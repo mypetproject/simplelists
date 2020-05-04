@@ -4,7 +4,9 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -15,6 +17,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     private List<String> mData;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
+
 
     // data is passed into the constructor
     MyRecyclerViewAdapter(Context context, List<String> data) {
@@ -31,9 +34,11 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
     // binds the data to the TextView in each row
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        String animal = mData.get(position);
+    public void onBindViewHolder(ViewHolder holder, final int position) {
+        String animal = mData.get(position) + " " + position;
         holder.myTextView.setText(animal);
+
+
     }
 
     // total number of rows
@@ -46,10 +51,13 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView myTextView;
+        ImageView mDeleteImage;
 
         ViewHolder(View itemView) {
             super(itemView);
+           // mDeleteImage = itemView.findViewById(R.id.image_delete);
             myTextView = itemView.findViewById(R.id.tvAnimalName);
+
             itemView.setOnClickListener(this);
         }
 
@@ -73,5 +81,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     public interface ItemClickListener {
         void onItemClick(View view, int position);
     }
+
+
 }
 

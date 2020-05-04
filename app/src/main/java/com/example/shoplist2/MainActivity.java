@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -57,19 +59,52 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     @Override
-    public void onItemClick(View view, int position) {
+    public void onItemClick(View view, final int position) {
         // Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
-        if (position == 0 ) {
+        /*ImageView mDeleteImage = (ImageView) view.findViewById(R.id.image_delete);
+        mDeleteImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                //String theRemovedItem = mData.get(position);
+                if (position == 0 || position == (data.size()-1) || data.size() < 3) {
+                    /*String theRemovedItem = data.get(position);
+
+                    data.remove(position);
+                    adapter.notifyItemRemoved(position);*/
+                  /*  removeSingleItem(position);
+
+                }
+            }
+        });*/
+        if (position == 0 || position == (data.size()-1)) {
             onButtonShowPopupWindowClick(view, 1);
-        } else if (position == (data.size()-1)) {
-            onButtonShowPopupWindowClick(view, data.size()-1);
+        //} else if (position == (data.size()-1)) {
+          //  onButtonShowPopupWindowClick(view, data.size()-1);
         } else {
-            TextView text = (TextView) findViewById(R.id.tvAnimalName);
-            //TextView text = (TextView) findViewById(R.id.rvAnimals);
-            text.setPaintFlags(text.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+
+// Как привязать text к arrayList, а не к получаемому view???
+            TextView text = (TextView) view.findViewById(R.id.tvAnimalName);
+            //TextView text = view.myTextView;
+            //text.setTextSize(40.0f);
+            if (text.getPaintFlags() != 1299) {
+                moveSingleItem(position);
+                text.setPaintFlags(text.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                text.setTextColor(R.color.colorPrimaryDark);
+                Toast.makeText(this, ""+text.getPaintFlags(), Toast.LENGTH_SHORT).show();
+
+            } else {
+                moveSingleItemToTop(position);
+                text.setPaintFlags(text.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
+                text.setTextColor(Color.parseColor("#000000"));
+
+            }
+//text.setTextSize(30.0f);
+            //text.setPaintFlags(text.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            //MyRecyclerViewAdapter.setTextSizes(30);
             //text.setTypeface(null,4);
-            // Toast.makeText(this, "You clicked " + adapter.getItem(position) +
-           //         " on row number " + position, Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "You clicked " + adapter.getItem(position) +
+            //        " on row number " + position + ". Size of ArrayList: " + data.size(), Toast.LENGTH_SHORT).show();
         }
         /*final int lastViewPosition = data.size()-1;
         switch (position) {
@@ -82,6 +117,13 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         }*/
 
     }
+
+
+    public void onItemDeleteClick(View view, int position) {
+
+    }
+
+
     public void onButtonShowPopupWindowClick(View view, final int insertIndex) {
 
         // inflate the layout of the popup window
@@ -147,16 +189,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
     }
 
-    /*public void onPopupButtonClick(View view) {
-        //Toast.makeText(this, "You clicked ", Toast.LENGTH_SHORT).show();
-        //setContentView(R.id.popup_edit);
-
-       mEdit = (EditText) findViewById(R.layout.popup_window);
-        String s = mEdit.getText().toString();
-        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
-        //insertFromPopup(s);
-    }*/
-
     public void onButtonClick(View view) {
         insertSingleItem();
     }
@@ -184,8 +216,10 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         adapter.notifyItemRangeInserted(insertIndex, items.size());
     }
 
-    private void removeSingleItem() {
-        int removeIndex = 2;
+
+
+    private void removeSingleItem(int removeIndex) {
+        // int removeIndex = 2;
         data.remove(removeIndex);
         adapter.notifyItemRemoved(removeIndex);
     }
@@ -225,8 +259,21 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         adapter.notifyItemChanged(updateIndex);
     }
 
-    private void moveSingleItem() {
-        int fromPosition = 3;
+    private void moveSingleItem(int fromPosition) {
+       // int fromPosition = 3;
+        int toPosition = data.size()-2;
+
+        // update data array
+        String item = data.get(fromPosition);
+        data.remove(fromPosition);
+        data.add(toPosition, item);
+
+        // notify adapter
+        adapter.notifyItemMoved(fromPosition, toPosition);
+    }
+
+    private void moveSingleItemToTop(int fromPosition) {
+        // int fromPosition = 3;
         int toPosition = 1;
 
         // update data array
