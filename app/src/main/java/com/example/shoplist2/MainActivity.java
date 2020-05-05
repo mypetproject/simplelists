@@ -1,7 +1,9 @@
 package com.example.shoplist2;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,6 +25,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MyRecyclerViewAdapter.ItemClickListener {
@@ -56,8 +60,33 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         adapter.setClickListener(this);
         recyclerView.setAdapter(adapter);
         //adapter.setCrossOutNumber(crossOutNumber);
+        ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,0) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder dragged, @NonNull RecyclerView.ViewHolder target) {
 
+                int position_dragged = dragged.getAdapterPosition();
+                int position_target = target.getAdapterPosition();
 
+                if (position_dragged >= (data.size()-crossOutNumber) || position_dragged == 0) {
+                    position_target = position_dragged;
+                } else if (position_target == 0) {
+                    position_target = 1;
+                } else if (position_target >= (data.size()-crossOutNumber)) {
+                    position_target = data.size()-crossOutNumber-1;
+                }
+                Collections.swap(data,position_dragged,position_target);
+
+                adapter.notifyItemMoved(position_dragged,position_target);
+
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+            }
+        });
+        helper.attachToRecyclerView(recyclerView);
     }
 
     @Override
