@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     List<String> data;
     MyRecyclerViewAdapter adapter;
     static int crossOutNumber;
+    static int editButtonClicked = 1;
+    boolean deleteFlag;
 
 
     @Override
@@ -87,69 +89,43 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             }
         });
         helper.attachToRecyclerView(recyclerView);
+// Do delete buttons invisible and hide holder "dobavit'"
+Button mEditButton = (Button) findViewById(R.id.edit_button);
+
+        mEditButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               switch (editButtonClicked) {
+                   case 1: editButtonClicked = 0; break;
+                   default: editButtonClicked = 1;
+               }
+                // Toast.makeText(v.getContext(), "You clicked edit button", Toast.LENGTH_SHORT).show();
+               adapter.notifyDataSetChanged();
+            }
+        });
     }
 
     @Override
     public void onItemClick(View view, final int position) {
         // Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
-       /* ImageView mDeleteImage = (ImageView) view.findViewById(R.id.image_delete);
-        mDeleteImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                //String theRemovedItem = mData.get(position);
-                if (position != 0) {
-                    //String theRemovedItem = data.get(position);
-
-                    //data.remove(position);
-                    //adapter.notifyItemRemoved(position);
-                    removeSingleItem(position);
-
-                }
-            }
-
-        });*/
 
         if (position == 0) {
-            onButtonShowPopupWindowClick(view, 1);
-        } else {
-
-
-            TextView text = (TextView) view.findViewById(R.id.tvAnimalName);
-
+            onButtonShowPopupWindowClick(view, 1, position);
+        } else if (editButtonClicked == 1){
             if (position < (data.size()-crossOutNumber)) {
                 crossOutNumber++;
                 moveSingleItem(position);
-                text.setPaintFlags(text.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-                text.setTextColor(Color.parseColor("#808080"));
-                //Toast.makeText(this, "" + text.getPaintFlags(), Toast.LENGTH_SHORT).show();
-                //adapter.setCrossOutNumber(crossOutNumber);
             } else {
                 crossOutNumber--;
                 moveSingleItemToTop(position);
-                text.setPaintFlags(text.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
-                text.setTextColor(Color.parseColor("#000000"));
-                //adapter.setCrossOutNumber(crossOutNumber);
-
             }
-//text.setTextSize(30.0f);
-            //text.setPaintFlags(text.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-            //MyRecyclerViewAdapter.setTextSizes(30);
-            //text.setTypeface(null,4);
-            //Toast.makeText(this, "You clicked " + adapter.getItem(position) +
-            //        " on row number " + position + ". Size of ArrayList: " + data.size(), Toast.LENGTH_SHORT).show();
-        }
-        /*final int lastViewPosition = data.size()-1;
-        switch (position) {
-            case 0: onButtonShowPopupWindowClick(view, 1);
-            break;
-            case lastViewPosition: onButtonShowPopupWindowClick(view, lastViewPosition);
-            break;
-            default: Toast.makeText(this, "You clicked " + adapter.getItem(position) +
-                    " on row number " + position, Toast.LENGTH_SHORT).show();
-        }*/
+        } else {
+            deleteFlag = true;
+            onButtonShowPopupWindowClick(view, position, position);
 
-    }
+            //removeSingleItem(position);
+        }
+     }
 
 
     public void onItemDeleteClick(View view, int position) {
@@ -157,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
 
-    public void onButtonShowPopupWindowClick(View view, final int insertIndex) {
+    public void onButtonShowPopupWindowClick(View view, final int insertIndex, final int position) {
 
         // inflate the layout of the popup window
         LayoutInflater inflater = (LayoutInflater)
@@ -170,15 +146,26 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         boolean focusable = true; // lets taps outside the popup also dismiss it
         final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
 
-        Button btnOk = (Button) popupView.findViewById(R.id.popup_ok_button);
-        Button btnCancel = (Button) popupView.findViewById(R.id.popup_cancel_button);
-        Button btnNext = (Button) popupView.findViewById(R.id.popup_next_button);
-        final EditText et = (EditText) popupView.findViewById(R.id.popup_edit);
+        Button btnOk = popupView.findViewById(R.id.popup_ok_button);
+        Button btnCancel = popupView.findViewById(R.id.popup_cancel_button);
+        Button btnNext = popupView.findViewById(R.id.popup_next_button);
+        final EditText et = popupView.findViewById(R.id.popup_edit);
+
+        if (position != 0) {
+            TextView text = view.findViewById(R.id.tvAnimalName);
+            et.setText(text.getText().toString());
+        } else {
+            deleteFlag = false;
+        }
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String str = et.getText().toString();
                 if (!str.isEmpty()) {
+                    if (deleteFlag) {
+                        deleteFlag = false;
+                        removeSingleItem(position);
+                    }
                     insertFromPopup(str, insertIndex);
                     popupWindow.dismiss();
                 }
@@ -188,6 +175,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                deleteFlag = false;
                 popupWindow.dismiss();
             }
         });
@@ -197,6 +185,10 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             public void onClick(View v) {
                 String str = et.getText().toString();
                 if (!str.isEmpty()) {
+                    if (deleteFlag) {
+                        deleteFlag = false;
+                        removeSingleItem(position);
+                    }
                     insertFromPopup(str, insertIndex);
                     et.getText().clear();
                 }
@@ -302,6 +294,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
         // notify adapter
         adapter.notifyItemMoved(fromPosition, toPosition);
+        adapter.notifyItemChanged(toPosition);
     }
 
     private void moveSingleItemToTop(int fromPosition) {
@@ -315,6 +308,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
         // notify adapter
         adapter.notifyItemMoved(fromPosition, toPosition);
+        adapter.notifyItemChanged(toPosition);
     }
    /* public void setCrossOutNumberInActivity(int mCrossOutNumber) {
         this.crossOutNumber = mCrossOutNumber;

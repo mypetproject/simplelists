@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">ShopList2</string>
+    <string name="hintPopup">Eeee</string>
+    <string name="enter_text">Enter text</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="next">NEXT</string>
+    <string name="edit">Edit</string>
 </resources>

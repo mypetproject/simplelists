@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,14 +47,25 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
 
-        String animal = mData.get(position) + " " + position + " cross -: "+ (mData.size()-MainActivity.crossOutNumber) + "mainCross: " + MainActivity.crossOutNumber;
-
+        /*String animal = mData.get(position) + " " + position + " cross -: "
+                + (mData.size()-MainActivity.crossOutNumber) + "mainCross: "
+                + MainActivity.crossOutNumber + " vis: " + MainActivity.editButtonClicked;*/
+        String animal = mData.get(position);
         if (position == 0) {
             holder.mDeleteImage.setVisibility(View.INVISIBLE);
         } else {
             holder.mDeleteImage.setVisibility(View.VISIBLE);
         }
+        if (MainActivity.editButtonClicked == 1 ) {
+            holder.mDeleteImage.setVisibility(View.INVISIBLE);
+        }
+        if (MainActivity.editButtonClicked == 1 && position == 0) {
+            holder.myTextView.setVisibility(View.GONE);
+            holder.mDeleteImage.setVisibility(View.GONE);
+        } else {
+            holder.myTextView.setVisibility(View.VISIBLE);
 
+        }
             if (position >= (mData.size()-MainActivity.crossOutNumber)) {
 
             holder.myTextView.setPaintFlags(holder.myTextView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
@@ -79,7 +91,16 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView myTextView;
         ImageView mDeleteImage;
+        //Button mEditButton = (Button) findViewById(R.id.edit_button);
 
+        /*mEditButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Toast.makeText(v.getContext(), "You clicked edit button", Toast.LENGTH_SHORT).show();
+                //mDeleteImage.setVisibility(View.INVISIBLE);
+                //notifyItemChanged(1);
+            }
+        });*/
         ViewHolder(View itemView) {
             super(itemView);
 
@@ -91,8 +112,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
                     int position = getAdapterPosition();
                     if (position >= (mData.size()-MainActivity.crossOutNumber)) {
                         MainActivity.crossOutNumber--;
-                        //mCrossOutNumber--;
-                        //MainActivity.setCrossOutNumberInActivity(mCrossOutNumber);
+
                     }
                     if (position>0) {
 
@@ -103,6 +123,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
                 }
             });
 
+            // Добавить кнопку edit
             itemView.setOnClickListener(this);
         }
 
