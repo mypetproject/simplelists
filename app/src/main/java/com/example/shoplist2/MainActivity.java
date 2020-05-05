@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
     List<String> data;
     MyRecyclerViewAdapter adapter;
+    static int crossOutNumber;
 
 
     @Override
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         data.add("Cow");
         data.add("Camel");
         data.add("Sheep");
-        data.add("Добавить");
+        data.add("Bread");
 
         // set up the RecyclerView
         RecyclerView recyclerView = findViewById(R.id.rvAnimals);
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         adapter = new MyRecyclerViewAdapter(this, data);
         adapter.setClickListener(this);
         recyclerView.setAdapter(adapter);
+        //adapter.setCrossOutNumber(crossOutNumber);
 
 
     }
@@ -61,42 +63,44 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     @Override
     public void onItemClick(View view, final int position) {
         // Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
-        /*ImageView mDeleteImage = (ImageView) view.findViewById(R.id.image_delete);
+       /* ImageView mDeleteImage = (ImageView) view.findViewById(R.id.image_delete);
         mDeleteImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 //String theRemovedItem = mData.get(position);
-                if (position == 0 || position == (data.size()-1) || data.size() < 3) {
-                    /*String theRemovedItem = data.get(position);
+                if (position != 0) {
+                    //String theRemovedItem = data.get(position);
 
-                    data.remove(position);
-                    adapter.notifyItemRemoved(position);*/
-                  /*  removeSingleItem(position);
+                    //data.remove(position);
+                    //adapter.notifyItemRemoved(position);
+                    removeSingleItem(position);
 
                 }
             }
+
         });*/
-        if (position == 0 || position == (data.size()-1)) {
+
+        if (position == 0) {
             onButtonShowPopupWindowClick(view, 1);
-        //} else if (position == (data.size()-1)) {
-          //  onButtonShowPopupWindowClick(view, data.size()-1);
         } else {
 
-// Как привязать text к arrayList, а не к получаемому view???
+
             TextView text = (TextView) view.findViewById(R.id.tvAnimalName);
-            //TextView text = view.myTextView;
-            //text.setTextSize(40.0f);
-            if (text.getPaintFlags() != 1299) {
+
+            if (position < (data.size()-crossOutNumber)) {
+                crossOutNumber++;
                 moveSingleItem(position);
                 text.setPaintFlags(text.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-                text.setTextColor(R.color.colorPrimaryDark);
-                Toast.makeText(this, ""+text.getPaintFlags(), Toast.LENGTH_SHORT).show();
-
+                text.setTextColor(Color.parseColor("#808080"));
+                //Toast.makeText(this, "" + text.getPaintFlags(), Toast.LENGTH_SHORT).show();
+                //adapter.setCrossOutNumber(crossOutNumber);
             } else {
+                crossOutNumber--;
                 moveSingleItemToTop(position);
-                text.setPaintFlags(text.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
+                text.setPaintFlags(text.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
                 text.setTextColor(Color.parseColor("#000000"));
+                //adapter.setCrossOutNumber(crossOutNumber);
 
             }
 //text.setTextSize(30.0f);
@@ -155,9 +159,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                          popupWindow.dismiss();
-                }
-            });
+                popupWindow.dismiss();
+            }
+        });
 
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -217,7 +221,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
 
-
     private void removeSingleItem(int removeIndex) {
         // int removeIndex = 2;
         data.remove(removeIndex);
@@ -260,8 +263,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void moveSingleItem(int fromPosition) {
-       // int fromPosition = 3;
-        int toPosition = data.size()-2;
+        // int fromPosition = 3;
+        int toPosition = data.size() - 1;
 
         // update data array
         String item = data.get(fromPosition);
@@ -284,5 +287,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         // notify adapter
         adapter.notifyItemMoved(fromPosition, toPosition);
     }
+   /* public void setCrossOutNumberInActivity(int mCrossOutNumber) {
+        this.crossOutNumber = mCrossOutNumber;
+    }*/
+
 }
 
