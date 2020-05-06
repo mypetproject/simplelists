@@ -14,10 +14,12 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -224,7 +226,30 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
 
         //InputMethodManager imm =  (InputMethodManager) getSystemService(popupView.getContext().INPUT_METHOD_SERVICE);
         //imm.showSoftInput(popupView, InputMethodManager.SHOW_IMPLICIT);
+
         et.requestFocus();
+        et.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+
+                    String str = et.getText().toString();
+                    if (!str.isEmpty()) {
+                        if (deleteFlag) {
+                            deleteFlag = false;
+                            removeSingleItem(position);
+                        }
+                        insertFromPopup(str, insertIndex);
+                        popupWindow.dismiss();
+                    }
+
+                    handled = true;
+                }
+                return handled;
+
+            }
+        });
 
         //Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
 
