@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
@@ -16,6 +17,8 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -153,10 +156,15 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
 
         if (position != 0) {
             TextView text = view.findViewById(R.id.tvAnimalName);
-            et.setText(text.getText().toString());
+            et.setText(text.getText().toString() + " ");
+            et.setSelection(et.length());
+
         } else {
             deleteFlag = false;
         }
+
+
+
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -199,6 +207,24 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
         // which view you pass in doesn't matter, it is only used for the window tolken
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
 
+        et.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(final View v, final boolean hasFocus) {
+                if (hasFocus && et.isEnabled() && et.isFocusable()) {
+                    et.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            final InputMethodManager imm =(InputMethodManager)getBaseContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.showSoftInput(et,InputMethodManager.SHOW_IMPLICIT);
+                        }
+                    });
+                }
+            }
+        });
+
+        //InputMethodManager imm =  (InputMethodManager) getSystemService(popupView.getContext().INPUT_METHOD_SERVICE);
+        //imm.showSoftInput(popupView, InputMethodManager.SHOW_IMPLICIT);
+        et.requestFocus();
 
         //Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
 
