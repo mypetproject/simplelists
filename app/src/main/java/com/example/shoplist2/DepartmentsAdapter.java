@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.ViewHolder> {
+public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.ViewHolder> {
 
     private List<String> mData;
     private LayoutInflater mInflater;
@@ -27,7 +27,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
 
     // data is passed into the constructor
-    MyRecyclerViewAdapter(Context context, List<String> data) {
+    DepartmentsAdapter(Context context, List<String> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
 
@@ -40,7 +40,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     // inflates the row layout from xml when needed
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.recycler_layout, parent, false);
+        View view = mInflater.inflate(R.layout.departments_layout, parent, false);
         return new ViewHolder(view);
     }
 
@@ -58,18 +58,21 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
             tvDep.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
         }*/
 
-       //String animal = mData.get(position);
+        //String animal = mData.get(position);
 
         //Remove delete button from position 0 and set visible on position > 0
         if (position == 0) {
-            holder.mDeleteImage.setVisibility(View.INVISIBLE);
+            holder.mDeleteImage.setVisibility(View.GONE);
+            holder.mAddImage.setVisibility(View.VISIBLE);
         } else {
             holder.mDeleteImage.setVisibility(View.VISIBLE);
+            holder.mAddImage.setVisibility(View.GONE);
         }
 
 
         if (MainActivity.editButtonClicked == 1 ) {
             holder.mDeleteImage.setVisibility(View.INVISIBLE);
+            holder.mAddImage.setVisibility(View.GONE);
         }
 
         if (MainActivity.editButtonClicked == 1 && position == 0) {
@@ -83,14 +86,14 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
 
 
-        if (position >= (mData.size()-MainActivity.crossOutNumber)) {
+        /*if (position >= (mData.size()-MainActivity.crossOutNumber)) {
 
             holder.myTextView.setPaintFlags(holder.myTextView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             holder.myTextView.setTextColor(Color.parseColor("#808080"));
         } else {
             holder.myTextView.setPaintFlags(holder.myTextView.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
             holder.myTextView.setTextColor(Color.parseColor("#000000"));
-        }
+        }*/
         holder.myTextView.setText(animal);
 
 
@@ -108,19 +111,21 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView myTextView;
         ImageView mDeleteImage;
+        ImageView mAddImage;
         LinearLayout mLinearLayout;
-       // String parent1;
+        // String parent1;
 
         ViewHolder(View itemView) {
             super(itemView);
             //mLinearLayout = itemView.findViewById(R.id.ll);
 
-           // mLinearLayout = itemView.findViewById(R.id.ll);
+            // mLinearLayout = itemView.findViewById(R.id.ll);
 
-            myTextView = itemView.findViewById(R.id.tvAnimalName);
-            mDeleteImage = itemView.findViewById(R.id.image_delete);
+            myTextView = itemView.findViewById(R.id.tvDepartmentsName);
+            mDeleteImage = itemView.findViewById(R.id.image_delete2);
+            mAddImage = itemView.findViewById(R.id.addImage);
 
-           // parent1 = mLinearLayout.getParent().toString();
+            // parent1 = mLinearLayout.getParent().toString();
 
             mDeleteImage.setOnClickListener(new View.OnClickListener() {
                 @Override
