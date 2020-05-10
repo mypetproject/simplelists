@@ -3,17 +3,21 @@ package com.example.shoplist2;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.MenuView;
+import androidx.core.view.MotionEventCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.ArrayMap;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -49,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     Map<String, Integer> crossOutNumbersArray;
 
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,6 +91,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             crossOutNumbersArray.put(key,0);
         }
 
+
+
         // set up the RecyclerView
         final RecyclerView recyclerView = findViewById(R.id.rvAnimals);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -119,14 +126,14 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         //recyclerView.setNestedScrollingEnabled(false);
         //recyclerViewDepartments.setNestedScrollingEnabled(false);
 
+        chosenDepartment = keysForDepartments.get(1);
+        setData();
 
         //Animation for drag & drop for list
         //TODO: Переделать свайп лево-право на переключение списков
         ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.
                 SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,
-                ItemTouchHelper.END ) {
-
-
+                ItemTouchHelper.END | ItemTouchHelper.START ) {
 
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder dragged, @NonNull RecyclerView.ViewHolder target) {
@@ -155,14 +162,27 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                /*int position = viewHolder.getAdapterPosition();
-                if (position != 0)            {
-                    deleteSingleItem(position);
-                }*/
-                chosenDepartment = keysForDepartments.get(keysForDepartments.indexOf(chosenDepartment)+1);
-                Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
+                int position = keysForDepartments.indexOf(chosenDepartment);
+                switch (direction) {
+                    case ItemTouchHelper.START:
+                        if (position < (keysForDepartments.size()-1)) {
+                            chosenDepartment = keysForDepartments.get(position + 1);
+                            Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
+
+                        }
+                        break;
+
+                    case ItemTouchHelper.END:
+                        if (position > 1) {
+                            chosenDepartment = keysForDepartments.get(position - 1);
+                            Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
+
+                        }
+                        break;
+
+                }
                 setData();
-                //adapter.notifyItemChanged(position);
+
             }
 
             @Override
@@ -206,37 +226,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         });
         helper2.attachToRecyclerView(recyclerViewDepartments);
 
-       /* ItemTouchHelper helper3 = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT) {
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder dragged, @NonNull RecyclerView.ViewHolder target) {
-
-                return false;
-            }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-
-                /*switch (direction) {
-                    case ItemTouchHelper.LEFT:
-                        chosenDepartment = keysForDepartments.get(keysForDepartments.indexOf(chosenDepartment)-1);
-                        Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
-                        setData();
-                        break;
-
-                    case ItemTouchHelper.RIGHT:
-                        chosenDepartment = keysForDepartments.get(keysForDepartments.indexOf(chosenDepartment)+1);
-                        Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
-                        setData();
-                        break;
-
-                }
-                /*if (direction == ItemTouchHelper.LEFT || direction == ItemTouchHelper.RIGHT) {
-                    //Toast.makeText(getBaseContext(), "swiped " + direction, Toast.LENGTH_SHORT).show();
-                }*/
-           /* }
-        });
-        helper3.attachToRecyclerView(recyclerView);*/
-
 
 // Do delete buttons invisible and hide holder "dobavit'"
 Button mEditButton = (Button) findViewById(R.id.edit_button);
@@ -255,8 +244,48 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
         });
 
     //data.addListener(new List<String>())
+   /* LinearLayout backgroundLayout = (LinearLayout) findViewById(R.id.backgroundLL);
+    backgroundLayout.setOnTouchListener(new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            Toast.makeText(v.getContext(), "ACTION: " + event.getActionMasked(), Toast.LENGTH_SHORT).show();
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                   // Toast.makeText(v.getContext(), "ACTION_DOWN", Toast.LENGTH_SHORT).show();
+                case MotionEvent.ACTION_UP:
+                  //  Toast.makeText(v.getContext(), "ACTION_UP", Toast.LENGTH_SHORT).show();
+
+            }
+            return false;
+        }
+    });*/
+
+   //Get swipes from background
+   findViewById(R.id.backgroundLL).setOnTouchListener(new OnSwipeTouchListener(MainActivity.this) {
+            int position;
+            public void onSwipeTop() {
+            }
+            public void onSwipeRight() {
+                 position = keysForDepartments.indexOf(chosenDepartment);
+                if (position > 1) {
+                    chosenDepartment = keysForDepartments.get(position - 1);
+                }
+                setData();
+            }
+            public void onSwipeLeft() {
+                position = keysForDepartments.indexOf(chosenDepartment);
+                if (position < (keysForDepartments.size()-1)) {
+                    chosenDepartment = keysForDepartments.get(position + 1);
+                }
+                setData();
+            }
+            public void onSwipeBottom() {
+            }
+        });
 
     }
+
+
 
     public static void setAdapterPosition(int pos) {
         adapterPosition = pos;
