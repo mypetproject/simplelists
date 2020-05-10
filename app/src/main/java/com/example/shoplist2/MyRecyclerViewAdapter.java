@@ -16,6 +16,7 @@ import android.widget.Toast;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.ViewHolder> {
@@ -113,33 +114,10 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
         ViewHolder(View itemView) {
             super(itemView);
-            //mLinearLayout = itemView.findViewById(R.id.ll);
-
-           // mLinearLayout = itemView.findViewById(R.id.ll);
-
             myTextView = itemView.findViewById(R.id.tvAnimalName);
             mDeleteImage = itemView.findViewById(R.id.image_delete);
 
-           // parent1 = mLinearLayout.getParent().toString();
-
-            mDeleteImage.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int position = getAdapterPosition();
-                    if (position >= (mData.size()-MainActivity.crossOutNumber)) {
-                        MainActivity.crossOutNumber--;
-
-                    }
-                    if (position>0) {
-
-                        // remove your item from data base
-                        mData.remove(position);  // remove the item from list
-                        notifyItemRemoved(position); // notify the adapter about the removed item
-                    }
-                }
-            });
-
-
+            mDeleteImage.setOnClickListener(this);
             itemView.setOnClickListener(this);
         }
 

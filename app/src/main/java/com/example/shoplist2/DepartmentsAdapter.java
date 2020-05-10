@@ -16,6 +16,7 @@ import android.widget.Toast;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.ViewHolder> {
@@ -28,6 +29,7 @@ public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.
 
     // data is passed into the constructor
     DepartmentsAdapter(Context context, List<String> data) {
+   // DepartmentsAdapter(Context context, HashMap<String, ArrayList<>> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
 
@@ -112,7 +114,7 @@ public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.
         TextView myTextView;
         ImageView mDeleteImage;
         ImageView mAddImage;
-        LinearLayout mLinearLayout;
+        //LinearLayout mLinearLayout;
         // String parent1;
 
         ViewHolder(View itemView) {
@@ -127,24 +129,20 @@ public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.
 
             // parent1 = mLinearLayout.getParent().toString();
 
-            mDeleteImage.setOnClickListener(new View.OnClickListener() {
+           /* mDeleteImage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    if (position >= (mData.size()-MainActivity.crossOutNumber)) {
-                        MainActivity.crossOutNumber--;
 
-                    }
-                    if (position>0) {
-
+//TODO: clear departmentsData after deleting department
                         // remove your item from data base
                         mData.remove(position);  // remove the item from list
                         notifyItemRemoved(position); // notify the adapter about the removed item
-                    }
+
                 }
-            });
+            });*/
 
-
+            mDeleteImage.setOnClickListener(this);
             itemView.setOnClickListener(this);
         }
 
