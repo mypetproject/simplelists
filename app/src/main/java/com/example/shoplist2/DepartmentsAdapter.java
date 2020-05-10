@@ -63,6 +63,11 @@ public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.
         //String animal = mData.get(position);
 
         //Remove delete button from position 0 and set visible on position > 0
+        if (animal == MainActivity.chosenDepartment) {
+            holder.itemView.setBackgroundColor(Color.parseColor("#00ff00"));
+        } else {
+            holder.itemView.setBackgroundColor(Color.parseColor("#79bfea"));
+        }
         if (position == 0) {
             holder.mDeleteImage.setVisibility(View.GONE);
             holder.mAddImage.setVisibility(View.VISIBLE);
@@ -134,7 +139,7 @@ public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.
                 public void onClick(View v) {
                     int position = getAdapterPosition();
 
-//TODO: clear departmentsData after deleting department
+
                         // remove your item from data base
                         mData.remove(position);  // remove the item from list
                         notifyItemRemoved(position); // notify the adapter about the removed item

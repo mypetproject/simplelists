@@ -7,10 +7,13 @@ import androidx.core.view.MotionEventCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SnapHelper;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.ArrayMap;
 import android.view.GestureDetector;
@@ -43,7 +46,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     static int editButtonClicked = 1;
     boolean deleteFlagForEdit;
     static int adapterPosition;
-    String chosenDepartment;
+    static  String chosenDepartment;
+    //int previewPositionOfDepartment;
 
    // List<String> departmentsData;
   // List<String, List<String>> departmentsData;
@@ -105,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         recyclerView.setAdapter(adapter);
 
 
-        RecyclerView recyclerViewDepartments = findViewById(R.id.rvDepartments);
+        final RecyclerView recyclerViewDepartments = findViewById(R.id.rvDepartments);
         LinearLayoutManager layoutManagerDepartments = new LinearLayoutManager(this);
         recyclerViewDepartments.setLayoutManager(layoutManagerDepartments);
 
@@ -130,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         setData();
 
         //Animation for drag & drop for list
-        //TODO: Переделать свайп лево-право на переключение списков
+
         ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.
                 SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,
                 ItemTouchHelper.END | ItemTouchHelper.START ) {
@@ -167,16 +171,16 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                     case ItemTouchHelper.START:
                         if (position < (keysForDepartments.size()-1)) {
                             chosenDepartment = keysForDepartments.get(position + 1);
-                            Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
-
+                           // Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
+                            recyclerViewDepartments.smoothScrollToPosition(position+1);
                         }
                         break;
 
                     case ItemTouchHelper.END:
                         if (position > 1) {
                             chosenDepartment = keysForDepartments.get(position - 1);
-                            Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
-
+                            //Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
+                            recyclerViewDepartments.smoothScrollToPosition(position-1);
                         }
                         break;
 
@@ -243,24 +247,7 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
             }
         });
 
-    //data.addListener(new List<String>())
-   /* LinearLayout backgroundLayout = (LinearLayout) findViewById(R.id.backgroundLL);
-    backgroundLayout.setOnTouchListener(new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            Toast.makeText(v.getContext(), "ACTION: " + event.getActionMasked(), Toast.LENGTH_SHORT).show();
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                   // Toast.makeText(v.getContext(), "ACTION_DOWN", Toast.LENGTH_SHORT).show();
-                case MotionEvent.ACTION_UP:
-                  //  Toast.makeText(v.getContext(), "ACTION_UP", Toast.LENGTH_SHORT).show();
-
-            }
-            return false;
-        }
-    });*/
-
-   //Get swipes from background
+       //Get swipes from background
    findViewById(R.id.backgroundLL).setOnTouchListener(new OnSwipeTouchListener(MainActivity.this) {
             int position;
             public void onSwipeTop() {
@@ -269,19 +256,27 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
                  position = keysForDepartments.indexOf(chosenDepartment);
                 if (position > 1) {
                     chosenDepartment = keysForDepartments.get(position - 1);
+                    recyclerViewDepartments.smoothScrollToPosition(position-1);
                 }
                 setData();
+
             }
             public void onSwipeLeft() {
                 position = keysForDepartments.indexOf(chosenDepartment);
                 if (position < (keysForDepartments.size()-1)) {
                     chosenDepartment = keysForDepartments.get(position + 1);
+                    recyclerViewDepartments.smoothScrollToPosition(position+1);
                 }
                 setData();
             }
             public void onSwipeBottom() {
             }
         });
+
+        //SnapHelper snapHelper = new LinearSnapHelper();
+       // snapHelper.attachToRecyclerView(recyclerViewDepartments);
+
+        //previewPositionOfDepartment = 1;
 
     }
 
@@ -303,6 +298,7 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
         if (listToAdd != null) {data.addAll(listToAdd);
         }
         adapter.notifyDataSetChanged();
+        adapterForDepartments.notifyDataSetChanged();
     }
 
     void getCrossOutNumber(String key) {
@@ -319,6 +315,7 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
          //Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
 
         //String resName = (String) view.getResources().getResourceName(position);
+       // adapterForDepartments.notifyDataSetChanged();
         View parent = (View) view.getParent();
         //Toast.makeText(this, "" + departmentsData.keySet(),Toast.LENGTH_LONG).show();
         //Toast.makeText(this, "Departments " + view.getParent().toString(), Toast.LENGTH_SHORT).show();
@@ -349,6 +346,7 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
                 deleteSingleItemInDepartments(view, position);
                 break;
                     case R.id.rvDepartments:
+                        //view.setBackgroundColor(Color.parseColor("#00ff00"));
                         if (position == 0) {
                             onButtonShowPopupWindowClick(view, 1, position, parentID);
                         } else /*if (editButtonClicked == 0) */{
