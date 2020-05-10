@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         dataForMap.add("Bread");
 
 
-        departmentsData = new HashMap<String, List<String>>();
+        departmentsData = new ArrayMap<String, List<String>>();
         departmentsData.put("Добавить", null);
         departmentsData.put("Butcher's", dataForMap);
         departmentsData.put("Confectioner's", null);
@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         data = new ArrayList<>();
         data.add("Добавить");
 
-        crossOutNumbersArray = new HashMap<String, Integer>();
+        crossOutNumbersArray = new ArrayMap<String, Integer>();
         for (String key : keysForDepartments) {
             crossOutNumbersArray.put(key,0);
         }
@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 Collections.swap(data,position_dragged,position_target);
 
                 adapter.notifyItemMoved(position_dragged,position_target);
-                //adapterForDepartments.notifyItemMoved(position_dragged,position_target);
+
 
                 return false;
             }
@@ -186,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
                 }
                 setData();
+                getCrossOutNumber(chosenDepartment);
 
             }
 
@@ -259,7 +260,7 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
                     recyclerViewDepartments.smoothScrollToPosition(position-1);
                 }
                 setData();
-
+                getCrossOutNumber(chosenDepartment);
             }
             public void onSwipeLeft() {
                 position = keysForDepartments.indexOf(chosenDepartment);
@@ -268,6 +269,7 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
                     recyclerViewDepartments.smoothScrollToPosition(position+1);
                 }
                 setData();
+                getCrossOutNumber(chosenDepartment);
             }
             public void onSwipeBottom() {
             }
