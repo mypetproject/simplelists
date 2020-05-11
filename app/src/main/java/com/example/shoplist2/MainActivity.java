@@ -3,6 +3,7 @@ package com.example.shoplist2;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.MenuView;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.MotionEventCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -32,6 +33,16 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
+import com.mikepenz.fontawesome_typeface_library.FontAwesome;
+import com.mikepenz.materialdrawer.Drawer;
+import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.model.DividerDrawerItem;
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
+import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
+import com.mikepenz.materialdrawer.model.SectionDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     boolean deleteFlagForEdit;
     static int adapterPosition;
     static  String chosenDepartment;
+    String chosenList;
     //int previewPositionOfDepartment;
 
    // List<String> departmentsData;
@@ -55,6 +67,11 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     DepartmentsAdapter adapterForDepartments;
     List<String> keysForDepartments;
     Map<String, Integer> crossOutNumbersArray;
+    List<String> keysForLists;
+
+    private Drawer drawerResult = null;
+    IDrawerItem[] iDrawerItems = new IDrawerItem[100];
+    Toolbar toolbar;
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -89,6 +106,13 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         keysForDepartments.add("Greengrocer's");
         data = new ArrayList<>();
         data.add("Добавить");
+
+        keysForLists = new ArrayList<>();
+        keysForLists.add("Добавить");
+        keysForLists.add("First");
+        keysForLists.add("Second");
+
+
 
         crossOutNumbersArray = new ArrayMap<String, Integer>();
         for (String key : keysForDepartments) {
@@ -280,9 +304,111 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
 
         //previewPositionOfDepartment = 1;
 
+        // Handle Toolbar
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        chosenList = keysForLists.get(1);
+        setNavigationDrawerData();
+       // PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(1).withName("Ololo");
+       // PrimaryDrawerItem item2 = new PrimaryDrawerItem().withIdentifier(2).withName("Olola");
+
+
+        drawerResult = new DrawerBuilder()
+                .withActivity(this)
+                .withToolbar(toolbar)
+                .withActionBarDrawerToggle(true)
+                .withHeader(R.layout.drawer_header)
+                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                    @Override
+                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                        if (position == 1) {
+
+                            View parent = (View) view.getParent();
+                            int parentID = parent.getId();
+                            Toast.makeText(getBaseContext(), "ParentID: " + view.getParent(), Toast.LENGTH_LONG).show();
+                            onButtonShowPopupWindowClick(view, 1, position-1, parentID);
+                        } else {
+                            //TextView  text = new TextView(view.getContext());
+
+                            chosenList =  keysForLists.get(position-1);
+                            //Toast.makeText(MainActivity.this, "Selected list: " + chosenList, Toast.LENGTH_SHORT).show();
+                            setTitle(chosenList);
+                            //setSupportActionBar(toolbar);
+
+                        }
+                        return false;
+                    }
+                })
+
+                .addDrawerItems(
+                        iDrawerItems
+                        /*new PrimaryDrawerItem().withName(R.string.drawer_item_home).withIcon(FontAwesome.Icon.faw_home).withBadge("99").withIdentifier(1),
+                        new PrimaryDrawerItem().withName(R.string.drawer_item_free_play).withIcon(FontAwesome.Icon.faw_gamepad),
+                        new PrimaryDrawerItem().withName(R.string.drawer_item_custom).withIcon(FontAwesome.Icon.faw_eye).withBadge("6").withIdentifier(2),
+                        new SectionDrawerItem().withName(R.string.drawer_item_settings),
+                        new SecondaryDrawerItem().withName(R.string.drawer_item_help).withIcon(FontAwesome.Icon.faw_cog),
+                        new SecondaryDrawerItem().withName(R.string.drawer_item_open_source).withIcon(FontAwesome.Icon.faw_question),
+                        new DividerDrawerItem(),
+                        new SecondaryDrawerItem().withName(R.string.drawer_item_contact).withIcon(FontAwesome.Icon.faw_github).withBadge("12+").withIdentifier(1),*/
+
+
+                )
+                .build();
+
+
+
+
     }
 
+    void setNavigationDrawerData() {
+        for (int i = 0; i < keysForLists.size();i++) {
+            iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i));
+        }
+        drawerResult = new DrawerBuilder()
+                .withActivity(this)
+                .withToolbar(toolbar)
+                .withActionBarDrawerToggle(true)
+                .withHeader(R.layout.drawer_header)
+                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                    @Override
+                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                        if (position == 1) {
 
+                            View parent = (View) view.getParent();
+                            int parentID = parent.getId();
+                            Toast.makeText(getBaseContext(), "ParentID: " + view.getParent(), Toast.LENGTH_LONG).show();
+                            onButtonShowPopupWindowClick(view, 1, position-1, parentID);
+                        } else {
+                            //TextView  text = new TextView(view.getContext());
+
+                            chosenList =  keysForLists.get(position-1);
+                            //Toast.makeText(MainActivity.this, "Selected list: " + chosenList, Toast.LENGTH_SHORT).show();
+                            setTitle(chosenList);
+                            //setSupportActionBar(toolbar);
+
+                        }
+                        return false;
+                    }
+                })
+                .addDrawerItems(
+                        iDrawerItems
+                )
+                .build();
+
+
+        setTitle(chosenList);
+    }
+
+        @Override
+        public void onBackPressed() {
+            // Закрываем Navigation Drawer по нажатию системной кнопки "Назад" если он открыт
+            if (drawerResult.isDrawerOpen()) {
+                drawerResult.closeDrawer();
+            } else {
+                super.onBackPressed();
+            }
+        }
 
     public static void setAdapterPosition(int pos) {
         adapterPosition = pos;
@@ -319,21 +445,6 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
         //String resName = (String) view.getResources().getResourceName(position);
        // adapterForDepartments.notifyDataSetChanged();
         View parent = (View) view.getParent();
-        //Toast.makeText(this, "" + departmentsData.keySet(),Toast.LENGTH_LONG).show();
-        //Toast.makeText(this, "Departments " + view.getParent().toString(), Toast.LENGTH_SHORT).show();
-       //Toast.makeText(this,  "vv: "+ parent.getId(), Toast.LENGTH_SHORT).show();
-        /*int viewId = view.getId();*/
-        /*switch(parent.getId()) {
-            case R.id.rvDepartments:
-                //Toast.makeText(this, "Departments", Toast.LENGTH_SHORT).show();
-                TextView text = view.findViewById(R.id.tvDepartmentsName);
-                //Toast.makeText(view.getContext(), "Dobavit'" + text.getText().toString(), Toast.LENGTH_SHORT).show();
-                if (text.getText().toString() == "Добавить" && position == 0) {
-                    //onButtonShowPopupWindowClick(view, 1, position);
-                    Toast.makeText(view.getContext(), "Dobavit'", Toast.LENGTH_SHORT).show();
-                }
-                break;
-            case R.id.rvAnimals:*/
         int parentID = parent.getId();
 
         //ImageView mDeleteImage = view.findViewById(R.id.image_delete);
@@ -438,7 +549,9 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
                 //String str = et.getText().toString();
                // if (!str.isEmpty()) {
                 String str = et.getText().toString();
-                    if ((!departmentsData.containsKey(str) && parentID == R.id.rvDepartments) || parentID == R.id.rvAnimals) {
+                    if ((!departmentsData.containsKey(str) && parentID == R.id.rvDepartments)
+                            || parentID == R.id.rvAnimals
+                            || !keysForLists.contains(str) && parentID == R.id.material_drawer_recycler_view) {
                         buttonClicked(str);
                     }else {
                         Toast.makeText(view.getContext(), "Введите уникальное название отдела", Toast.LENGTH_SHORT).show();
@@ -458,6 +571,7 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
                     } else if (parentID == R.id.rvDepartments) {
                         setData();
                         chosenDepartment = str;
+                        setNavigationDrawerData();
                     }
                 }
             }
@@ -640,6 +754,11 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
             case R.id.rvAnimals:
                 data.add(insertIndex, s);
                 adapter.notifyItemInserted(insertIndex);
+                break;
+            case R.id.material_drawer_recycler_view:
+                keysForLists.add(insertIndex,s);
+                chosenList = s;
+                setNavigationDrawerData();
                 break;
         }
     }
