@@ -16,7 +16,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.ArrayMap;
+
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -46,6 +46,7 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,13 +58,15 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     static int editButtonClicked = 1;
     boolean deleteFlagForEdit;
     static int adapterPosition;
-    static  String chosenDepartment;
+    static String chosenDepartment;
     String chosenList;
     //int previewPositionOfDepartment;
 
-   // List<String> departmentsData;
-  // List<String, List<String>> departmentsData;
-   public Map<String, List<String>> departmentsData;
+    // List<String> departmentsData;
+    // List<String, List<String>> departmentsData;
+    public LinkedHashMap<String, DataWithCrossOutNumber> departmentsData;
+    public LinkedHashMap<String, LinkedHashMap<String, DataWithCrossOutNumber>> listData;
+    //public Map<String, LinkedHashMap<String, List<Integer>>> listOfCrossOutNumbers;
     DepartmentsAdapter adapterForDepartments;
     List<String> keysForDepartments;
     Map<String, Integer> crossOutNumbersArray;
@@ -82,43 +85,65 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
         // data to populate the RecyclerView with
 
-        List<String> dataForMap = new ArrayList<>();
+        ArrayList<String> dataForMap = new ArrayList<String>();
         //dataForMap.add("Добавить");
-        dataForMap.add("Cow");
+       /* dataForMap.add("Cow");
         dataForMap.add("Camel");
         dataForMap.add("Sheep");
-        dataForMap.add("Bread");
-
-
-        departmentsData = new ArrayMap<String, List<String>>();
-        departmentsData.put("Добавить", null);
+        dataForMap.add("Bread");*/
+        DataWithCrossOutNumber dataForMap2 = new DataWithCrossOutNumber(dataForMap, 0);
+        departmentsData = new LinkedHashMap<String, DataWithCrossOutNumber>();
+       /* departmentsData.put("Добавить", null);
         departmentsData.put("Butcher's", dataForMap);
         departmentsData.put("Confectioner's", null);
         departmentsData.put("Stationer's", null);
-        departmentsData.put("Greengrocer's", null);
+        departmentsData.put("Greengrocer's", null);*/
+
+        listData = new LinkedHashMap<String, LinkedHashMap<String, DataWithCrossOutNumber>>();
+        listData.put("Добавить", null);
+        listData.put("First", new LinkedHashMap<String, DataWithCrossOutNumber>());
+        listData.put("Second", new LinkedHashMap<String, DataWithCrossOutNumber>());
+
+       // listData.get("First").put("Добавить", null);
+       // listData.get("First").put("Butcher's", dataForMap2);
+    /*    listData.get("First").put("Confectioner's", new DataWithCrossOutNumber(null,0));
+        listData.get("First").put("Stationer's", new DataWithCrossOutNumber(null,0));
+        listData.get("First").put("Greengrocer's", new DataWithCrossOutNumber(null,0));*/
+       /*LinkedHashMap<String, ArrayList<DataWithCrossOutNumber>> bufDepData = new LinkedHashMap<String, ArrayList<DataWithCrossOutNumber>>();
+        bufDepData.putAll(listData.get("First"));
+        for (Map.Entry entry: bufDepData.entrySet()) {
+            ArrayList<String> arrList = new ArrayList<String>();
+            if (entry.getValue() != null) {
+                for (DataWithCrossOutNumber d : (DataWithCrossOutNumber[]) entry.getValue()) {
+                    arrList.add(d.getData());
+                }
+            }
+            departmentsData.put((String) entry.getKey(), arrList);
+        }*/
+        //departmentsData = listData.get("First");
+        chosenList = ("First");
 
 
-        keysForDepartments = new ArrayList<>();
-        keysForDepartments.add("Добавить");
-        keysForDepartments.add("Butcher's");
-        keysForDepartments.add("Confectioner's");
-        keysForDepartments.add("Stationer's");
-        keysForDepartments.add("Greengrocer's");
+       // Toast.makeText(getBaseContext(), "" + listData.get(chosenList).keySet(), Toast.LENGTH_LONG).show();
+        keysForDepartments = new ArrayList<>(listData.get(chosenList).keySet());
+
+
+        //Toast.makeText(getBaseContext(), "" + keysForDepartments, Toast.LENGTH_LONG).show();
         data = new ArrayList<>();
-        data.add("Добавить");
+//        data.add("Добавить");
 
-        keysForLists = new ArrayList<>();
-        keysForLists.add("Добавить");
+        keysForLists = new ArrayList<>(listData.keySet());
+       // Toast.makeText(getBaseContext(), "" + keysForLists, Toast.LENGTH_LONG).show();
+        /*keysForLists.add("Добавить");
         keysForLists.add("First");
-        keysForLists.add("Second");
+        keysForLists.add("Second");*/
 
 
-
-        crossOutNumbersArray = new ArrayMap<String, Integer>();
-        for (String key : keysForDepartments) {
-            crossOutNumbersArray.put(key,0);
-        }
-
+       /* crossOutNumbersArray = new LinkedHashMap<String, Integer>();
+        for (String key : departmentsData.keySet()) {
+            crossOutNumbersArray.put(key, 0);
+            //keysForDepartments.add(key);
+        }*/
 
 
         // set up the RecyclerView
@@ -154,14 +179,18 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         //recyclerView.setNestedScrollingEnabled(false);
         //recyclerViewDepartments.setNestedScrollingEnabled(false);
 
-        chosenDepartment = keysForDepartments.get(1);
-        setData();
+        if (keysForDepartments.size() > 1) {
 
+            chosenDepartment = keysForDepartments.get(1);
+            getData();
+        }
+        setDepartmentsData();
+        setKeysForDepartments();
         //Animation for drag & drop for list
 
         ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.
                 SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,
-                ItemTouchHelper.END | ItemTouchHelper.START ) {
+                ItemTouchHelper.END | ItemTouchHelper.START) {
 
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder dragged, @NonNull RecyclerView.ViewHolder target) {
@@ -169,23 +198,20 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 int position_dragged = dragged.getAdapterPosition();
                 int position_target = target.getAdapterPosition();
 
-                if (position_dragged >= (data.size()-crossOutNumber) || position_dragged == 0) {
+                if (position_dragged >= (data.size() - crossOutNumber) || position_dragged == 0) {
                     position_target = position_dragged;
                 } else if (position_target == 0) {
                     position_target = 1;
-                } else if (position_target >= (data.size()-crossOutNumber)) {
-                    position_target = data.size()-crossOutNumber-1;
+                } else if (position_target >= (data.size() - crossOutNumber)) {
+                    position_target = data.size() - crossOutNumber - 1;
                 }
-                Collections.swap(data,position_dragged,position_target);
+                Collections.swap(data, position_dragged, position_target);
 
-                adapter.notifyItemMoved(position_dragged,position_target);
+                adapter.notifyItemMoved(position_dragged, position_target);
 
 
                 return false;
             }
-
-
-
 
 
             @Override
@@ -193,10 +219,10 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 int position = keysForDepartments.indexOf(chosenDepartment);
                 switch (direction) {
                     case ItemTouchHelper.START:
-                        if (position < (keysForDepartments.size()-1)) {
+                        if (position < (keysForDepartments.size() - 1)) {
                             chosenDepartment = keysForDepartments.get(position + 1);
-                           // Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
-                            recyclerViewDepartments.smoothScrollToPosition(position+1);
+                            // Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
+                            recyclerViewDepartments.smoothScrollToPosition(position + 1);
                         }
                         break;
 
@@ -204,18 +230,19 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                         if (position > 1) {
                             chosenDepartment = keysForDepartments.get(position - 1);
                             //Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
-                            recyclerViewDepartments.smoothScrollToPosition(position-1);
+                            recyclerViewDepartments.smoothScrollToPosition(position - 1);
                         }
                         break;
 
                 }
-                setData();
-                getCrossOutNumber(chosenDepartment);
+                getData();
+                //getCrossOutNumber(chosenDepartment);
+                getCrossOutNumber();
 
             }
 
             @Override
-            public int getSwipeDirs(@NonNull RecyclerView recyclerView,@NonNull RecyclerView.ViewHolder viewHolder) {
+            public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
 
                 if (viewHolder.getAdapterPosition() == 0) {
                     // no swipe for header
@@ -228,21 +255,21 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         helper.attachToRecyclerView(recyclerView);
 
         //Animation for drag & drop for departments list
-        ItemTouchHelper helper2 = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT,0) {
+        ItemTouchHelper helper2 = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT, 0) {
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerViewDepartments, @NonNull RecyclerView.ViewHolder dragged, @NonNull RecyclerView.ViewHolder target) {
 
                 int position_dragged = dragged.getAdapterPosition();
                 int position_target = target.getAdapterPosition();
 
-               if (position_dragged == 0) {
-                   position_target = position_dragged;
-               } else if (position_target == 0) {
+                if (position_dragged == 0) {
+                    position_target = position_dragged;
+                } else if (position_target == 0) {
                     position_target = 1;
                 }
-                Collections.swap(keysForDepartments,position_dragged,position_target);
+                Collections.swap(keysForDepartments, position_dragged, position_target);
 
-                adapterForDepartments.notifyItemMoved(position_dragged,position_target);
+                adapterForDepartments.notifyItemMoved(position_dragged, position_target);
 
 
                 return false;
@@ -257,50 +284,62 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
 
 // Do delete buttons invisible and hide holder "dobavit'"
-Button mEditButton = (Button) findViewById(R.id.edit_button);
+        Button mEditButton = (Button) findViewById(R.id.edit_button);
 
         mEditButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               switch (editButtonClicked) {
-                   case 1: editButtonClicked = 0; break;
-                   default: editButtonClicked = 1;
-               }
+                switch (editButtonClicked) {
+                    case 1:
+                        editButtonClicked = 0;
+                        break;
+                    default:
+                        editButtonClicked = 1;
+                }
                 // Toast.makeText(v.getContext(), "You clicked edit button", Toast.LENGTH_SHORT).show();
-               adapter.notifyDataSetChanged();
+                /*setDepartmentsData();
+                setKeysForDepartments();
+                getData();*/
+                adapter.notifyDataSetChanged();
                 adapterForDepartments.notifyDataSetChanged();
             }
         });
 
-       //Get swipes from background
-   findViewById(R.id.backgroundLL).setOnTouchListener(new OnSwipeTouchListener(MainActivity.this) {
+        //Get swipes from background
+        findViewById(R.id.backgroundLL).setOnTouchListener(new OnSwipeTouchListener(MainActivity.this) {
             int position;
+
             public void onSwipeTop() {
             }
+
             public void onSwipeRight() {
-                 position = keysForDepartments.indexOf(chosenDepartment);
+                position = keysForDepartments.indexOf(chosenDepartment);
                 if (position > 1) {
                     chosenDepartment = keysForDepartments.get(position - 1);
-                    recyclerViewDepartments.smoothScrollToPosition(position-1);
+                    recyclerViewDepartments.smoothScrollToPosition(position - 1);
                 }
-                setData();
-                getCrossOutNumber(chosenDepartment);
+                getData();
+                //!!getCrossOutNumber(chosenDepartment);
+                getCrossOutNumber();
             }
+
             public void onSwipeLeft() {
                 position = keysForDepartments.indexOf(chosenDepartment);
-                if (position < (keysForDepartments.size()-1)) {
+                if (position < (keysForDepartments.size() - 1)) {
                     chosenDepartment = keysForDepartments.get(position + 1);
-                    recyclerViewDepartments.smoothScrollToPosition(position+1);
+                    recyclerViewDepartments.smoothScrollToPosition(position + 1);
                 }
-                setData();
-                getCrossOutNumber(chosenDepartment);
+                getData();
+                //!!getCrossOutNumber(chosenDepartment);
+                getCrossOutNumber();
             }
+
             public void onSwipeBottom() {
             }
         });
 
         //SnapHelper snapHelper = new LinearSnapHelper();
-       // snapHelper.attachToRecyclerView(recyclerViewDepartments);
+        // snapHelper.attachToRecyclerView(recyclerViewDepartments);
 
         //previewPositionOfDepartment = 1;
 
@@ -310,11 +349,11 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         chosenList = keysForLists.get(1);
         setNavigationDrawerData();
-       // PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(1).withName("Ololo");
-       // PrimaryDrawerItem item2 = new PrimaryDrawerItem().withIdentifier(2).withName("Olola");
+        // PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(1).withName("Ololo");
+        // PrimaryDrawerItem item2 = new PrimaryDrawerItem().withIdentifier(2).withName("Olola");
 
 
-        drawerResult = new DrawerBuilder()
+       /* drawerResult = new DrawerBuilder()
                 .withActivity(this)
                 .withToolbar(toolbar)
                 .withActionBarDrawerToggle(true)
@@ -327,13 +366,14 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
                             View parent = (View) view.getParent();
                             int parentID = parent.getId();
                             Toast.makeText(getBaseContext(), "ParentID: " + view.getParent(), Toast.LENGTH_LONG).show();
-                            onButtonShowPopupWindowClick(view, 1, position-1, parentID);
+                            onButtonShowPopupWindowClick(view, 1, position - 1, parentID);
                         } else {
                             //TextView  text = new TextView(view.getContext());
 
-                            chosenList =  keysForLists.get(position-1);
+                            chosenList = keysForLists.get(position - 1);
                             //Toast.makeText(MainActivity.this, "Selected list: " + chosenList, Toast.LENGTH_SHORT).show();
                             setTitle(chosenList);
+                            setDepartmentsData();
                             //setSupportActionBar(toolbar);
 
                         }
@@ -353,16 +393,14 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
                         new SecondaryDrawerItem().withName(R.string.drawer_item_contact).withIcon(FontAwesome.Icon.faw_github).withBadge("12+").withIdentifier(1),*/
 
 
-                )
-                .build();
-
-
+             /*   )
+                .build();*/
 
 
     }
 
     void setNavigationDrawerData() {
-        for (int i = 0; i < keysForLists.size();i++) {
+        for (int i = 0; i < keysForLists.size(); i++) {
             iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i));
         }
         drawerResult = new DrawerBuilder()
@@ -377,16 +415,37 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
 
                             View parent = (View) view.getParent();
                             int parentID = parent.getId();
-                            Toast.makeText(getBaseContext(), "ParentID: " + view.getParent(), Toast.LENGTH_LONG).show();
-                            onButtonShowPopupWindowClick(view, 1, position-1, parentID);
+                           // Toast.makeText(getBaseContext(), "ParentID: " + view.getParent(), Toast.LENGTH_LONG).show();
+                            onButtonShowPopupWindowClick(view, 1, position - 1, parentID);
+
+                          /*  setDepartmentsData();
+                            setKeysForDepartments();
+                            data.clear();*/
+                            //adapterForDepartments.notifyDataSetChanged();
                         } else {
                             //TextView  text = new TextView(view.getContext());
 
-                            chosenList =  keysForLists.get(position-1);
+                            chosenList = keysForLists.get(position - 1);
                             //Toast.makeText(MainActivity.this, "Selected list: " + chosenList, Toast.LENGTH_SHORT).show();
                             setTitle(chosenList);
-                            //setSupportActionBar(toolbar);
 
+                            setDepartmentsData();
+                            setKeysForDepartments();
+                            if (keysForDepartments.size()<2) {
+                                data.clear();
+                            } else {
+                                String text = keysForDepartments.get(1);
+                                chosenDepartment = text;
+                                getData();
+                                //!!getCrossOutNumber(chosenDepartment);
+                                getCrossOutNumber();
+
+                            }
+                            //setData();
+                            //Toast.makeText(getBaseContext(), "" + departmentsData.keySet(), Toast.LENGTH_SHORT).show();
+
+                            //setSupportActionBar(toolbar);
+                            //notifyAdapters();
                         }
                         return false;
                     }
@@ -400,50 +459,97 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
         setTitle(chosenList);
     }
 
-        @Override
-        public void onBackPressed() {
-            // Закрываем Navigation Drawer по нажатию системной кнопки "Назад" если он открыт
-            if (drawerResult.isDrawerOpen()) {
-                drawerResult.closeDrawer();
-            } else {
-                super.onBackPressed();
-            }
+    void notifyAdapters() {
+        adapter.notifyDataSetChanged();
+        adapterForDepartments.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onBackPressed() {
+        // Закрываем Navigation Drawer по нажатию системной кнопки "Назад" если он открыт
+        if (drawerResult.isDrawerOpen()) {
+            drawerResult.closeDrawer();
+        } else {
+            super.onBackPressed();
         }
+    }
 
     public static void setAdapterPosition(int pos) {
         adapterPosition = pos;
     }
 
+    public void setKeysForDepartments() {
+        keysForDepartments.clear();
+
+        if (listData.get(chosenList) != null) keysForDepartments.addAll(listData.get(chosenList).keySet());
+        //Toast.makeText(getBaseContext(), "" + new ArrayList<String>(listData.get(chosenList).keySet()), Toast.LENGTH_LONG).show();
+    }
+
+
+    public void setKeysForLists() {
+        keysForLists.clear();
+       if (listData != null) keysForLists.addAll(listData.keySet());
+    }
+
+
+
     public void setData() {
         //TextView text = view.findViewById(R.id.tvDepartmentsName);
-        List<String> listToAdd = departmentsData.get(chosenDepartment);
+        List<String> listToAdd = departmentsData.get(chosenDepartment).getData();
 
 
         data.clear();
         //Toast.makeText(view.getContext(), "" + listToAdd, Toast.LENGTH_LONG).show();
         data.add("Добавить");
 
-        if (listToAdd != null) {data.addAll(listToAdd);
+        if (listToAdd != null) {
+            data.addAll(listToAdd);
         }
+
         adapter.notifyDataSetChanged();
         adapterForDepartments.notifyDataSetChanged();
     }
 
-    void getCrossOutNumber(String key) {
-        crossOutNumber = crossOutNumbersArray.get(key);
+    public void getData() {
+        List<String> listToAdd = listData.get(chosenList).get(chosenDepartment).getData();
+        data.clear();
+        data.add("Добавить");
+        if (listToAdd != null)  data.addAll(listToAdd);
+
+        adapter.notifyDataSetChanged();
+        adapterForDepartments.notifyDataSetChanged();
     }
 
-    void setCrossOutNumber(String key) {
-        crossOutNumbersArray.put(key,crossOutNumber);
+    void setDepartmentsData() {
+
+        departmentsData.clear();
+        listData.get(chosenList).put("Добавить", null);
+        departmentsData.put("Добавить", null);
+      //  Toast.makeText(getBaseContext(), "" + listData.get(chosenList), Toast.LENGTH_LONG).show();
+        if (listData.get(chosenList) != null) departmentsData.putAll(listData.get(chosenList));
+        adapter.notifyDataSetChanged();
+        adapterForDepartments.notifyDataSetChanged();
+    }
+
+    //!!!void getCrossOutNumber(String key) {
+    void getCrossOutNumber() {
+        //!! crossOutNumber = crossOutNumbersArray.get(key);
+        crossOutNumber = listData.get(chosenList).get(chosenDepartment).getCrossOutNumber();
+    }
+
+    //!!!void setCrossOutNumber(String key) {
+    void setCrossOutNumber() {
+        //!!crossOutNumbersArray.put(key,crossOutNumber);
+        listData.get(chosenList).get(chosenDepartment).setCrossOutNumber(crossOutNumber);
     }
 
 
     @Override
     public void onItemClick(View view, final int position) {
-         //Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
 
         //String resName = (String) view.getResources().getResourceName(position);
-       // adapterForDepartments.notifyDataSetChanged();
+        // adapterForDepartments.notifyDataSetChanged();
         View parent = (View) view.getParent();
         int parentID = parent.getId();
 
@@ -458,52 +564,55 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
             case R.id.depLl:
                 deleteSingleItemInDepartments(view, position);
                 break;
-                    case R.id.rvDepartments:
-                        //view.setBackgroundColor(Color.parseColor("#00ff00"));
-                        if (position == 0) {
-                            onButtonShowPopupWindowClick(view, 1, position, parentID);
-                        } else /*if (editButtonClicked == 0) */{
+            case R.id.rvDepartments:
+                //view.setBackgroundColor(Color.parseColor("#00ff00"));
+                if (position == 0) {
+                    onButtonShowPopupWindowClick(view, 1, position, parentID);
+                } else /*if (editButtonClicked == 0) */ {
 
-                            TextView text = view.findViewById(R.id.tvDepartmentsName);
-                            chosenDepartment = text.getText().toString();
-                            setData();
-                            getCrossOutNumber(chosenDepartment);
-                           // deleteFlagForEdit = true;
-                           // onButtonShowPopupWindowClick(view, position, position, parentID);
-                        }/* else if (editButtonClicked == 1) {
+                    TextView text = view.findViewById(R.id.tvDepartmentsName);
+                    chosenDepartment = text.getText().toString();
+                    getData();
+                    //!!getCrossOutNumber(chosenDepartment);
+                    getCrossOutNumber();
+                    // deleteFlagForEdit = true;
+                    // onButtonShowPopupWindowClick(view, position, position, parentID);
+                }/* else if (editButtonClicked == 1) {
                             setData(view, position);
                             TextView text = view.findViewById(R.id.tvDepartmentsName);
                             chosenDepartment = text.getText().toString();
                             getCrossOutNumber(chosenDepartment);
                         }*/
-                        break;
-                    case R.id.rvAnimals:
-                        if (position == 0) {
-                            onButtonShowPopupWindowClick(view, 1, position, parentID);
-                        } else if (editButtonClicked == 1) {
+                break;
+            case R.id.rvAnimals:
+                if (position == 0) {
+                    onButtonShowPopupWindowClick(view, 1, position, parentID);
+                } else if (editButtonClicked == 1) {
 
 
-                            if (position < (data.size() - crossOutNumber)) {
-                                crossOutNumber++;
-                                setCrossOutNumber(chosenDepartment);
-                                moveSingleItem(position);
-                                saveDataWhenItChanged();
-                            } else {
-                                crossOutNumber--;
-                                setCrossOutNumber(chosenDepartment);
-                                moveSingleItemToTop(position);
-                                saveDataWhenItChanged();
-                            }
-                        } else {
-                            deleteFlagForEdit = true;
-                            onButtonShowPopupWindowClick(view, position, position, parentID);
+                    if (position < (data.size() - crossOutNumber)) {
+                        crossOutNumber++;
+                        //!!  setCrossOutNumber(chosenDepartment);
+                        setCrossOutNumber();
+                        moveSingleItem(position);
+                        saveDataWhenItChanged();
+                    } else {
+                        crossOutNumber--;
+                        //setCrossOutNumber(chosenDepartment);
+                        setCrossOutNumber();
+                        moveSingleItemToTop(position);
+                        saveDataWhenItChanged();
+                    }
+                } else {
+                    deleteFlagForEdit = true;
+                    onButtonShowPopupWindowClick(view, position, position, parentID);
 
-                        }
-                        break;
+                }
+                break;
 
         }
 
-        }
+    }
 
     public void onButtonShowPopupWindowClick(final View view, final int insertIndex, final int position, final int parentID) {
 
@@ -524,13 +633,13 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
         final EditText et = popupView.findViewById(R.id.popup_edit);
         //TextView text;
         if (position != 0) {
-            TextView  text = new TextView(view.getContext());
+            TextView text = new TextView(view.getContext());
             switch (parentID) {
                 case R.id.rvAnimals:
-               text = view.findViewById(R.id.tvAnimalName);
-                break;
-                case  R.id.rvDepartments:
-                 text = view.findViewById(R.id.tvDepartmentsName);
+                    text = view.findViewById(R.id.tvAnimalName);
+                    break;
+                case R.id.rvDepartments:
+                    text = view.findViewById(R.id.tvDepartmentsName);
                     break;
             }
             et.setText(text.getText().toString() + " ");
@@ -541,23 +650,22 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
         }
 
 
-
-
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //String str = et.getText().toString();
-               // if (!str.isEmpty()) {
+                // if (!str.isEmpty()) {
                 String str = et.getText().toString();
-                    if ((!departmentsData.containsKey(str) && parentID == R.id.rvDepartments)
-                            || parentID == R.id.rvAnimals
-                            || !keysForLists.contains(str) && parentID == R.id.material_drawer_recycler_view) {
-                        buttonClicked(str);
-                    }else {
-                        Toast.makeText(view.getContext(), "Введите уникальное название отдела", Toast.LENGTH_SHORT).show();
-                    }
+                if ((!departmentsData.containsKey(str) && parentID == R.id.rvDepartments)
+                        || parentID == R.id.rvAnimals
+                        || !keysForLists.contains(str) && parentID == R.id.material_drawer_recycler_view) {
+                    buttonClicked(str);
+                } else {
+                    Toast.makeText(view.getContext(), "Введите уникальное название отдела", Toast.LENGTH_SHORT).show();
                 }
-            void buttonClicked(String str){
+            }
+
+            void buttonClicked(String str) {
 
                 if (!str.isEmpty()) {
                     if (deleteFlagForEdit) {
@@ -569,13 +677,13 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
                     if (parentID == R.id.rvAnimals) {
                         saveDataWhenItChanged();
                     } else if (parentID == R.id.rvDepartments) {
-                        setData();
+                        getData();
                         chosenDepartment = str;
                         setNavigationDrawerData();
                     }
                 }
             }
-                        // }
+            // }
 
         });
 
@@ -609,13 +717,16 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
                 //String str = et.getText().toString();
                 // if (!str.isEmpty()) {
                 String str = et.getText().toString();
-                if ((!departmentsData.containsKey(str) && parentID == R.id.rvDepartments) || parentID == R.id.rvAnimals) {
+                if ((!departmentsData.containsKey(str) && parentID == R.id.rvDepartments)
+                        || parentID == R.id.rvAnimals
+                        || !keysForLists.contains(str) && parentID == R.id.material_drawer_recycler_view)  {
                     buttonClicked(str);
-                }else {
+                } else {
                     Toast.makeText(view.getContext(), "Введите уникальное название отдела", Toast.LENGTH_SHORT).show();
                 }
             }
-            void buttonClicked(String str){
+
+            void buttonClicked(String str) {
 
                 if (!str.isEmpty()) {
                     if (deleteFlagForEdit) {
@@ -627,7 +738,7 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
                     if (parentID == R.id.rvAnimals) {
                         saveDataWhenItChanged();
                     } else if (parentID == R.id.rvDepartments) {
-                        setData();
+                        getData();
                         chosenDepartment = str;
                     }
                 }
@@ -647,8 +758,8 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
                     et.post(new Runnable() {
                         @Override
                         public void run() {
-                            final InputMethodManager imm =(InputMethodManager)getBaseContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.showSoftInput(et,InputMethodManager.SHOW_IMPLICIT);
+                            final InputMethodManager imm = (InputMethodManager) getBaseContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
                         }
                     });
                 }
@@ -678,13 +789,15 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
                         }
                     }*/
 
-                        String str = et.getText().toString();
-                        if ((!departmentsData.containsKey(str) && parentID == R.id.rvDepartments) || parentID == R.id.rvAnimals) {
-                            buttonClicked(str);
+                    String str = et.getText().toString();
+                    if ((!departmentsData.containsKey(str) && parentID == R.id.rvDepartments)
+                            || parentID == R.id.rvAnimals
+                            || !keysForLists.contains(str) && parentID == R.id.material_drawer_recycler_view) {
+                        buttonClicked(str);
 
-                        }else {
-                            Toast.makeText(view.getContext(), "Введите уникальное название отдела", Toast.LENGTH_SHORT).show();
-                        }
+                    } else {
+                        Toast.makeText(view.getContext(), "Введите уникальное название отдела", Toast.LENGTH_SHORT).show();
+                    }
 
 
                     handled = true;
@@ -693,7 +806,7 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
 
             }
 
-            void buttonClicked(String str){
+            void buttonClicked(String str) {
 
                 if (!str.isEmpty()) {
                     if (deleteFlagForEdit) {
@@ -705,7 +818,7 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
                     if (parentID == R.id.rvAnimals) {
                         saveDataWhenItChanged();
                     } else if (parentID == R.id.rvDepartments) {
-                        setData();
+                        getData();
                         chosenDepartment = str;
                     }
                 }
@@ -731,34 +844,63 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
     }*/
 
     public void saveDataWhenItChanged() {
-        List<String> forClone = new ArrayList<>(data);
+        ArrayList<String> forClone = new ArrayList<String>(data);
         forClone.remove(0);
+        DataWithCrossOutNumber forCloneWithCrossOut = new DataWithCrossOutNumber(forClone, crossOutNumber);
         //forClone.clone(data);
-        departmentsData.put(chosenDepartment, forClone);
+        //!!!departmentsData.put(chosenDepartment, forClone);
         //Toast.makeText(getBaseContext(), "chosen: " + chosenDepartment + " data: " + departmentsData.get(chosenDepartment), Toast.LENGTH_LONG).show();
-
+        listData.get(chosenList).put(chosenDepartment, forCloneWithCrossOut);
     }
 
 
+    private void setNewDepartment(String s){
+        LinkedHashMap<String, DataWithCrossOutNumber> newmap = (LinkedHashMap<String, DataWithCrossOutNumber>) listData.get(chosenList).clone();
+        listData.get(chosenList).clear();
+        listData.get(chosenList).put("Добавить", null);
+        listData.get(chosenList).put(s, new DataWithCrossOutNumber(null,0));
+        listData.get(chosenList).putAll(newmap);
+    }
+
+    private void setNewList(String s){
+       LinkedHashMap<String, LinkedHashMap<String, DataWithCrossOutNumber>> newmap =
+               (LinkedHashMap<String, LinkedHashMap<String, DataWithCrossOutNumber>>) listData.clone();
+        listData.clear();
+        listData.put("Добавить", null);
+        listData.put(s, new LinkedHashMap<String, DataWithCrossOutNumber>());
+        listData.putAll(newmap);
+    }
+
     private void insertFromPopup(String s, int insertIndex, int parentId) {
         //int insertIndex = 1;
-        switch(parentId) {
+        switch (parentId) {
             case R.id.rvDepartments:
-                keysForDepartments.add(insertIndex, s);
-                departmentsData.put(s,null);
-                crossOutNumbersArray.put(s,0);
+               //!! keysForDepartments.add(insertIndex, s);
+                //listData.get(chosenList).put(s, new DataWithCrossOutNumber(null,0));
+                setNewDepartment(s);
+                setKeysForDepartments();
+                chosenDepartment = s;
+                setDepartmentsData();
+                // departmentsData.put(s, null);
+                //crossOutNumbersArray.put(s, 0);
                 //Toast.makeText(this, "" + departmentsData.get(s), Toast.LENGTH_LONG).show();
                 adapterForDepartments.notifyItemInserted(insertIndex);
 
                 break;
             case R.id.rvAnimals:
                 data.add(insertIndex, s);
+               // listData.get(chosenList).get(chosenDepartment).getData().add(insertIndex,s);
                 adapter.notifyItemInserted(insertIndex);
                 break;
             case R.id.material_drawer_recycler_view:
-                keysForLists.add(insertIndex,s);
+                //keysForLists.add(insertIndex, s);
+                setNewList(s);
+                setKeysForLists();
                 chosenList = s;
                 setNavigationDrawerData();
+                setDepartmentsData();
+                setKeysForDepartments();
+                data.clear();
                 break;
         }
     }
@@ -777,7 +919,7 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
 
     private void removeSingleItem(int removeIndex, int parentId) {
         // int removeIndex = 2;
-       switch(parentId) {
+        switch (parentId) {
             case R.id.rvAnimals:
                 data.remove(removeIndex);
                 adapter.notifyItemRemoved(removeIndex);
@@ -797,8 +939,8 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
         }*/
 
 
-       // data.remove(removeIndex);
-       // adapter.notifyItemRemoved(removeIndex);
+        // data.remove(removeIndex);
+        // adapter.notifyItemRemoved(removeIndex);
     }
 
     private void removeMultipleItems() {
@@ -828,7 +970,8 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
         // notify adapter
         adapter.notifyDataSetChanged();
     }
-//TODO: Use instead deleting and inserting for edit item
+
+    //TODO: Use instead deleting and inserting for edit item
     private void updateSingleItem() {
         String newValue = "I like sheep.";
         int updateIndex = 3;
@@ -868,42 +1011,65 @@ Button mEditButton = (Button) findViewById(R.id.edit_button);
         this.crossOutNumber = mCrossOutNumber;
     }*/
 
-   private void deleteSingleItem(int position) {
-       if (position >= (data.size()-crossOutNumber)) {
-           crossOutNumber--;
-           setCrossOutNumber(chosenDepartment);
-       }
-       if (position>0) {
-
-           // remove your item from data base
-           data.remove(position);  // remove the item from list
-
-           adapter.notifyItemRemoved(position); // notify the adapter about the removed item
-           saveDataWhenItChanged();
-
-       }
-   }
-
-    private void deleteSingleItemInDepartments(View view, int position) {
-        if (position>0) {
+    private void deleteSingleItem(int position) {
+        if (position >= (data.size() - crossOutNumber)) {
+            crossOutNumber--;
+            //!!setCrossOutNumber(chosenDepartment);
+            setCrossOutNumber();
+        }
+        if (position > 0) {
 
             // remove your item from data base
-            departmentsData.remove(chosenDepartment);  // remove the item from list
-            keysForDepartments.remove(chosenDepartment);
+            data.remove(position);  // remove the item from list
+
+            adapter.notifyItemRemoved(position); // notify the adapter about the removed item
+            saveDataWhenItChanged();
+
+        }
+    }
+
+    //TODO: App down when last department deleted
+    private void deleteSingleItemInDepartments(View view, int position) {
+        if (position > 0 && keysForDepartments.size()>1) {
+            //TextView text = view.findViewById(R.id.tvDepartmentsName);
+            //chosenDepartment = text.getText().toString();
+            String text = keysForDepartments.get(position);
+           // Toast.makeText(getBaseContext(), "" + textStr, Toast.LENGTH_LONG).show();
+            // remove your item from data base
+            //!!departmentsData.remove(chosenDepartment);  // remove the item from list
+            listData.get(chosenList).remove(text);
+            setDepartmentsData();
+           //! keysForDepartments.remove(chosenDepartment);
+
+            setKeysForDepartments();
+            if (position == 1 && text == chosenDepartment) {
+                chosenDepartment = keysForDepartments.get(1);
+            } else if (text == chosenDepartment) {
+                chosenDepartment = keysForDepartments.get(position-1);
+            }
             adapterForDepartments.notifyItemRemoved(position); // notify the adapter about the removed item
-             int index = 0;
+            /*int index = 0;
             for (String key : keysForDepartments) {
-                if (index == 1){
+                if (index == 1) {
                     chosenDepartment = key;
-                    Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
                     break;
                 }
                 index++;
 
-            }
-            setData();
+            }*/
+
+            getData();
 
 
+        } else if (position > 0 && keysForDepartments.size() == 2) {
+          //  Toast.makeText(getBaseContext(), "XXX", Toast.LENGTH_SHORT).show();
+            String text = keysForDepartments.get(position);
+            listData.get(chosenList).remove(text);
+            setDepartmentsData();
+            setKeysForDepartments();
+           // adapterForDepartments.notifyItemRemoved(position);
+           // adapter.notifyDataSetChanged();
         }
     }
 
