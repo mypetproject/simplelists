@@ -432,15 +432,18 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                             setDepartmentsData();
                             setKeysForDepartments();
                             if (keysForDepartments.size()<2) {
+                                crossOutNumber = 0;
                                 data.clear();
                             } else {
                                 String text = keysForDepartments.get(1);
                                 chosenDepartment = text;
                                 getData();
+
                                 //!!getCrossOutNumber(chosenDepartment);
                                 getCrossOutNumber();
 
                             }
+
                             //setData();
                             //Toast.makeText(getBaseContext(), "" + departmentsData.keySet(), Toast.LENGTH_SHORT).show();
 
@@ -483,6 +486,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
         if (listData.get(chosenList) != null) keysForDepartments.addAll(listData.get(chosenList).keySet());
         //Toast.makeText(getBaseContext(), "" + new ArrayList<String>(listData.get(chosenList).keySet()), Toast.LENGTH_LONG).show();
+
     }
 
 
@@ -525,7 +529,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         departmentsData.clear();
         listData.get(chosenList).put("Добавить", null);
         departmentsData.put("Добавить", null);
-      //  Toast.makeText(getBaseContext(), "" + listData.get(chosenList), Toast.LENGTH_LONG).show();
         if (listData.get(chosenList) != null) departmentsData.putAll(listData.get(chosenList));
         adapter.notifyDataSetChanged();
         adapterForDepartments.notifyDataSetChanged();
@@ -567,6 +570,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             case R.id.rvDepartments:
                 //view.setBackgroundColor(Color.parseColor("#00ff00"));
                 if (position == 0) {
+                    crossOutNumber = 0;
                     onButtonShowPopupWindowClick(view, 1, position, parentID);
                 } else /*if (editButtonClicked == 0) */ {
 
@@ -1030,7 +1034,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
     //TODO: App down when last department deleted
     private void deleteSingleItemInDepartments(View view, int position) {
-        if (position > 0 && keysForDepartments.size()>1) {
+        if (position > 0 && keysForDepartments.size()>2) {
             //TextView text = view.findViewById(R.id.tvDepartmentsName);
             //chosenDepartment = text.getText().toString();
             String text = keysForDepartments.get(position);
@@ -1038,16 +1042,18 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             // remove your item from data base
             //!!departmentsData.remove(chosenDepartment);  // remove the item from list
             listData.get(chosenList).remove(text);
+           // adapterForDepartments.notifyItemRemoved(position); // notify the adapter about the removed item
             setDepartmentsData();
+            setKeysForDepartments();
            //! keysForDepartments.remove(chosenDepartment);
 
-            setKeysForDepartments();
+
             if (position == 1 && text == chosenDepartment) {
                 chosenDepartment = keysForDepartments.get(1);
             } else if (text == chosenDepartment) {
                 chosenDepartment = keysForDepartments.get(position-1);
             }
-            adapterForDepartments.notifyItemRemoved(position); // notify the adapter about the removed item
+
             /*int index = 0;
             for (String key : keysForDepartments) {
                 if (index == 1) {
@@ -1062,14 +1068,12 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             getData();
 
 
-        } else if (position > 0 && keysForDepartments.size() == 2) {
-          //  Toast.makeText(getBaseContext(), "XXX", Toast.LENGTH_SHORT).show();
+        } else if (position > 0) {
             String text = keysForDepartments.get(position);
             listData.get(chosenList).remove(text);
+            data.clear();
             setDepartmentsData();
             setKeysForDepartments();
-           // adapterForDepartments.notifyItemRemoved(position);
-           // adapter.notifyDataSetChanged();
         }
     }
 
