@@ -1,10 +1,13 @@
 package com.example.shoplist2;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.MenuView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.MotionEventCompat;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -17,6 +20,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -44,11 +48,31 @@ import com.mikepenz.materialdrawer.model.SectionDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.concurrent.Callable;
+
+
+//import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
+import io.reactivex.observers.DisposableCompletableObserver;
+import io.reactivex.observers.DisposableSingleObserver;
+import io.reactivex.schedulers.Schedulers;
+
+
+//import io.reactivex.schedulers.Schedulers;
+
 
 public class MainActivity extends AppCompatActivity implements MyRecyclerViewAdapter.ItemClickListener, DepartmentsAdapter.ItemClickListener {
 
@@ -73,8 +97,18 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     List<String> keysForLists;
 
     private Drawer drawerResult = null;
-    IDrawerItem[] iDrawerItems = new IDrawerItem[100];
+    IDrawerItem[] iDrawerItems = new IDrawerItem[1000];
     Toolbar toolbar;
+
+    List<String> ls;
+    List<Integer> lInt;
+    List<Integer> lPos;
+    ListDataDatabase db;
+    ListData chosenListData = new ListData();
+    DepartmentData chosenDepartmentData;
+    Data chosenData = new Data();
+
+    private static final String TAG = "myLogs";
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -83,15 +117,46 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // data to populate the RecyclerView with
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        ArrayList<String> dataForMap = new ArrayList<String>();
+
+        // data to populate the RecyclerView with
+        db = App.getInstance().getDatabase();
+        keysForLists = new ArrayList<>();
+        keysForDepartments = new ArrayList<>();
+       /* db.listDataDao().getAllNames()
+                // .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<List<String>>() {
+                    @Override
+                    public void accept(List<String> names) {
+                        // ...
+                       if (names != null) keysForLists.addAll(names);
+                    }
+
+                });*/
+       ListData firstElementOfList = new ListData();
+       firstElementOfList.setList_name("Добавить");
+       firstElementOfList.list_position = 0;
+       db.listDataDao().insert(firstElementOfList);
+       // List<String> fromDB = db.listDataDao().getAllNamesNotFlowable();
+       // if (fromDB.size() > 0) {
+           // keysForLists.clear();
+           // keysForLists.addAll(fromDB);
+        Log.d(TAG, "First element to list added " + db.listDataDao().getAllNamesNotFlowable());
+            setKeysForLists();
+
+       // Toast.makeText(getBaseContext(), "" + keysForLists, Toast.LENGTH_SHORT).show();
+
+        //ArrayList<String> dataForMap = new ArrayList<String>();
         //dataForMap.add("Добавить");
        /* dataForMap.add("Cow");
         dataForMap.add("Camel");
         dataForMap.add("Sheep");
         dataForMap.add("Bread");*/
-        DataWithCrossOutNumber dataForMap2 = new DataWithCrossOutNumber(dataForMap, 0);
+        //DataWithCrossOutNumber dataForMap2 = new DataWithCrossOutNumber(dataForMap, 0);
         departmentsData = new LinkedHashMap<String, DataWithCrossOutNumber>();
        /* departmentsData.put("Добавить", null);
         departmentsData.put("Butcher's", dataForMap);
@@ -99,10 +164,10 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         departmentsData.put("Stationer's", null);
         departmentsData.put("Greengrocer's", null);*/
 
-        listData = new LinkedHashMap<String, LinkedHashMap<String, DataWithCrossOutNumber>>();
-        listData.put("Добавить", null);
-        listData.put("First", new LinkedHashMap<String, DataWithCrossOutNumber>());
-        listData.put("Second", new LinkedHashMap<String, DataWithCrossOutNumber>());
+       // listData = new LinkedHashMap<String, LinkedHashMap<String, DataWithCrossOutNumber>>();
+       // listData.put("Добавить", null);
+       // listData.put("First", new LinkedHashMap<String, DataWithCrossOutNumber>());
+       // listData.put("Second", new LinkedHashMap<String, DataWithCrossOutNumber>());
 
        // listData.get("First").put("Добавить", null);
        // listData.get("First").put("Butcher's", dataForMap2);
@@ -121,23 +186,72 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             departmentsData.put((String) entry.getKey(), arrList);
         }*/
         //departmentsData = listData.get("First");
-        chosenList = ("First");
 
 
        // Toast.makeText(getBaseContext(), "" + listData.get(chosenList).keySet(), Toast.LENGTH_LONG).show();
-        keysForDepartments = new ArrayList<>(listData.get(chosenList).keySet());
+      //  keysForDepartments = new ArrayList<>(listData.get(chosenList).keySet());
+
+
 
 
         //Toast.makeText(getBaseContext(), "" + keysForDepartments, Toast.LENGTH_LONG).show();
         data = new ArrayList<>();
 //        data.add("Добавить");
+      /*  if (keysForLists.size() == 0) {
+            keysForLists = new ArrayList<>(listData.keySet());
+            //int counter = 0;
+            //for (String s : keysForLists) {
+                ListData listData = new ListData();
+                listData.setList_name(keysForLists.get(0));
 
-        keysForLists = new ArrayList<>(listData.keySet());
+                listData.list_position = 0;
+              //  counter++;
+                // Toast.makeText(getBaseContext(), "" + listData.list_position, Toast.LENGTH_SHORT).show();
+                //listDataDao.insert(listData);
+                Single.fromCallable(() -> db.listDataDao().insert(listData)).subscribeOn(Schedulers.io()).subscribe();
+
+        }*/
+       /* if (keysForLists.size() > 1) {
+            chosenList = keysForLists.get(1);
+        }*/
+        //  keysForLists = new ArrayList<>();
+       // setKeysForLists();
        // Toast.makeText(getBaseContext(), "" + keysForLists, Toast.LENGTH_LONG).show();
         /*keysForLists.add("Добавить");
         keysForLists.add("First");
         keysForLists.add("Second");*/
 
+
+        //ListDataDao listDataDao = db.listDataDao();
+        //Single.fromCallable(() -> db.listDataDao().deleteAll()).subscribeOn(Schedulers.io()).subscribe();
+
+
+        ls = new ArrayList<>();
+        lInt = new ArrayList<>();
+        lPos = new ArrayList<>();
+        //List<ListData> ld = new ArrayList<ListData>();
+       /*db.listDataDao().getAll()
+              // .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<List<ListData>>() {
+                    @Override
+                    public void accept(List<ListData> lstdt) {
+                        // ...
+                      for (ListData s : lstdt) {
+                          //Toast.makeText(getBaseContext(), "" + lstdt.size(), Toast.LENGTH_SHORT).show();
+                          ls.add(s.getList_name());
+                          lInt.add(s.list_id);
+                          lPos.add(s.list_position);
+                      }
+                    }
+
+                });
+                //Toast.makeText(getBaseContext(), "" +  lPos.size(), Toast.LENGTH_SHORT).show();
+
+        /*for (ListData s : ld) {
+            String x = s.getList_name();
+            ls.add(x);
+        }*/
 
        /* crossOutNumbersArray = new LinkedHashMap<String, Integer>();
         for (String key : departmentsData.keySet()) {
@@ -180,12 +294,13 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         //recyclerViewDepartments.setNestedScrollingEnabled(false);
 
         if (keysForDepartments.size() > 1) {
-
-            chosenDepartment = keysForDepartments.get(1);
+            chosenDepartmentData = db.departmentDataDao().getChosenDepartment(1,chosenListData.list_id);
+           // chosenDepartment = keysForDepartments.get(1);
+            chosenDepartment = chosenDepartmentData.department_name;
             getData();
         }
-        setDepartmentsData();
-        setKeysForDepartments();
+       // setDepartmentsData();
+      //  setKeysForDepartments();
         //Animation for drag & drop for list
 
         ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.
@@ -344,11 +459,11 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         //previewPositionOfDepartment = 1;
 
         // Handle Toolbar
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        chosenList = keysForLists.get(1);
-        setNavigationDrawerData();
+
+       /* if (keysForLists.size()>1) {
+            chosenList = keysForLists.get(1);
+        }*/
+        //setNavigationDrawerData();
         // PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(1).withName("Ololo");
         // PrimaryDrawerItem item2 = new PrimaryDrawerItem().withIdentifier(2).withName("Olola");
 
@@ -400,8 +515,10 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     void setNavigationDrawerData() {
+        //setKeysForLists();
         for (int i = 0; i < keysForLists.size(); i++) {
             iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i));
+            Log.d(TAG, "items for drawer added ");
         }
         drawerResult = new DrawerBuilder()
                 .withActivity(this)
@@ -424,13 +541,44 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                             //adapterForDepartments.notifyDataSetChanged();
                         } else {
                             //TextView  text = new TextView(view.getContext());
+                            //db = App.getInstance().getDatabase();
 
-                            chosenList = keysForLists.get(position - 1);
+                            db.listDataDao().getAll()
+                                    // .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(new Consumer<List<ListData>>() {
+                                        @Override
+                                        public void accept(List<ListData> lstdt) {
+                                            // ...
+                                            ls.clear();
+                                            lInt.clear();
+                                            lPos.clear();
+                                            for (ListData s : lstdt) {
+                                                //Toast.makeText(getBaseContext(), "" + lstdt.size(), Toast.LENGTH_SHORT).show();
+                                                ls.add(s.getList_name());
+                                                lInt.add(s.list_id);
+                                                lPos.add(s.list_position);
+                                            }
+                                        }
+
+                                    });
+                            //Toast.makeText(getBaseContext(), "" + lInt + ls + lPos, Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "method: 'setNavigationDrawerData()'; list data = " + lInt + ls + lPos);
                             //Toast.makeText(MainActivity.this, "Selected list: " + chosenList, Toast.LENGTH_SHORT).show();
-                            setTitle(chosenList);
+                            if (keysForLists.size() > 1) {
 
+                                chosenListData = db.listDataDao().getChosenList(position-1);
+                                Log.d(TAG, "method: 'setNavigationDrawerData()'; " + chosenListData.getAllInString());
+                                //chosenList = keysForLists.get(position - 1);
+                                chosenList = chosenListData.getList_name();
+                                setTitle(chosenList);
+                                if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() > 1) {
+                                    chosenDepartmentData = db.departmentDataDao().getChosenDepartment(1,chosenListData.list_id);
+                                }
+                            }
                             setDepartmentsData();
                             setKeysForDepartments();
+                            getData();
                             if (keysForDepartments.size()<2) {
                                 crossOutNumber = 0;
                                 data.clear();
@@ -455,11 +603,14 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 })
                 .addDrawerItems(
                         iDrawerItems
+
                 )
                 .build();
 
 
-        setTitle(chosenList);
+        if (keysForLists.size() > 1) {
+            setTitle(chosenList);
+        }
     }
 
     void notifyAdapters() {
@@ -477,22 +628,73 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         }
     }
 
+
+
     public static void setAdapterPosition(int pos) {
         adapterPosition = pos;
     }
 
     public void setKeysForDepartments() {
         keysForDepartments.clear();
+        /*if (listData.size() > 1) {
+            if (listData.get(chosenList) != null) keysForDepartments.addAll(listData.get(chosenList).keySet());
+        }*/
+        Log.d(TAG, "keysForDepartments clear");
+        if (keysForLists.size() > 1) {
+            keysForDepartments.addAll(db.departmentDataDao().getAllNames(chosenListData.list_id));
 
-        if (listData.get(chosenList) != null) keysForDepartments.addAll(listData.get(chosenList).keySet());
+            Log.d(TAG, "method: 'setKeysForDepartment'; departments keys names: " + keysForDepartments);
+           /* for (DepartmentData d : db.departmentDataDao().getAll(chosenListData.list_id)) {
+                Log.d(TAG, "method: 'setKeysForDepartment'; departments keys data: " + d.getAllInString());
+            }*/
+        }
+        //if (chosenList != null)
         //Toast.makeText(getBaseContext(), "" + new ArrayList<String>(listData.get(chosenList).keySet()), Toast.LENGTH_LONG).show();
 
     }
 
 
     public void setKeysForLists() {
+
+      // if (listData != null) keysForLists.addAll(listData.keySet());
+        //if (listData != null) keysForLists.addAll(db.listDataDao().getAllNames());
+       /* db.listDataDao().getAllNames()
+                // .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<List<String>>() {
+                    @Override
+                    public void accept(List<String> keysList) {
+                        // ...
+                        keysForLists.clear();
+                        if (keysList != null) keysForLists.addAll(keysList);
+                       //Toast.makeText(getBaseContext(), "" + keysForLists, Toast.LENGTH_LONG).show();
+                        if (keysForLists.size()>1) {
+                            chosenListData = db.listDataDao().getChosenList(1);
+                            chosenList = chosenListData.getList_name();
+                            Log.d(TAG, "Chosen list: " + chosenList);
+                        }
+                        setNavigationDrawerData();
+                        setDepartmentsData();
+                        setKeysForDepartments();
+                    }
+
+                });*/
+        //Toast.makeText(getBaseContext(), "xxx:" + keysForLists, Toast.LENGTH_LONG).show();
+
         keysForLists.clear();
-       if (listData != null) keysForLists.addAll(listData.keySet());
+        Log.d(TAG, "keysforlists cleaned");
+       // if (db.listDataDao().getAllNamesNotFlowable().size() > 0) {
+            keysForLists.addAll(db.listDataDao().getAllNamesNotFlowable());
+            Log.d(TAG, "keysforlists added information from base " + keysForLists);
+       // }
+        //Toast.makeText(getBaseContext(), "" + keysForLists, Toast.LENGTH_LONG).show();
+        if (keysForLists.size()>1) {
+            chosenListData = db.listDataDao().getChosenList(1);
+            chosenList = chosenListData.getList_name();
+        }
+        setNavigationDrawerData();
+        setDepartmentsData();
+        setKeysForDepartments();
     }
 
 
@@ -515,36 +717,71 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     public void getData() {
-        List<String> listToAdd = listData.get(chosenList).get(chosenDepartment).getData();
+       /* List<String> listToAdd = listData.get(chosenList).get(chosenDepartment).getData();
         data.clear();
         data.add("Добавить");
         if (listToAdd != null)  data.addAll(listToAdd);
 
         adapter.notifyDataSetChanged();
+        adapterForDepartments.notifyDataSetChanged();*/
+
+        data.clear();
+        Log.d(TAG, "Data clear, chosen department: " + chosenDepartmentData.department_name);
+        if (db.dataDao().getAllNames(chosenDepartmentData.department_id) != null) data.addAll(db.dataDao().getAllNames(chosenDepartmentData.department_id));
+        Log.d(TAG, "Added elements to data array: " + data);
+        if (data.size() == 0) {
+            Data dataForInsert = new Data(chosenDepartmentData.department_id, 0, "Добавить");
+            db.dataDao().insert(dataForInsert);
+            Log.d(TAG, "Added first element to data: " + dataForInsert.getAllInString());
+        }
+
+        adapter.notifyDataSetChanged();
         adapterForDepartments.notifyDataSetChanged();
+        Log.d(TAG, "adapters notified");
     }
 
     void setDepartmentsData() {
 
-        departmentsData.clear();
-        listData.get(chosenList).put("Добавить", null);
-        departmentsData.put("Добавить", null);
-        if (listData.get(chosenList) != null) departmentsData.putAll(listData.get(chosenList));
-        adapter.notifyDataSetChanged();
-        adapterForDepartments.notifyDataSetChanged();
+      /*  if (listData.size() > 1) {
+            departmentsData.clear();
+            listData.get(chosenList).put("Добавить", null);
+            departmentsData.put("Добавить", null);
+            if (listData.get(chosenList) != null) departmentsData.putAll(listData.get(chosenList));
+            adapter.notifyDataSetChanged();
+            adapterForDepartments.notifyDataSetChanged();
+        }*/
+
+        if (keysForLists.size() > 1) {
+            //departmentsData.clear();
+            DepartmentData departmentData = new DepartmentData(chosenListData.list_id, 0,  "Добавить", 0);
+           /* departmentData.list_id = chosenListData.list_id;
+            departmentData.department_position = 0;
+            departmentData.department_name = "Добавить";
+            departmentData.CrossOutNumber = 0;*/
+            db.departmentDataDao().insert(departmentData);
+            //departmentsData.putAll(db.departmentDataDao().getAllNames(chosenListData.list_id));
+            Log.d(TAG, "items departments data added");
+        }
+        Log.d(TAG, "in departments data");
     }
 
     //!!!void getCrossOutNumber(String key) {
     void getCrossOutNumber() {
         //!! crossOutNumber = crossOutNumbersArray.get(key);
-        crossOutNumber = listData.get(chosenList).get(chosenDepartment).getCrossOutNumber();
+        if (keysForLists.size() > 1) {
+            //crossOutNumber = listData.get(chosenList).get(chosenDepartment).getCrossOutNumber();
+            crossOutNumber = chosenDepartmentData.CrossOutNumber;
+        }
     }
 
     //!!!void setCrossOutNumber(String key) {
     void setCrossOutNumber() {
         //!!crossOutNumbersArray.put(key,crossOutNumber);
-        listData.get(chosenList).get(chosenDepartment).setCrossOutNumber(crossOutNumber);
-    }
+        if (keysForLists.size() > 1) {
+            //listData.get(chosenList).get(chosenDepartment).setCrossOutNumber(crossOutNumber);
+            chosenDepartmentData.CrossOutNumber = crossOutNumber;
+        }
+        }
 
 
     @Override
@@ -574,8 +811,13 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                     onButtonShowPopupWindowClick(view, 1, position, parentID);
                 } else /*if (editButtonClicked == 0) */ {
 
-                    TextView text = view.findViewById(R.id.tvDepartmentsName);
-                    chosenDepartment = text.getText().toString();
+                    //TextView text = view.findViewById(R.id.tvDepartmentsName);
+                    chosenDepartmentData = db.departmentDataDao().getChosenDepartment(position,chosenListData.list_id);
+                    Log.d(TAG, "Chosen department: " + chosenDepartmentData.getAllInString());
+                    chosenDepartment = chosenDepartmentData.department_name;
+                   // Log.d(TAG, "Chosen department name: " + chosenDepartment);
+                    //chosenDepartment = text.getText().toString();
+                        Log.d(TAG, "Chosen department name: " + chosenDepartment);
                     getData();
                     //!!getCrossOutNumber(chosenDepartment);
                     getCrossOutNumber();
@@ -609,6 +851,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                     }
                 } else {
                     deleteFlagForEdit = true;
+                    chosenData = db.dataDao().getChosenData(position,chosenDepartmentData.department_id);
                     onButtonShowPopupWindowClick(view, position, position, parentID);
 
                 }
@@ -636,6 +879,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         Button btnNext = popupView.findViewById(R.id.popup_next_button);
         final EditText et = popupView.findViewById(R.id.popup_edit);
         //TextView text;
+
+
+       //Log.d(TAG, "chosen data clicked id: " + chosenData.data_id + " name: " + chosenData.data_name);
         if (position != 0) {
             TextView text = new TextView(view.getContext());
             switch (parentID) {
@@ -674,12 +920,16 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 if (!str.isEmpty()) {
                     if (deleteFlagForEdit) {
                         deleteFlagForEdit = false;
-                        removeSingleItem(position, parentID);
+                       // removeSingleItem(position, parentID);
+                       db.dataDao().updateSingleItem(chosenData.data_id, str);
+                       getData();
+                       //adapter.notifyDataSetChanged();
+                    } else {
+                        insertFromPopup(str, insertIndex, parentID);
                     }
-                    insertFromPopup(str, insertIndex, parentID);
                     popupWindow.dismiss();
                     if (parentID == R.id.rvAnimals) {
-                        saveDataWhenItChanged();
+                        //saveDataWhenItChanged();
                     } else if (parentID == R.id.rvDepartments) {
                         getData();
                         chosenDepartment = str;
@@ -702,21 +952,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
-            /*public void onClick(View v) {
-                String str = et.getText().toString();
-                if (!str.isEmpty()) {
-                    if (deleteFlagForEdit) {
-                        deleteFlagForEdit = false;
-                        removeSingleItem(position, parentID);
-                    }
-                    insertFromPopup(str, insertIndex, parentID);
-                    et.getText().clear();
-                    if (parentID == R.id.rvAnimals) {
-                        saveDataWhenItChanged();
-                    }
-                }
-            }*/
-
             public void onClick(View v) {
                 //String str = et.getText().toString();
                 // if (!str.isEmpty()) {
@@ -735,12 +970,15 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 if (!str.isEmpty()) {
                     if (deleteFlagForEdit) {
                         deleteFlagForEdit = false;
-                        removeSingleItem(position, parentID);
+                        db.dataDao().updateSingleItem(chosenData.data_id, str);
+                        getData();
+                        //adapter.notifyDataSetChanged();
+                    } else {
+                        insertFromPopup(str, insertIndex, parentID);
                     }
-                    insertFromPopup(str, insertIndex, parentID);
                     et.getText().clear();
                     if (parentID == R.id.rvAnimals) {
-                        saveDataWhenItChanged();
+                     //  saveDataWhenItChanged();
                     } else if (parentID == R.id.rvDepartments) {
                         getData();
                         chosenDepartment = str;
@@ -859,20 +1097,62 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
 
     private void setNewDepartment(String s){
-        LinkedHashMap<String, DataWithCrossOutNumber> newmap = (LinkedHashMap<String, DataWithCrossOutNumber>) listData.get(chosenList).clone();
+       /* LinkedHashMap<String, DataWithCrossOutNumber> newmap = (LinkedHashMap<String, DataWithCrossOutNumber>) listData.get(chosenList).clone();
         listData.get(chosenList).clear();
         listData.get(chosenList).put("Добавить", null);
         listData.get(chosenList).put(s, new DataWithCrossOutNumber(null,0));
-        listData.get(chosenList).putAll(newmap);
+        listData.get(chosenList).putAll(newmap);*/
+
+        DepartmentData departmentData = new DepartmentData(chosenListData.list_id, 1, s, 0);
+        /*departmentData.CrossOutNumber = 0;
+        departmentData.department_name = s;
+        departmentData.department_position = 1;
+        departmentData.list_id = chosenListData.list_id;*/
+        db.departmentDataDao().incrementValues(chosenListData.list_id);
+        db.departmentDataDao().setDobavitInZero(chosenListData.list_id);
+        db.departmentDataDao().insert(departmentData);
+        chosenDepartmentData = db.departmentDataDao().getChosenDepartment(1,chosenListData.list_id);
+        Log.d(TAG, "method: 'setNewDepartment'; departments data after insert new in db: " + db.departmentDataDao().getAllNames(chosenListData.list_id));
+    }
+
+    private void setNewData(String s, int position) {
+        Data newData = new Data(chosenDepartmentData.department_id, position,s);
+        db.dataDao().incrementValues(chosenDepartmentData.department_id,position-1);
+
+       // db.dataDao().setDobavitInZero(chosenDepartmentData.department_id);
+        db.dataDao().insert(newData);
+        Log.d(TAG, "Test increment data position: " + db.dataDao().getAllPositions(chosenDepartmentData.department_id));
+        Log.d(TAG, "new data set");
     }
 
     private void setNewList(String s){
-       LinkedHashMap<String, LinkedHashMap<String, DataWithCrossOutNumber>> newmap =
+      /* LinkedHashMap<String, LinkedHashMap<String, DataWithCrossOutNumber>> newmap =
                (LinkedHashMap<String, LinkedHashMap<String, DataWithCrossOutNumber>>) listData.clone();
         listData.clear();
         listData.put("Добавить", null);
         listData.put(s, new LinkedHashMap<String, DataWithCrossOutNumber>());
-        listData.putAll(newmap);
+        listData.putAll(newmap);*/
+
+       // ListDataDatabase db = App.getInstance().getDatabase();
+            ListData listData = new ListData();
+            listData.setList_name(s);
+            listData.list_position = 1;
+        db.listDataDao().incrementValues();
+        db.listDataDao().setDobavitInZero();
+        db.listDataDao().insert(listData);
+
+        chosenListData = db.listDataDao().getChosenList(1);
+       // Single.fromCallable(() -> InsertListInAnotherThread(listData)).subscribeOn(Schedulers.io()).subscribe();
+    }
+
+    private int InsertListInAnotherThread(ListData listData) {
+        db.listDataDao().incrementValues();
+        db.listDataDao().setDobavitInZero();
+        db.listDataDao().insert(listData);
+
+        chosenListData = db.listDataDao().getChosenList(1);
+
+        return 0;
     }
 
     private void insertFromPopup(String s, int insertIndex, int parentId) {
@@ -884,15 +1164,16 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 setNewDepartment(s);
                 setKeysForDepartments();
                 chosenDepartment = s;
-                setDepartmentsData();
+//                setDepartmentsData();
                 // departmentsData.put(s, null);
                 //crossOutNumbersArray.put(s, 0);
                 //Toast.makeText(this, "" + departmentsData.get(s), Toast.LENGTH_LONG).show();
                 adapterForDepartments.notifyItemInserted(insertIndex);
-
+                Log.d(TAG,"in rvDepartments, adapter notified. Chosen department");
                 break;
             case R.id.rvAnimals:
                 data.add(insertIndex, s);
+                setNewData(s, insertIndex);
                // listData.get(chosenList).get(chosenDepartment).getData().add(insertIndex,s);
                 adapter.notifyItemInserted(insertIndex);
                 break;
@@ -900,10 +1181,11 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 //keysForLists.add(insertIndex, s);
                 setNewList(s);
                 setKeysForLists();
-                chosenList = s;
-                setNavigationDrawerData();
-                setDepartmentsData();
-                setKeysForDepartments();
+               //chosenList = s;
+                chosenList = chosenListData.getList_name();
+                //setNavigationDrawerData();
+               //!!!!! setDepartmentsData();
+               //!!!!! setKeysForDepartments();
                 data.clear();
                 break;
         }
@@ -975,14 +1257,14 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         adapter.notifyDataSetChanged();
     }
 
-    //TODO: Use instead deleting and inserting for edit item
+
     private void updateSingleItem() {
         String newValue = "I like sheep.";
         int updateIndex = 3;
         data.set(updateIndex, newValue);
         adapter.notifyItemChanged(updateIndex);
     }
-
+//TODO: implement moving
     private void moveSingleItem(int fromPosition) {
         // int fromPosition = 3;
         int toPosition = data.size() - 1;
@@ -1032,7 +1314,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         }
     }
 
-    //TODO: App down when last department deleted
+
     private void deleteSingleItemInDepartments(View view, int position) {
         if (position > 0 && keysForDepartments.size()>2) {
             //TextView text = view.findViewById(R.id.tvDepartmentsName);
