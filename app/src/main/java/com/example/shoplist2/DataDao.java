@@ -4,6 +4,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import java.util.List;
 
@@ -28,10 +29,19 @@ public interface DataDao {
     @Query("Update data_table Set data_position = data_position + 1 WHERE department_id = :department_id AND data_position < :position AND data_position > 0")
     void incrementValuesFromOneToPosition(int department_id, int position);
 
+    @Query("Update data_table Set data_position = data_position + 1 WHERE department_id = :department_id " +
+            "AND data_position < :fromPosition AND data_position >= :toPosition AND data_position > 0")
+    void incrementValuesFromPositionToPosition(int department_id, int fromPosition, int toPosition);
+
+    @Query("Update data_table Set data_position = data_position - 1 WHERE department_id = :department_id " +
+            "AND data_position > :fromPosition AND data_position <= :toPosition AND data_position > 0")
+    void decrementValuesFromPositionToPosition(int department_id, int fromPosition, int toPosition);
+
     @Query("Update data_table Set data_position = data_position - 1 WHERE department_id = :department_id AND data_position > :position")
     void decrementValues(int department_id, int position);
 
-
+    @Update
+    void update(Data data);
 
     @Query("Update data_table Set data_position = 0 WHERE data_name = 'Добавить' AND department_id = :department_id ")
     void setDobavitInZero(int department_id );

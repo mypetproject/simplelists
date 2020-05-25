@@ -295,8 +295,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
         if (keysForDepartments.size() > 1) {
             chosenDepartmentData = db.departmentDataDao().getChosenDepartment(1,chosenListData.list_id);
+
            // chosenDepartment = keysForDepartments.get(1);
-            //chosenDepartment = chosenDepartmentData.department_name;
+            chosenDepartment = chosenDepartmentData.department_name;
             getData();
         }
        // setDepartmentsData();
@@ -324,18 +325,32 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
                 adapter.notifyItemMoved(position_dragged, position_target);
 
-
+                Data temp = db.dataDao().getChosenData(position_dragged,chosenDepartmentData.department_id);
+                temp.data_position = position_target;
+                if (position_dragged > position_target) {
+                    db.dataDao().incrementValuesFromPositionToPosition(chosenDepartmentData.department_id, position_dragged,position_target);
+                } else {
+                    db.dataDao().decrementValuesFromPositionToPosition(chosenDepartmentData.department_id,position_dragged,position_target);
+                }
+                db.dataDao().update(temp);
+                Log.d(TAG, "data keys after swipe: " + db.dataDao().getAllNames(chosenDepartmentData.department_id));
                 return false;
             }
 
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                int position = keysForDepartments.indexOf(chosenDepartment);
+                //setKeysForDepartments();
+                //int position = keysForDepartments.indexOf(chosenDepartment);
+                int position = chosenDepartmentData.department_position;
+                Log.d(TAG, "onSwiped position:" + position);
                 switch (direction) {
                     case ItemTouchHelper.START:
                         if (position < (keysForDepartments.size() - 1)) {
-                            chosenDepartment = keysForDepartments.get(position + 1);
+                            chosenDepartmentData = db.departmentDataDao()
+                                    .getChosenDepartment(chosenDepartmentData.department_position +1, chosenListData.list_id);
+                            //chosenDepartment = keysForDepartments.get(position + 1);
+                            chosenDepartment = chosenDepartmentData.department_name;
                             // Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
                             recyclerViewDepartments.smoothScrollToPosition(position + 1);
                         }
@@ -343,16 +358,20 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
                     case ItemTouchHelper.END:
                         if (position > 1) {
-                            chosenDepartment = keysForDepartments.get(position - 1);
+                            chosenDepartmentData = db.departmentDataDao()
+                                    .getChosenDepartment(chosenDepartmentData.department_position -1, chosenListData.list_id);
+                            //chosenDepartment = keysForDepartments.get(position - 1);
+                            chosenDepartment = chosenDepartmentData.department_name;
                             //Toast.makeText(getBaseContext(), "" + chosenDepartment, Toast.LENGTH_SHORT).show();
                             recyclerViewDepartments.smoothScrollToPosition(position - 1);
                         }
                         break;
 
                 }
+                getCrossOutNumber();
                 getData();
                 //getCrossOutNumber(chosenDepartment);
-                getCrossOutNumber();
+
 
             }
 
@@ -386,7 +405,18 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
                 adapterForDepartments.notifyItemMoved(position_dragged, position_target);
 
-
+                DepartmentData temp = db.departmentDataDao().getChosenDepartment(position_dragged,chosenListData.list_id);
+                temp.department_position = position_target;
+                if (position_dragged > position_target) {
+                    db.departmentDataDao().incrementValuesFromPositionToPosition(chosenListData.list_id, position_dragged,position_target);
+                } else {
+                    db.departmentDataDao().decrementValuesFromPositionToPosition(chosenListData.list_id,position_dragged,position_target);
+                }
+                db.departmentDataDao().update(temp);
+                chosenDepartmentData = db.departmentDataDao().getChosenDepartment(position_target, chosenListData.list_id);
+                setKeysForDepartments();
+                Log.d(TAG, "dep keys after swipe: " + db.departmentDataDao().getAllNames(chosenListData.list_id)
+                + " positions" + db.departmentDataDao().getAllPositions(chosenListData.list_id));
                 return false;
             }
 
@@ -430,23 +460,31 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             public void onSwipeRight() {
                 position = keysForDepartments.indexOf(chosenDepartment);
                 if (position > 1) {
-                    chosenDepartment = keysForDepartments.get(position - 1);
+                    chosenDepartmentData = db.departmentDataDao()
+                            .getChosenDepartment(chosenDepartmentData.department_position - 1, chosenListData.list_id);
+                   // chosenDepartment = keysForDepartments.get(position - 1);
+                    chosenDepartment = chosenDepartmentData.department_name;
                     recyclerViewDepartments.smoothScrollToPosition(position - 1);
                 }
+                getCrossOutNumber();
                 getData();
                 //!!getCrossOutNumber(chosenDepartment);
-                getCrossOutNumber();
+
             }
 
             public void onSwipeLeft() {
                 position = keysForDepartments.indexOf(chosenDepartment);
                 if (position < (keysForDepartments.size() - 1)) {
-                    chosenDepartment = keysForDepartments.get(position + 1);
+                    chosenDepartmentData = db.departmentDataDao()
+                            .getChosenDepartment(chosenDepartmentData.department_position +1, chosenListData.list_id);
+                   // chosenDepartment = keysForDepartments.get(position + 1);
+                    chosenDepartment = chosenDepartmentData.department_name;
                     recyclerViewDepartments.smoothScrollToPosition(position + 1);
                 }
+                getCrossOutNumber();
                 getData();
                 //!!getCrossOutNumber(chosenDepartment);
-                getCrossOutNumber();
+
             }
 
             public void onSwipeBottom() {
@@ -590,10 +628,12 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                                 //String text = keysForDepartments.get(1);
                                // chosenDepartment = text;
                                 chosenDepartmentData = db.departmentDataDao().getChosenDepartment(1,chosenListData.list_id);
+                                chosenDepartment = chosenDepartmentData.department_name;
+                                getCrossOutNumber();
                                 getData();
 
                                 //!!getCrossOutNumber(chosenDepartment);
-                                getCrossOutNumber();
+
 
                             }
 
