@@ -5,6 +5,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import java.util.List;
 
@@ -22,14 +23,23 @@ public interface DepartmentDataDao {
         @Query("SELECT department_name FROM departments_table WHERE list_id = :list_id ORDER BY department_position ASC")
         List<String> getAllNames(int list_id);
 
-        @Query("Update departments_table Set department_position = department_position + 1 WHERE list_id = :list_id ")
-        void incrementValues(int list_id);
+        @Query("Update departments_table Set department_position = department_position + 1 WHERE list_id = :list_id AND department_position > :position")
+        void incrementValues(int list_id, int position);
+
+        @Query("Update departments_table Set department_position = department_position - 1 WHERE list_id = :list_id AND department_position > :position")
+        void decrementValues(int list_id, int position);
 
         @Query("Update departments_table Set department_position = 0 WHERE department_name = 'Добавить' AND list_id = :list_id")
         void setDobavitInZero(int list_id);
 
         @Query("SELECT * FROM departments_table WHERE department_position = :position AND list_id = :list_id")
         DepartmentData getChosenDepartment(int position, int list_id);
+
+        @Query("DELETE FROM departments_table WHERE department_position = :position AND list_id = :list_id ")
+        void deleteSingleData(int position, int list_id);
+
+        @Update
+        void update(DepartmentData departmentData);
 /*
         @Query("DELETE FROM lists_table")
         int deleteAll();

@@ -3,6 +3,7 @@ package com.example.shoplist2;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,7 +54,7 @@ public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.
 
 
         String animal = mData.get(position);
-
+        Log.d("myLogs", "holder name in department adapter: " + animal);
       /*  View parent = (View) itemView.myTextView.getParent();
         if (parent.getId() == R.id.rvDepartments) {
             //Toast.makeText(holder.myTextView.getContext(), "" + parent.getId(), Toast.LENGTH_SHORT).show();
@@ -61,10 +62,11 @@ public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.
         }*/
 
         //String animal = mData.get(position);
-
+        //Log.d("myLogs", "chosenDepartment: " + MainActivity.chosenDepartment + "X");
         //Remove delete button from position 0 and set visible on position > 0
-        if (animal == MainActivity.chosenDepartment) {
+        if (animal.equals(MainActivity.chosenDepartment)) {
             holder.itemView.setBackgroundColor(Color.parseColor("#00ff00"));
+            Log.d("myLogs", "Set color for " + MainActivity.chosenDepartment);
         } else {
             holder.itemView.setBackgroundColor(Color.parseColor("#79bfea"));
         }

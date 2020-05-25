@@ -25,14 +25,28 @@ public interface DataDao {
     @Query("Update data_table Set data_position = data_position + 1 WHERE department_id = :department_id AND data_position > :position")
     void incrementValues(int department_id, int position);
 
+    @Query("Update data_table Set data_position = data_position + 1 WHERE department_id = :department_id AND data_position < :position AND data_position > 0")
+    void incrementValuesFromOneToPosition(int department_id, int position);
+
+    @Query("Update data_table Set data_position = data_position - 1 WHERE department_id = :department_id AND data_position > :position")
+    void decrementValues(int department_id, int position);
+
+
+
     @Query("Update data_table Set data_position = 0 WHERE data_name = 'Добавить' AND department_id = :department_id ")
     void setDobavitInZero(int department_id );
 
     @Query("Update data_table Set data_name = :name WHERE data_id = :data_id ")
     void updateSingleItem(int data_id, String name );
 
+    @Query("Update data_table Set data_position = :position WHERE data_id = :data_id ")
+    void updateSingleItemPosition(int data_id, int position);
+
     @Query("SELECT * FROM data_table WHERE data_position = :position AND department_id = :department_id")
     Data getChosenData(int position, int department_id);
+
+    @Query("DELETE FROM data_table WHERE data_position = :position AND department_id = :department_id ")
+    void deleteSingleData(int position, int department_id);
 /*
         @Query("DELETE FROM lists_table")
         int deleteAll();
