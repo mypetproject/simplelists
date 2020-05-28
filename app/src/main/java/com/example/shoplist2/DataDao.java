@@ -20,6 +20,9 @@ public interface DataDao {
     @Query("SELECT data_name FROM data_table WHERE department_id = :department_id ORDER BY data_position ASC")
     List<String> getAllNames(int department_id);
 
+    @Query("SELECT data_name FROM data_table WHERE department_id = :department_id AND data_position > 0 ORDER BY data_position ASC")
+    List<String> getAllNamesForGenerator(int department_id);
+
     @Query("SELECT data_position FROM data_table WHERE department_id = :department_id ORDER BY data_position ASC")
     List<Integer> getAllPositions(int department_id);
 

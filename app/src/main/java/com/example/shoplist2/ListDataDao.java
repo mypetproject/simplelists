@@ -37,7 +37,7 @@ public interface ListDataDao {
     @Query("SELECT * from lists_table ORDER BY list_name ASC")
     LiveData<List<ListData>> getAlphabetizedLists();
 
-    @Query("Update lists_table Set list_position = list_position + 1")
+    @Query("Update lists_table Set list_position = list_position + 1 WHERE list_position > 0")
     int incrementValues();
 
     @Query("Update lists_table Set list_position = 0 WHERE list_name = 'Добавить'")

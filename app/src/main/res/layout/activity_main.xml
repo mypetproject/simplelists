@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    >
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -14,8 +15,18 @@
         android:elevation="4dp"
         android:minHeight="?attr/actionBarSize"
         android:paddingTop="@dimen/tool_bar_top_padding"
-        android:transitionName="actionBar"
-        />
+        android:transitionName="actionBar">
+
+        <ImageButton
+            android:id="@+id/share_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+           android:layout_marginEnd="20dp"
+            android:src="@drawable/ic_share"
+            android:background="?attr/colorAccent"
+            />
+    </androidx.appcompat.widget.Toolbar>
 
     <LinearLayout
         android:id="@+id/backgroundLL"
@@ -52,4 +63,6 @@
         android:layout_alignParentEnd="true"
         android:layout_margin="40dp"
         />
+
+
 </RelativeLayout>
