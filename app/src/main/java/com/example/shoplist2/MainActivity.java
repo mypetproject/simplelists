@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import android.text.InputType;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.ContextMenu;
@@ -159,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
                 });*/
        ListData firstElementOfList = new ListData();
-       firstElementOfList.setList_name("Добавить");
+       firstElementOfList.setList_name("Добавить список");
        firstElementOfList.list_position = 0;
        db.listDataDao().insert(firstElementOfList);
        // List<String> fromDB = db.listDataDao().getAllNamesNotFlowable();
@@ -701,15 +702,14 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                         return false;
                     }
                 })
-                .addDrawerItems(
-                        iDrawerItems
-
-                )
+                .addDrawerItems(iDrawerItems)
                 .build();
 
 
         if (keysForLists.size() > 1) {
             setTitle(chosenListData.getList_name());
+        } else {
+            setTitle("<- Нажмите");
         }
 
     }
@@ -1251,6 +1251,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT);
         et.setLayoutParams(lp);
+        et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
 
         String title;
         if (position != 0) {
@@ -1731,7 +1732,7 @@ Log.d(TAG, "data clear");
         departmentData.add("Рыба");
         departmentData.add("Креветки");
         defaultData.put("Рыба и морепродукты", departmentData);
-        departmentData.clear();
+        departmentData = new ArrayList<>();
 
         departmentData.add("Яблоки");
         departmentData.add("Бананы");
