@@ -23,6 +23,9 @@ public interface DepartmentDataDao {
         @Query("SELECT department_name FROM departments_table WHERE list_id = :list_id ORDER BY department_position ASC")
         List<String> getAllNames(int list_id);
 
+        @Query("SELECT department_name FROM departments_table WHERE list_id = :list_id AND department_position > 0 ORDER BY department_position ASC")
+        List<String> getAllNamesExceptFirst(int list_id);
+
         @Query("SELECT department_position FROM departments_table WHERE list_id = :list_id ORDER BY department_position ASC")
         List<Integer> getAllPositions(int list_id);
 

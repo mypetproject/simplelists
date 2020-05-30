@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ShopList2</string>
+    <string name="app_name">SimpleShopList</string>
     <string name="hintPopup">Eeee</string>
     <string name="enter_text">Enter text</string>
     <string name="cancel">Cancel</string>
