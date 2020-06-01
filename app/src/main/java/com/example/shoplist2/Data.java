@@ -22,10 +22,13 @@ public class Data {
 
     public String data_name;
 
-    public Data(int department_id, int data_position, String data_name) {
+    public float data_qty;
+
+    public Data(int department_id, int data_position, String data_name, float data_qty) {
         this.department_id = department_id;
         this.data_position = data_position;
         this.data_name = data_name;
+        this.data_qty = data_qty;
     }
 
     public Data() {
@@ -33,7 +36,7 @@ public class Data {
     }
     public String getAllInString() {
         String s = "department id: " + department_id + " data id: " + data_id + " data position: "
-                + data_position + " data name: '" + data_name + "'";
+                + data_position + " data name: '" + data_name + "' quantity: '" + data_qty + "'";
         return s;
     }
 }

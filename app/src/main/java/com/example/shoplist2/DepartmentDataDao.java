@@ -41,6 +41,9 @@ public interface DepartmentDataDao {
         @Query("SELECT * FROM departments_table WHERE department_position = :position AND list_id = :list_id")
         DepartmentData getChosenDepartment(int position, int list_id);
 
+        @Query("SELECT * FROM departments_table WHERE department_name = :name AND list_id = :list_id")
+        DepartmentData getChosenDepartmentByName(String name, int list_id);
+
         @Query("DELETE FROM departments_table WHERE department_position = :position AND list_id = :list_id ")
         void deleteSingleData(int position, int list_id);
 

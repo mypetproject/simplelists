@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/data_menu_edit"
+        android:icon="@drawable/ic_edit_black_24dp"
+        android:title="Редактировать" />
+
+    <item
+        android:id="@+id/data_menu_move"
+        android:icon="@drawable/ic_move"
+        android:title="Переместить в..." />
+
+    <item
+        android:id="@+id/data_menu_delete"
+        android:icon="@drawable/ic_delete"
+        android:title="Удалить" />
+
+
+
+
+</menu>

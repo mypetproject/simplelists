@@ -59,12 +59,15 @@ public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.
         //String animal = mData.get(position);
         //Log.d("myLogs", "chosenDepartment: " + MainActivity.chosenDepartment + "X");
         //Remove delete button from position 0 and set visible on position > 0
-        if (animal.equals(MainActivity.chosenDepartmentData.department_name)) {
+
+
+        if (mData.size() > 1) if (animal.equals(MainActivity.chosenDepartmentData.department_name)) {
             holder.itemView.setBackgroundColor(Color.parseColor("#00ff00"));
             Log.d("myLogs", "Set color for " + MainActivity.chosenDepartmentData.department_name);
         } else {
             holder.itemView.setBackgroundColor(Color.parseColor("#79bfea"));
         }
+        Log.d("myLogs", "onBindViewHolder color chosen");
         if (position == 0) {
             holder.mDeleteImage.setVisibility(View.GONE);
             holder.mAddImage.setVisibility(View.VISIBLE);
@@ -74,12 +77,12 @@ public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.
         }
 
 
-        if (MainActivity.editButtonClicked == 1 ) {
+        if (MainActivity.editButtonClicked) {
             holder.mDeleteImage.setVisibility(View.INVISIBLE);
             holder.mAddImage.setVisibility(View.GONE);
         }
 
-        if (MainActivity.editButtonClicked == 1 && position == 0) {
+        if (MainActivity.editButtonClicked && position == 0) {
             holder.myTextView.setVisibility(View.GONE);
             holder.mDeleteImage.setVisibility(View.GONE);
             //holder.mLinearLayout.setVisibility(View.GONE);
@@ -91,7 +94,7 @@ public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.
         holder.myTextView.setText(animal);
 
 
-
+Log.d("myLogs","onBindViewHolder ended");
     }
 
     // total number of rows
