@@ -5,6 +5,9 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:id="@+id/ll"
+    android:layout_marginRight="10dp"
+    android:layout_marginLeft="10dp"
+
     >
 
 
@@ -41,7 +44,7 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:minHeight="50dp"
-        android:layout_weight="2"
+        android:layout_weight="3"
         android:textColor="#000000"
         android:textSize="20sp"
         android:gravity="center"/>
@@ -50,13 +53,13 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:minHeight="50dp"
-        android:layout_weight="2"
+        android:layout_weight="3"
         android:textColor="#000000"
         android:textSize="15sp"
         android:gravity="center"
         android:visibility="gone"
         android:inputType="numberDecimal"
-
+        android:maxLength="7"
         />
     <!-- todo переделать кнопку "ок" на клавиатуре -->
 <!--

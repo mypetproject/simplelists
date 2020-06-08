@@ -25,14 +25,15 @@ public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.
     private List<String> mData;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
+    private int mDataSize;
 
 
     // data is passed into the constructor
-    DepartmentsAdapter(Context context, List<String> data) {
+    DepartmentsAdapter(Context context, List<String> data, int dataSize) {
    // DepartmentsAdapter(Context context, HashMap<String, ArrayList<>> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
-
+this.mDataSize = dataSize;
     }
 
     // inflates the row layout from xml when needed
@@ -45,40 +46,29 @@ public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.
     // binds the data to the TextView in each row
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
-
-
-
-        String animal = mData.get(position);
+     String animal = mData.get(position);
         Log.d("myLogs", "holder name in department adapter: " + animal);
-      /*  View parent = (View) itemView.myTextView.getParent();
-        if (parent.getId() == R.id.rvDepartments) {
-            //Toast.makeText(holder.myTextView.getContext(), "" + parent.getId(), Toast.LENGTH_SHORT).show();
-            tvDep.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
-        }*/
-
-        //String animal = mData.get(position);
-        //Log.d("myLogs", "chosenDepartment: " + MainActivity.chosenDepartment + "X");
-        //Remove delete button from position 0 and set visible on position > 0
-
-
         if (mData.size() > 1) if (animal.equals(MainActivity.chosenDepartmentData.department_name)) {
-            holder.itemView.setBackgroundColor(Color.parseColor("#00ff00"));
+           holder.itemView.setPressed(true);
             Log.d("myLogs", "Set color for " + MainActivity.chosenDepartmentData.department_name);
         } else {
-            holder.itemView.setBackgroundColor(Color.parseColor("#79bfea"));
+            holder.itemView.setPressed(false);
         }
         Log.d("myLogs", "onBindViewHolder color chosen");
+
         if (position == 0) {
             holder.mDeleteImage.setVisibility(View.GONE);
             holder.mAddImage.setVisibility(View.VISIBLE);
+            holder.mQty.setVisibility(View.GONE);
         } else {
             holder.mDeleteImage.setVisibility(View.VISIBLE);
             holder.mAddImage.setVisibility(View.GONE);
+            holder.mQty.setVisibility(View.VISIBLE);
         }
 
 
         if (MainActivity.editButtonClicked) {
-            holder.mDeleteImage.setVisibility(View.INVISIBLE);
+            holder.mDeleteImage.setVisibility(View.GONE);
             holder.mAddImage.setVisibility(View.GONE);
         }
 
@@ -92,7 +82,15 @@ public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.
         }
 
         holder.myTextView.setText(animal);
-
+        int activeQty = MainActivity.db.dataDao().getAllNames(
+                MainActivity.db.departmentDataDao().getChosenDepartmentByName(animal,MainActivity.chosenListData.list_id).department_id)
+                .size() -  MainActivity.db.departmentDataDao().getChosenDepartmentByName(animal,MainActivity.chosenListData.list_id).CrossOutNumber - 1;
+        if (activeQty > 0) {
+            holder.mQty.setText(activeQty + "");
+        } else {
+            holder.mQty.setVisibility(View.GONE);
+            //LinearLayout.LayoutParams layoutParams =  holder.itemView.getLayoutParams();
+        }
 
 Log.d("myLogs","onBindViewHolder ended");
     }
@@ -109,6 +107,7 @@ Log.d("myLogs","onBindViewHolder ended");
         TextView myTextView;
         ImageView mDeleteImage;
         ImageView mAddImage;
+        TextView mQty;
         //LinearLayout mLinearLayout;
         // String parent1;
 
@@ -121,6 +120,7 @@ Log.d("myLogs","onBindViewHolder ended");
             myTextView = itemView.findViewById(R.id.tvDepartmentsName);
             mDeleteImage = itemView.findViewById(R.id.image_delete2);
             mAddImage = itemView.findViewById(R.id.addImage);
+            mQty = itemView.findViewById(R.id.tvDepartmentsQty);
 
             // parent1 = mLinearLayout.getParent().toString();
 

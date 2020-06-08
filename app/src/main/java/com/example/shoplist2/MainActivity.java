@@ -10,11 +10,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.usage.UsageEvents;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -22,6 +27,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -36,13 +42,20 @@ import android.widget.ViewSwitcher;
 
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.holder.BadgeStyle;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity implements MyRecyclerViewAdapter.ItemClickListener, DepartmentsAdapter.ItemClickListener {
 
@@ -60,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     List<String> keysForLists;
 
     private Drawer drawerResult = null;
+    //private boolean newListCancelled = false;
+    private int selectedListIndex = 2;
 
     Toolbar toolbar;
 
@@ -69,11 +84,19 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     static Data chosenData = new Data();
     int parentID;
 
-    ImageButton mShareButton;
+   // ImageButton mShareButton;
     EditText et;
     static boolean canUpdate;
 
     RecyclerView recyclerViewDepartments;
+    RecyclerView recyclerView;
+
+    //for OnItemTouch
+    private static final int MAX_CLICK_DURATION = 250;
+    private long startClickTime;
+    private long clickDuration;
+
+    // static boolean //dontTouchMLowButton = false;
 
     private static final String TAG = "myLogs";
 
@@ -119,12 +142,13 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 */
 
         // set up the RecyclerView
-        final RecyclerView recyclerView = findViewById(R.id.rvAnimals);
+        recyclerView = findViewById(R.id.rvAnimals);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
                 layoutManager.getOrientation());
         recyclerView.addItemDecoration(dividerItemDecoration);
+        //recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
         adapter = new MyRecyclerViewAdapter(this, data, data_qty);
         adapter.setClickListener(this);
         recyclerView.setAdapter(adapter);
@@ -144,8 +168,11 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
         recyclerViewDepartments.addItemDecoration(dividerItemDecorationDepartments);
         recyclerViewDepartments.addItemDecoration(dividerItemDecorationDepartments2);*/
-        adapterForDepartments = new DepartmentsAdapter(this, keysForDepartments);
+        adapterForDepartments = new DepartmentsAdapter(this, keysForDepartments, data.size());
         adapterForDepartments.setClickListener(this);
+        /*while (recyclerViewDepartments.getItemDecorationCount() > 0) {
+            recyclerViewDepartments.removeItemDecorationAt(0);
+        }*/
         recyclerViewDepartments.setAdapter(adapterForDepartments);
         layoutManagerDepartments.setOrientation(LinearLayoutManager.HORIZONTAL);
 
@@ -284,14 +311,14 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 if (editButtonClicked) {
                     editButtonClicked = false;
                 } else {
-                        editButtonClicked = true;
+                    editButtonClicked = true;
                 }
                 adapter.notifyDataSetChanged();
                 adapterForDepartments.notifyDataSetChanged();
             }
         });
 
-        mShareButton = (ImageButton) findViewById(R.id.share_button);
+     /*   mShareButton = (ImageButton) findViewById(R.id.share_button);
 
         if (keysForLists.size() < 2) {
             mShareButton.setVisibility(View.INVISIBLE);
@@ -310,7 +337,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             }
         });
 
-
+*/
         //Get swipes from background
         findViewById(R.id.backgroundLL).setOnTouchListener(new OnSwipeTouchListener(MainActivity.this) {
             int position;
@@ -391,15 +418,33 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
     }
 
+    private int activeQtyForList(int position){
+        List<DepartmentData> listOfDepartmentsData = new ArrayList<DepartmentData>(db.departmentDataDao().getAll(db.listDataDao().getChosenList(position).list_id));
+        int sumOfActive = 1;
+        for (DepartmentData dd : listOfDepartmentsData) {
+            sumOfActive += MainActivity.db.dataDao().getAll(dd.department_id).size() - dd.CrossOutNumber -1;
+        }
+        Log.d(TAG, " activeQtyForList sum: " + sumOfActive);
+        return sumOfActive;
+    }
+
     void setNavigationDrawerData() {
         IDrawerItem[] iDrawerItems = new IDrawerItem[1000];
-        for (int i = 0; i < keysForLists.size(); i++) {
-            iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i));
-            Log.d(TAG, "items for drawer added " + keysForLists.get(i));
+        for (int i = 1; i <= keysForLists.size(); i++) {
+            int activeQty = activeQtyForList(i-1);
+            if (activeQty > 0 && i != 1) {
+                iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i - 1)).withBadge(activeQty+"").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
+            } else {
+                iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i - 1));
+            }
+
+
+            Log.d(TAG, "items for drawer added " + keysForLists.get(i - 1));
         }
         drawerResult = new DrawerBuilder()
                 .withActivity(this)
                 .withToolbar(toolbar)
+
                 .withActionBarDrawerToggle(true)
                 .withHeader(R.layout.drawer_header)
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
@@ -410,18 +455,27 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                             View parent = (View) view.getParent();
                             int parentID = parent.getId();
                             inputTextDialogWindow(view, 1, position - 1, parentID);
+                            // drawerResult.setSelection(selectedListIndex,false);
                         } else {
                             setActiveList(position);
+                            selectedListIndex = position;
+                           // recyclerViewDepartments.smoothScrollToPosition(1);
+                            // drawerResult.setSelection(selectedListIndex,false);
                         }
+                        setNavigationDrawerData();
                         return false;
                     }
                 })
                 .addDrawerItems(iDrawerItems)
+
                 .build();
         //       Log.d(TAG, "setNavigationDrawerData() drawerBuilderEnded");
-
+//drawerResult.setSelection(1);
+        //drawerResult.setSelection(iDrawerItems[1]);
         if (keysForLists.size() > 1) {
             setTitle(chosenListData.getList_name());
+            drawerResult.setSelection(selectedListIndex, false);
+
         } else {
             setTitle("<- Нажмите");
         }
@@ -438,6 +492,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             } else {
                 chosenDepartmentData = new DepartmentData(chosenListData.list_id, 0, "", 0);
             }
+            recyclerViewDepartments.scrollToPosition(1);
         }
         setDepartmentsData();
         setKeysForDepartments();
@@ -456,8 +511,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
     @Override
     public void onBackPressed() {
-        //todo translate
-        // Закрываем Navigation Drawer по нажатию системной кнопки "Назад" если он открыт
+
+        // Close Navigation Drawer by press button "Back" if it is in open condition
         if (drawerResult.isDrawerOpen()) {
             drawerResult.closeDrawer();
         } else {
@@ -487,31 +542,29 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         Log.d(TAG, name + " setKeysForLists() added information from base " + db.listDataDao().getAllPositions());
         if (keysForLists.size() > 1) {
             chosenListData = db.listDataDao().getChosenList(1);
-
-
         }
-        mShareButton = (ImageButton) findViewById(R.id.share_button);
+      /*  mShareButton = (ImageButton) findViewById(R.id.share_button);
         if (keysForLists.size() < 2) {
-            mShareButton.setVisibility(View.INVISIBLE);
+            mShareButton.setVisibility(View.GONE);
         } else {
-            mShareButton.setVisibility(View.VISIBLE);
-        }
+            mShareButton.setVisibility(View.GONE);
+        }*/
         setNavigationDrawerData();
         setDepartmentsData();
         setKeysForDepartments();
     }
 
 
-
     public void getData() {
         canUpdate = false;
         data.clear();
         data_qty.clear();
-        if (keysForDepartments.size() > 0)
+        if (keysForDepartments.size() > 0) {
             data.addAll(db.dataDao().getAllNames(chosenDepartmentData.department_id));
             data_qty.addAll(db.dataDao().getAllQty(chosenDepartmentData.department_id));
+        }
         if (data.size() == 0) {
-            Data dataForInsert = new Data(chosenDepartmentData.department_id, 0, "Добавить",0);
+            Data dataForInsert = new Data(chosenDepartmentData.department_id, 0, "Добавить", 0);
             db.dataDao().insert(dataForInsert);
             Log.d(TAG, "Added first element to data: " + dataForInsert.getAllInString());
             data.addAll(db.dataDao().getAllNames(chosenDepartmentData.department_id));
@@ -547,22 +600,24 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
     @Override
     public void onItemClick(View view, final int position) {
-        String name = new Object() {}.getClass().getEnclosingMethod().getName();
+        String name = new Object() {
+        }.getClass().getEnclosingMethod().getName();
         View parent = (View) view.getParent();
         parentID = parent.getId();
         int viewID = view.getId();
 
         boolean clicker = false;
-        Log.d(TAG,name + " viewID: " + viewID + " R.id.tvAnimalCount:" + R.id.tvAnimalCount);
-       // Log.d(TAG,name + " view name: " + getResources().getResourceName(view.getId()));
+        Log.d(TAG, name + " viewID: " + viewID + " R.id.tvAnimalCount:" + R.id.tvAnimalCount);
+        // Log.d(TAG,name + " view name: " + getResources().getResourceName(view.getId()));
         switch (viewID) {
+            //todo по longclick прибавлять или вычитать числа, пока не отпустят
             case R.id.image_to_low:
-                db.dataDao().minusQty(position,chosenDepartmentData.department_id);
+                db.dataDao().minusQty(position, chosenDepartmentData.department_id);
                 getData();
                 clicker = true;
                 break;
             case R.id.image_to_high:
-                db.dataDao().plusQty(position,chosenDepartmentData.department_id);
+                db.dataDao().plusQty(position, chosenDepartmentData.department_id);
                 getData();
                 clicker = true;
                 break;
@@ -582,7 +637,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 dataHolderMenuItemButtonClick(view);
                 break;
             case R.id.depLl:
-                TextView text  = parent.findViewById(R.id.tvDepartmentsName);
+                TextView text = parent.findViewById(R.id.tvDepartmentsName);
                 final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
                         .setMessage("Удалить отдел '" + text.getText().toString() + "'?")
                         .setCancelable(true)
@@ -635,16 +690,167 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                     chosenData = db.dataDao().getChosenData(position, chosenDepartmentData.department_id);
                     inputTextDialogWindow(view, position, position, parentID);
                 }
+                adapterForDepartments.notifyDataSetChanged();
                 break;
         }
     }
 
+    @Override
+    public void onItemLongClick(int position, View view) {
+        String name = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        Log.d(TAG, name + " Long click started");
+       /* final int viewID = view.getId();
+        switch (viewID) {
+            case R.id.image_to_low:
+                db.dataDao().minusQty(position,chosenDepartmentData.department_id);
+
+                getData();
+                Log.d(TAG, name + " Long click minus");
+                break;
+            case R.id.image_to_high:
+                db.dataDao().plusQty(position,chosenDepartmentData.department_id);
+
+                getData();
+                Log.d(TAG, name + " Long click plus");
+                break;
+        }*/
+        //Toast.makeText(view.getContext(), "Long click", Toast.LENGTH_SHORT).show();
+    }
+
+    //todo обновлять данные при удержании, action_down прерывается при вызове adapter.notify
+    @Override
+    public int onItemTouch(View view, MotionEvent event, int position) {
+        String name = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        Log.d(TAG, name + " started " + event.toString());
+        //Toast.makeText(view.getContext(), "Touch event: " + event, Toast.LENGTH_SHORT).show();
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN: {
+                //  view.getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().requestDisallowInterceptTouchEvent(true);
+                //Log.d(TAG, "parent: " + view.getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().toString());
+                //view.getParent().requestDisallowInterceptTouchEvent(true);
+                clickDuration = 0;
+                startClickTime = Calendar.getInstance().getTimeInMillis();
+                Log.d(TAG, name + " ACTION_DOWN start " + event.getAction() + " clickDuration: " + clickDuration);
+
+                switch (view.getId()) {
+                    case R.id.image_to_low:
+                        Single.fromCallable(() -> itemCount(false, position, view)).subscribeOn(Schedulers.io()).subscribe();
+                      /*  if (clickDuration == 0) {
+                            mTimer.schedule(mMyTimerTask, 500, 500);
+                        }*/
+                        break;
+                    case R.id.image_to_high:
+                        Single.fromCallable(() -> itemCount(true, position, view)).subscribeOn(Schedulers.io()).subscribe();
+                        break;
+                }
+                // Single.fromCallable(() -> db.listDataDao().insert(listData)).subscribeOn(Schedulers.io()).subscribe();
+                // Single.fromCallable(() -> itemCount(true, position)).subscribeOn(Schedulers.io()).subscribe();
+
+                break;
+            }
+            case MotionEvent.ACTION_UP:
+                // view.getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().requestDisallowInterceptTouchEvent(false);
+                //view.getParent().requestDisallowInterceptTouchEvent(false);
+                clickDuration = Calendar.getInstance().getTimeInMillis() - startClickTime;
+                Log.d(TAG, name + " ACTION_UP start " + event.getAction() + " clickDuration: " + clickDuration);
+                if (clickDuration < MAX_CLICK_DURATION) {
+                    //click event has occurred
+                    //dontTouchMLowButton = false;
+                    //  Toast.makeText(view.getContext(), "Clicked", Toast.LENGTH_SHORT).show();
+
+                }
+                getData();
+                break;
+            case MotionEvent.ACTION_CANCEL:
+                clickDuration = Calendar.getInstance().getTimeInMillis() - startClickTime;
+                //dontTouchMLowButton = false;
+                //onItemTouch(view, null,position);
+                getData();
+                break;
+        }
+        return 0;
+    }
 
 
+    private int itemCount(boolean sign, int position, View view) {
+        String name = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+//dontTouchMLowButton = true;
+        int counter = 0;
+        while (clickDuration == 0) {
+            //counter++;
+            Log.d(TAG, name + " sign: " + sign);
+            if (sign) {
+                db.dataDao().plusQty(position, chosenDepartmentData.department_id);
 
+            } else {
+                db.dataDao().minusQty(position, chosenDepartmentData.department_id);
+            }
+
+            Log.d(TAG, name + " data saved: ");
+
+            // EditText editText = (EditText) view.findViewById(R.id.etAnimalCount);
+            // Log.d(TAG, name + " findViewById: ");
+
+//adapter.notifyDataSetChanged();
+            // getData();
+            // runOnUiThread(this::getData);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // view.requestD
+                    //dontTouchMLowButton = true;
+                    Log.d(TAG, name + "  runOnUiThread ");
+                    //EditText editText = (EditText) view.findViewById(R.id.etAnimalCount);
+                    //EditText editText = (EditText) view.getParent()
+                  /*  Log.d(TAG, name + " findViewById: " + view.getParent().getParent().toString());
+
+                  data_qty.set(position,db.dataDao().getChosenData(position,chosenDepartmentData.department_id).data_qty);
+                  RecyclerView.ViewHolder vh = recyclerView.getChildViewHolder(view);
+                   Log.d(TAG, name + " vh: " + vh.toString());
+                  EditText et = (EditText) vh.itemView.findViewById(R.id.etAnimalCount);
+                   Log.d(TAG, name + " vh: " + et.getText());
+                   Log.d(TAG, name + "  data_qty wrote ");
+et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_id).data_qty+"");*/
+                    // adapter.notifyItemChanged(position);
+                    //   adapter.notifyDataSetChanged();
+                    //  adapterForDepartments.notifyDataSetChanged();
+                    //  editText.setText(String.valueOf(data_qty.get(position)));
+                    // adapter.notifyDataSetChanged();
+                    // getData();
+//todo переделать toast на обновление edittext
+                    data_qty.set(position, db.dataDao().getChosenData(position, chosenDepartmentData.department_id).data_qty);
+                    Toast toast = Toast.makeText(view.getContext(), "" + db.dataDao().getChosenData(position, chosenDepartmentData.department_id).data_qty, Toast.LENGTH_SHORT);
+                    CountDownTimer toastCountDown;
+                    toastCountDown = new CountDownTimer(100, 10) {
+                        @Override
+                        public void onTick(long millisUntilFinished) {
+                            toast.show();
+                        }
+
+                        @Override
+                        public void onFinish() {
+                            toast.cancel();
+                        }
+                    };
+                    toast.show();
+                    toastCountDown.start();
+                    Log.d(TAG, name + "  data get ");
+
+                }
+            });
+            // Log.d(TAG, name + " get data");
+            SystemClock.sleep(200);
+        }
+        return 0;
+    }
 
     public void inputTextDialogWindow(final View view, final int insertIndex, final int position, final int parentID) {
-        String name = new Object() {}.getClass().getEnclosingMethod().getName();
+        String name = new Object() {
+        }.getClass().getEnclosingMethod().getName();
         final EditText et = new EditText(view.getContext());
         Log.d(TAG, name + " et start building");
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -796,7 +1002,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     }
 
     private void setNewData(String s, int position) {
-        Data newData = new Data(chosenDepartmentData.department_id, position, s,0);
+        Data newData = new Data(chosenDepartmentData.department_id, position, s, 0);
         db.dataDao().incrementValues(chosenDepartmentData.department_id, position - 1);
         db.dataDao().insert(newData);
         Log.d(TAG, "Test increment data position: " + db.dataDao().getAllPositions(chosenDepartmentData.department_id));
@@ -833,13 +1039,18 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 break;
             case R.id.rvAnimals:
                 data.add(insertIndex, s);
+                data_qty.add(insertIndex,0.0f);
                 setNewData(s, insertIndex);
+                setNavigationDrawerData();
                 adapter.notifyItemInserted(insertIndex);
+                adapterForDepartments.notifyItemChanged(chosenDepartmentData.department_position);
                 break;
             case R.id.material_drawer_recycler_view:
                 parser(s);
                 setKeysForLists();
                 setKeysForDepartments();
+                selectedListIndex = 2;
+                setNavigationDrawerData();
                 if (keysForDepartments.size() > 1) {
                     chosenDepartmentData = db.departmentDataDao().getChosenDepartment(1, chosenListData.list_id);
                     getData();
@@ -870,6 +1081,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                             .show();
                     Log.d(TAG, "dialog built");
                 }
+
+
                 break;
         }
     }
@@ -976,7 +1189,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             int dataPosition = 1;
             Log.d(TAG, "all default data: " + defaultData.get(key));
             for (String s : defaultData.get(key)) {
-                Data data = new Data(chosenDepartmentData.department_id, dataPosition, s,0);
+                Data data = new Data(chosenDepartmentData.department_id, dataPosition, s, 0);
                 db.dataDao().insert(data);
                 dataPosition++;
             }
@@ -1112,7 +1325,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     }
 
     private void deleteSingleItemInList() {
-        String name = new Object() {}.getClass().getEnclosingMethod().getName();
+        String name = new Object() {
+        }.getClass().getEnclosingMethod().getName();
         int position = chosenListData.list_position;
         if (position > 0 && keysForLists.size() > 2) {
             db.listDataDao().deleteSingleItem(chosenListData.list_id);
@@ -1123,7 +1337,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             } else {
                 setActiveList(position + 1);
             }
-       } else if (position > 0) {
+        } else if (position > 0) {
             db.listDataDao().deleteSingleItem(chosenListData.list_id);
             crossOutNumber = 0;
             data.clear();
@@ -1249,7 +1463,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() > 1)
             for (String s : db.departmentDataDao().getAllNamesExceptFirst(chosenListData.list_id)) {
                 chosenDepartmentData = db.departmentDataDao().getChosenDepartment(departmentPosition, chosenListData.list_id);
-               // stringToSend += s + "[";
+                // stringToSend += s + "[";
                 stringToSend += s + "\n-*-\n";
                 int dataCounter = 0;
                 for (String dataS : db.dataDao().getAllNamesForGenerator(chosenDepartmentData.department_id)) {
@@ -1264,21 +1478,22 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 stringToSend += "\n---\n";
                 departmentPosition++;
             }
-       // stringToSend += "]";
+        // stringToSend += "]";
         stringToSend += "--=*=--";
         Log.d(TAG, "StringToSend ready " + stringToSend);
         return generatorFilter(stringToSend);
     }
 
-    private String generatorFilter(String s){
-        s = s.replace('[','(');
-        s = s.replace(']',')');
+    private String generatorFilter(String s) {
+        s = s.replace('[', '(');
+        s = s.replace(']', ')');
         //s = s.replace(';',',');
         return s;
     }
 
     public void onMoreMenuItemButtonClick(View view) {
-        String name = new Object() {}.getClass().getEnclosingMethod().getName();
+        String name = new Object() {
+        }.getClass().getEnclosingMethod().getName();
         PopupMenu popup = new PopupMenu(this, view);
         //popup.setOnMenuItemClickListener(this);
         popup.inflate(R.menu.popup_menu);
@@ -1304,7 +1519,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                             editButtonClicked = false;
                         } else {
                             editButtonClicked = true;
-                            }
+                        }
                         adapter.notifyDataSetChanged();
                         adapterForDepartments.notifyDataSetChanged();
                         return true;
@@ -1377,8 +1592,9 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     }*/
 
 
-    private void dataHolderMenuItemButtonClick(View view){
-        String name = new Object() {}.getClass().getEnclosingMethod().getName();
+    private void dataHolderMenuItemButtonClick(View view) {
+        String name = new Object() {
+        }.getClass().getEnclosingMethod().getName();
         PopupMenu popup = new PopupMenu(this, view);
         //popup.setOnMenuItemClickListener(this);
         popup.inflate(R.menu.data_popup_menu);
@@ -1394,7 +1610,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         deleteSingleItem(dataPosition);
                         return true;
                     //Toast.makeText(getBaseContext(), "delete", Toast.LENGTH_SHORT).show();
-                    case  R.id.data_menu_edit:
+                    case R.id.data_menu_edit:
                         //Toast.makeText(getBaseContext(), "edit", Toast.LENGTH_SHORT).show();
                         deleteFlagForEdit = true;
                         chosenData = db.dataDao().getChosenData(dataPosition, chosenDepartmentData.department_id);
@@ -1404,7 +1620,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         return true;
                     case R.id.data_menu_move:
                         //Toast.makeText(getBaseContext(), "move", Toast.LENGTH_SHORT).show();
-                        createDataMoveSubMenu(parentView);
+                        //createDataMoveSubMenu(parentView);
+                        createDataMoveSubMenu(view);
                         // popup.getMenu().addSubMenu("ololo");
                         return false;
                     default:
@@ -1420,36 +1637,37 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
     }
 
-    private void createDataMoveSubMenu(View view){
-        String name = new Object() {}.getClass().getEnclosingMethod().getName();
+    private void createDataMoveSubMenu(View view) {
+        String name = new Object() {
+        }.getClass().getEnclosingMethod().getName();
         PopupMenu popup = new PopupMenu(this, view);
-       // popup.setOnMenuItemClickListener(this);
+        // popup.setOnMenuItemClickListener(this);
         //popup2.inflate(R.menu.data_popup_menu);
-       // popup2.setForceShowIcon(true);
+        // popup2.setForceShowIcon(true);
 
-       for (String s : db.departmentDataDao().getAllNamesExceptFirst(chosenListData.list_id)) {
-           if (!s.equals(chosenDepartmentData.department_name)) popup.getMenu().add(s);
-       }
+        for (String s : db.departmentDataDao().getAllNamesExceptFirst(chosenListData.list_id)) {
+            if (!s.equals(chosenDepartmentData.department_name)) popup.getMenu().add(s);
+        }
         popup.show();
-       popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-           @Override
-           public boolean onMenuItemClick(MenuItem item) {
-               TextView  text = view.findViewById(R.id.tvAnimalName);
-               Log.d(TAG, name + " ext.getText().toString()");
-               Data newData = new Data(
-                       db.departmentDataDao().getChosenDepartmentByName(item.getTitle().toString(),
-                        chosenListData.list_id).department_id,
-                       1,
-                       text.getText().toString(),
-                       0);
-               deleteSingleItem(dataPosition);
-               db.dataDao().incrementValues(
-                       db.departmentDataDao().getChosenDepartmentByName(item.getTitle().toString(),
-                               chosenListData.list_id).department_id, 0);
-               db.dataDao().insert(newData);
-           return false;
-           }
-       });
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                TextView text = view.findViewById(R.id.tvAnimalName);
+                Log.d(TAG, name + " ext.getText().toString()");
+                Data newData = new Data(
+                        db.departmentDataDao().getChosenDepartmentByName(item.getTitle().toString(),
+                                chosenListData.list_id).department_id,
+                        1,
+                        text.getText().toString(),
+                        0);
+                deleteSingleItem(dataPosition);
+                db.dataDao().incrementValues(
+                        db.departmentDataDao().getChosenDepartmentByName(item.getTitle().toString(),
+                                chosenListData.list_id).department_id, 0);
+                db.dataDao().insert(newData);
+                return false;
+            }
+        });
     }
 
 }
@@ -1457,7 +1675,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 //todo Добавление списков, отделов, элементов с помощью google assistant
 //todo Обучение интерфейсу при первом старте
 
-//todo Баг при добавлении нового листа, выделяется всегда первый пункт "Добавить"
+
 
 //todo popupmenu по долгому тапу на лист, отдел или элемент
 //todo обойти ограничение массива iDrawerItem[100] или перезаписывать элементы
@@ -1466,8 +1684,9 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
 //todo аттач фото к элементу отдела
 //todo !счетчик невычеркнутых элементов к списку в боковое меню
-//todo !! баг с количеством при зачеркивании
+
 //todo проверка на hardware клавиатуру при вызове alertdialog для корректировки или добавления элемента (те, где есть edittext)
 //TODO в режиме редактирования делать из title в toolbar edittext вместо textview (title = "", edittext - visible, после выхода из режима редактирования забираем с edittext введеный текст, title = et, edittext.gone)
 //todo привязать свайп влево-вправо к recyclerview, а не к холдерам (для смены отдела)
 //todo по лонгтапу по элементу отдела появляется чекбокс, где можно выделить элементы и удалить несколько сразу
+//todo ViewPager?
