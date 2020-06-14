@@ -29,7 +29,7 @@ public interface DepartmentDataDao {
         @Query("SELECT department_position FROM departments_table WHERE list_id = :list_id ORDER BY department_position ASC")
         List<Integer> getAllPositions(int list_id);
 
-        @Query("Update departments_table Set department_position = department_position + 1 WHERE list_id = :list_id AND department_position > :position")
+        @Query("Update departments_table Set department_position = department_position + 1 WHERE list_id = :list_id AND department_position >= :position")
         void incrementValues(int list_id, int position);
 
         @Query("Update departments_table Set department_position = department_position - 1 WHERE list_id = :list_id AND department_position > :position")
@@ -43,6 +43,9 @@ public interface DepartmentDataDao {
 
         @Query("SELECT * FROM departments_table WHERE department_name = :name AND list_id = :list_id")
         DepartmentData getChosenDepartmentByName(String name, int list_id);
+
+        @Query("SELECT * FROM departments_table WHERE department_id = :department_id")
+        DepartmentData getDepartmentDataById(int department_id);
 
         @Query("DELETE FROM departments_table WHERE department_position = :position AND list_id = :list_id ")
         void deleteSingleData(int position, int list_id);

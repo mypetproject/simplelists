@@ -150,7 +150,7 @@ Log.d("myLogs","onBindViewHolder ended");
                 MainActivity.setAdapterPosition(getLayoutPosition());
 
                 //Toast.makeText(view.getContext(), "Departments " + view.getResources().getResourceName(view.getId()), Toast.LENGTH_SHORT).show();
-                mClickListener.onItemClick(view, getAdapterPosition());
+                mClickListener.onItemClick(view, getAdapterPosition(), 0);
             }
         }
     }
@@ -167,7 +167,7 @@ Log.d("myLogs","onBindViewHolder ended");
 
     // parent activity will implement this method to respond to click events
     public interface ItemClickListener {
-        void onItemClick(View view, int position);
+        void onItemClick(View view, int position, int id);
     }
 
 

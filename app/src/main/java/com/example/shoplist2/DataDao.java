@@ -61,6 +61,12 @@ public interface DataDao {
     @Query("SELECT * FROM data_table WHERE data_position = :position AND department_id = :department_id")
     Data getChosenData(int position, int department_id);
 
+    @Query("SELECT * FROM data_table WHERE data_id = :id")
+    Data getChosenDataById(int id);
+
+    @Query("SELECT department_id FROM data_table WHERE data_id = :id")
+    Integer getDepartmentIdByDataId(int id);
+
     @Query("DELETE FROM data_table WHERE data_position = :position AND department_id = :department_id ")
     void deleteSingleData(int position, int department_id);
 
