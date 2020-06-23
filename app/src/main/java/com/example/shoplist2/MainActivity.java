@@ -30,6 +30,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewParent;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -95,14 +96,14 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
     RecyclerView recyclerViewDepartments;
     static RecyclerView recyclerView;
-    ViewPagerAdapter viewPagerAdapter;
-    ViewPager2 myViewPager2;
+    static ViewPagerAdapter viewPagerAdapter;
+    static ViewPager2 myViewPager2;
     TabLayout tabLayout;
 
     //for OnItemTouch
     private static final int MAX_CLICK_DURATION = 250;
-    private long startClickTime;
-    private long clickDuration;
+    private static long startClickTime;
+    private static long clickDuration;
 
     // static boolean //dontTouchMLowButton = false;
 
@@ -112,11 +113,17 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     private static List<Data> adapterListData;
     ImageButton addDepartmentButton;
 
+    static MainActivity mn;
+    static boolean editFlag;
+    static boolean stopClick = false;
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mn = MainActivity.this;
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -198,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             Log.d(TAG, "chosenDepartmentData  ended ");
             getCrossOutNumber();
             Log.d(TAG, "getCrossOutNumber();  ended ");
-            getData();
+            //  getData();
             Log.d(TAG, "getData();  ended ");
         }
 
@@ -468,18 +475,177 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     }*/
 
     public static void ViewPagerItemClicked(View view, int id, MyRecyclerViewAdapter adapter, int position, List<Data> adapterData) {
-        // public static void ViewPagerItemClicked(View view, int id, RecyclerView recyclerView, int position) {
+
         Log.d(TAG, "Clicked position: " + id);
         // MyRecyclerViewAdapter myRecyclerViewAdapter = (MyRecyclerViewAdapter) recyclerView.getAdapter();
         setAdapter(adapter);
+ //focusedChild = myViewPager2.getCurrentItem();
+Log.d(TAG, "focusedChild = " + myViewPager2.getCurrentItem());
         // setRecyclerView(recyclerView);
         setAdapterData(adapterData);
         if (editButtonClicked) {
-            moveItemToBottom(id, position);
+            DepartmentData temp = db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id));
+            if (position < (db.dataDao().getAllNames(db.dataDao().getDepartmentIdByDataId(id)).size()
+                    - db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id)).CrossOutNumber)) {
+                temp.CrossOutNumber++;
+                moveItemToBottom(id, position);
+            } else {
+                db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id)).CrossOutNumber--;
+                temp.CrossOutNumber--;
+                moveItemToTop(id, position);
+            }
+            db.departmentDataDao().update(temp);
+            Log.d(TAG, "crossOutNumber: " + db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id)).CrossOutNumber);
         } else {
-            inputTextDialogWindowForViewHolderItem(view,position,id);
-        }
+            switch (view.getId()) {
+                case R.id.image_more:
+                    dataHolderMenuItemButtonClick(view, position, id);
+                    break;
+                default:
+                    inputTextDialogWindowForViewHolderItem(view, position, id);
+            }
 
+        }
+    }
+
+    public static void viewPagerOnTouchListener(View view, MotionEvent event, int id, MyRecyclerViewAdapter adapter, List<Data> adapterData) {
+        // Log.d(TAG, "item " + db.dataDao().getChosenDataById(id).data_name + " touched");
+        String name = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        Log.d(TAG, name + " started " + event.toString());
+        setAdapter(adapter);
+        setAdapterData(adapterData);
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN: {
+                //  view.getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().requestDisallowInterceptTouchEvent(true);
+                //Log.d(TAG, "parent: " + view.getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().toString());
+                //view.getParent().requestDisallowInterceptTouchEvent(true);
+                clickDuration = 0;
+                startClickTime = Calendar.getInstance().getTimeInMillis();
+                Log.d(TAG, name + " ACTION_DOWN start " + event.getAction() + " clickDuration: " + clickDuration);
+
+                switch (view.getId()) {
+                    case R.id.image_to_low:
+
+                        if (!stopClick)
+                            Single.fromCallable(() -> itemCount(false, id, view)).subscribeOn(Schedulers.io()).subscribe();
+                      /*  if (clickDuration == 0) {
+                            mTimer.schedule(mMyTimerTask, 500, 500);
+                        }*/
+                        break;
+                    case R.id.image_to_high:
+                        if (!stopClick)
+                            Single.fromCallable(() -> itemCount(true, id, view)).subscribeOn(Schedulers.io()).subscribe();
+                        break;
+                }
+                // Single.fromCallable(() -> db.listDataDao().insert(listData)).subscribeOn(Schedulers.io()).subscribe();
+                // Single.fromCallable(() -> itemCount(true, position)).subscribeOn(Schedulers.io()).subscribe();
+
+                break;
+            }
+            case MotionEvent.ACTION_UP:
+                // view.getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().requestDisallowInterceptTouchEvent(false);
+                //view.getParent().requestDisallowInterceptTouchEvent(false);
+                clickDuration = Calendar.getInstance().getTimeInMillis() - startClickTime;
+                Log.d(TAG, name + " ACTION_UP start " + event.getAction() + " clickDuration: " + clickDuration);
+                //   if (clickDuration < MAX_CLICK_DURATION) {
+                //click event has occurred
+                //dontTouchMLowButton = false;
+                //  Toast.makeText(view.getContext(), "Clicked", Toast.LENGTH_SHORT).show();
+
+                //  }
+                adapterListData.clear();
+                adapterListData.addAll(db.dataDao().getAll(
+                        db.dataDao().getDepartmentIdByDataId(id)
+                ));
+//adapter.notifyItemChanged(db.dataDao().getChosenDataById(id).data_position);
+                adapter.notifyDataSetChanged();
+                // getData();
+                break;
+            case MotionEvent.ACTION_CANCEL:
+                clickDuration = Calendar.getInstance().getTimeInMillis() - startClickTime;
+                //dontTouchMLowButton = false;
+                //onItemTouch(view, null,position);
+                //getData();
+                adapterListData.clear();
+                adapterListData.addAll(db.dataDao().getAll(
+                        db.dataDao().getDepartmentIdByDataId(id)
+                ));
+//adapter.notifyItemChanged(db.dataDao().getChosenDataById(id).data_position);
+                adapter.notifyDataSetChanged();
+                break;
+        }
+        //  return 0;
+
+    }
+
+    private static int itemCount(boolean sign, int id, View view) {
+        String name = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        stopClick = true;
+        while (clickDuration == 0) {
+            Log.d(TAG, name + " sign: " + sign);
+            if (sign) {
+                db.dataDao().plusQty(id);
+
+            } else {
+                db.dataDao().minusQty(id);
+            }
+            Log.d(TAG, name + " data saved: ");
+            mn.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, name + "  runOnUiThread ");
+                    //todo popup menu над элементом вмесо toaster?
+                    Toast toast = Toast.makeText(view.getContext(), "" + db.dataDao().getChosenDataById(id).data_qty, Toast.LENGTH_SHORT);
+                    CountDownTimer toastCountDown;
+                    toastCountDown = new CountDownTimer(100, 10) {
+                        @Override
+                        public void onTick(long millisUntilFinished) {
+                            toast.show();
+                        }
+
+                        @Override
+                        public void onFinish() {
+                            toast.cancel();
+                        }
+                    };
+                    toast.show();
+                    toastCountDown.start();
+                    Log.d(TAG, name + "  data get ");
+                }
+            });
+            // Log.d(TAG, name + " get data");
+            SystemClock.sleep(200);
+        }
+        stopClick = false;
+        return 0;
+    }
+
+    private static void moveItemToTop(int id, int fromPosition) {
+        db.dataDao().incrementValuesFromOneToPosition(db.dataDao().getDepartmentIdByDataId(id), fromPosition);
+        db.dataDao().updateSingleItemPosition(id, 1);
+        adapterListData.clear();
+        adapterListData.addAll(db.dataDao().getAll(
+                db.dataDao().getDepartmentIdByDataId(id)
+        ));
+        adapter.notifyItemMoved(fromPosition, 1);
+        adapter.notifyItemChanged(1);
+    }
+
+    private static void moveItemToBottom(int id, int position) {
+        int pos = db.dataDao().getAllPositions(db.dataDao().getDepartmentIdByDataId(id)).size();
+        db.dataDao().updateSingleItemPosition(db.dataDao().getChosenDataById(id).data_id, pos);
+
+        db.dataDao().decrementValues(db.dataDao().getDepartmentIdByDataId(id), position);
+
+        adapterListData.clear();
+        adapterListData.addAll(db.dataDao().getAll(
+                db.dataDao().getDepartmentIdByDataId(id)
+        ));
+        adapter.notifyItemMoved(position, pos - 1);
+        adapter.notifyItemChanged(pos - 1);
     }
 
     private static void inputTextDialogWindowForViewHolderItem(View view, int position, int id) {
@@ -488,16 +654,24 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         Log.d(TAG, name + " started");
 
         final EditText et = new EditText(view.getContext());
-       // Log.d(TAG, name + " et start building");
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT);
         et.setLayoutParams(lp);
         et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-        Log.d(TAG, name + " et end building");
+
         String title;
-        title = "Добавить";
-        et.setHint("Введите сообщение");
+        editFlag = true;
+        if (position != 0) {
+            et.setText(db.dataDao().getChosenDataById(id).data_name + " ");
+            Log.d(TAG, name + " et.setText(text.getText().toString()");
+            et.setSelection(et.length());
+            title = "Редактировать";
+        } else {
+            editFlag = false;
+            title = "Добавить";
+            et.setHint("Введите сообщение");
+        }
 
         final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
                 .setTitle(title)
@@ -510,7 +684,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         "Отмена",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                               // deleteFlagForEdit = false;
+                                // deleteFlagForEdit = false;
                                 dialog.cancel();
                             }
                         })
@@ -521,21 +695,30 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, name + "positiveButton started onClick");
+                Log.d(TAG, name + " positiveButton started onClick title: " + editFlag);
                 String str = et.getText().toString();
-               // if (uniqueTest(str, view)) {
-                   // InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                  //  imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
-                setNewData(str, 1, id);
+                // if (uniqueTest(str, view)) {
+                // InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                //  imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+                if (editFlag) {
+                    editOldData(str, id);
+                } else {
+                    setNewData(str, 1, id);
+
+                }
                 Log.d(TAG, name + "positiveButton ended setNewData");
-               // setNavigationDrawerData();
+
                 adapterListData.clear();
                 adapterListData.addAll(db.dataDao().getAll(
-                        db.dataDao().getChosenDataById(id).department_id
+                        db.dataDao().getDepartmentIdByDataId(id)
                 ));
-                adapter.notifyItemInserted(1);
-                //adapter.notifyDataSetChanged();
-                    dialog.dismiss();
+                Log.d(TAG, name + " adapterListData.addAll");
+                if (!editFlag) {
+                    adapter.notifyItemInserted(1);
+                } else {
+                    adapter.notifyItemChanged(position);
+                }
+                dialog.dismiss();
               /*  } else {
                     Toast.makeText(view.getContext(), "Введите уникальное название", Toast.LENGTH_SHORT).show();
                 }*/
@@ -584,27 +767,18 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         Log.d(TAG, name + " ended");
     }
 
+    private static void editOldData(String str, int id) {
+        Data tempData = db.dataDao().getChosenDataById(id);
+        tempData.data_name = str;
+        db.dataDao().update(tempData);
+        Log.d(TAG, "editOldData ended");
+    }
+
 
     private static void setAdapterData(List<Data> adapterData) {
         adapterListData = adapterData;
     }
 
-    private static void moveItemToBottom(int id, int position) {
-        int pos = db.dataDao().getAllPositions(db.dataDao().getDepartmentIdByDataId(id)).size();
-        db.dataDao().updateSingleItemPosition(db.dataDao().getChosenDataById(id).data_id, pos);
-
-        db.dataDao().decrementValues(db.dataDao().getDepartmentIdByDataId(id), position);
-
-        DepartmentData temp = db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id));
-        temp.CrossOutNumber++;
-        db.departmentDataDao().update(temp);
-        adapterListData.clear();
-        adapterListData.addAll(MainActivity.db.dataDao().getAll(
-                MainActivity.db.dataDao().getChosenDataById(id).department_id
-        ));
-        adapter.notifyItemMoved(position, pos - 1);
-        adapter.notifyItemChanged(pos -1);
-    }
 
     public static void setAdapter(MyRecyclerViewAdapter getAdapter) {
         adapter = getAdapter;
@@ -637,15 +811,16 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         return sumOfActive;
     }
 
-  void setNavigationDrawerData() {
+    void setNavigationDrawerData() {
         Log.d(TAG, "setNavigationDrawerData() started");
         IDrawerItem[] iDrawerItems = new IDrawerItem[1000];
         for (int i = 0; i < keysForLists.size(); i++) {
             int activeQty = activeQtyForList(i);
             if (activeQty > 0 && i != 0) {
+                //todo заменить keysForLists на запрос из базы
                 iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadge(activeQty + "").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
             } else {
-                iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i));
+                iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
             }
             // Log.d(TAG, "items for drawer added " + keysForLists.get(i - 1));
         }
@@ -678,8 +853,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 .withOnDrawerListener(new Drawer.OnDrawerListener() {
                     @Override
                     public void onDrawerOpened(View drawerView) {
-                       //todo как обновить количество активных позиций в открытом меню или когда slide
-                      //  setNavigationDrawerData();
+                        //todo как обновить количество активных позиций в открытом меню или когда slide
+                        //  setNavigationDrawerData();
                         Log.d(TAG, "drawerView.getVerticalScrollbarPosition() = " + drawerResult.getCurrentSelectedPosition());
                     }
 
@@ -690,7 +865,10 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
                     @Override
                     public void onDrawerSlide(View drawerView, float slideOffset) {
-                        drawerResult.updateBadge(drawerResult.getCurrentSelectedPosition()-1, new StringHolder(activeQtyForList(drawerResult.getCurrentSelectedPosition()-1)+""));
+                        if (activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) > 0) {
+                            drawerResult.updateBadge(drawerResult.getCurrentSelectedPosition() - 1, new StringHolder(activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) + ""));
+                            drawerResult.setSelection(selectedListIndex - 1, false);
+                        }
                     }
                 })
                 .addDrawerItems(iDrawerItems)
@@ -845,12 +1023,12 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         switch (viewID) {
             //todo по longclick прибавлять или вычитать числа, пока не отпустят
             case R.id.image_to_low:
-                db.dataDao().minusQty(position, chosenDepartmentData.department_id);
+                //!    db.dataDao().minusQty(position, chosenDepartmentData.department_id);
                 getData();
                 clicker = true;
                 break;
             case R.id.image_to_high:
-                db.dataDao().plusQty(position, chosenDepartmentData.department_id);
+                //!   db.dataDao().plusQty(position, chosenDepartmentData.department_id);
                 getData();
                 clicker = true;
                 break;
@@ -867,7 +1045,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             case R.id.ll:
                 dataPosition = position;
                 parentID = R.id.rvAnimals;
-                dataHolderMenuItemButtonClick(view);
+                //dataHolderMenuItemButtonClick(view);
                 break;
             case R.id.depLl:
                 TextView text = parent.findViewById(R.id.tvDepartmentsName);
@@ -926,6 +1104,17 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 // adapterForDepartments.notifyDataSetChanged();
                 break;
         }
+    }
+
+    @Override
+    public void onItemTouch(View view, MotionEvent event, int id) {
+
+    }
+
+   /* @Override
+    public int onItemTouch(View view, MotionEvent event, int position) {
+      //  Toast.makeText(this, "item touched", Toast.LENGTH_SHORT).show();
+        return 0;
     }
 //todo временно скрыто
  /*   @Override
@@ -1008,78 +1197,6 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         return 0;
     }*/
 
-
-    private int itemCount(boolean sign, int position, View view) {
-        String name = new Object() {
-        }.getClass().getEnclosingMethod().getName();
-//dontTouchMLowButton = true;
-        int counter = 0;
-        while (clickDuration == 0) {
-            //counter++;
-            Log.d(TAG, name + " sign: " + sign);
-            if (sign) {
-                db.dataDao().plusQty(position, chosenDepartmentData.department_id);
-
-            } else {
-                db.dataDao().minusQty(position, chosenDepartmentData.department_id);
-            }
-
-            Log.d(TAG, name + " data saved: ");
-
-            // EditText editText = (EditText) view.findViewById(R.id.etAnimalCount);
-            // Log.d(TAG, name + " findViewById: ");
-
-//adapter.notifyDataSetChanged();
-            // getData();
-            // runOnUiThread(this::getData);
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    // view.requestD
-                    //dontTouchMLowButton = true;
-                    Log.d(TAG, name + "  runOnUiThread ");
-                    //EditText editText = (EditText) view.findViewById(R.id.etAnimalCount);
-                    //EditText editText = (EditText) view.getParent()
-                  /*  Log.d(TAG, name + " findViewById: " + view.getParent().getParent().toString());
-
-                  RecyclerView.ViewHolder vh = recyclerView.getChildViewHolder(view);
-                   Log.d(TAG, name + " vh: " + vh.toString());
-                  EditText et = (EditText) vh.itemView.findViewById(R.id.etAnimalCount);
-                   Log.d(TAG, name + " vh: " + et.getText());
-
-et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_id).data_qty+"");*/
-                    // adapter.notifyItemChanged(position);
-                    //   adapter.notifyDataSetChanged();
-                    //  adapterForDepartments.notifyDataSetChanged();
-                    // adapter.notifyDataSetChanged();
-                    // getData();
-//todo переделать toast на обновление edittext
-                    data.get(position).data_qty = db.dataDao().getChosenData(position, chosenDepartmentData.department_id).data_qty;
-
-                    Toast toast = Toast.makeText(view.getContext(), "" + db.dataDao().getChosenData(position, chosenDepartmentData.department_id).data_qty, Toast.LENGTH_SHORT);
-                    CountDownTimer toastCountDown;
-                    toastCountDown = new CountDownTimer(100, 10) {
-                        @Override
-                        public void onTick(long millisUntilFinished) {
-                            toast.show();
-                        }
-
-                        @Override
-                        public void onFinish() {
-                            toast.cancel();
-                        }
-                    };
-                    toast.show();
-                    toastCountDown.start();
-                    Log.d(TAG, name + "  data get ");
-
-                }
-            });
-            // Log.d(TAG, name + " get data");
-            SystemClock.sleep(200);
-        }
-        return 0;
-    }
 
     public void inputTextDialogWindow(final View view, final int insertIndex, final int position) {
         String name = new Object() {
@@ -1204,8 +1321,8 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
             if (deleteFlagForEdit) {
                 deleteFlagForEdit = false;
                 // removeSingleItem(position, parentID);
-                db.dataDao().updateSingleItem(chosenData.data_id, str);
-                getData();
+                //!  db.dataDao().updateSingleItem(chosenData.data_id, str);
+                //!  getData();
             } else {
                 insertFromPopup(str, insertIndex, view);
             }
@@ -1263,12 +1380,14 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
         Log.d(TAG, "new data set ended");
     }
 
-    private static void setNewData(String s, int position) {
-        Data newData = new Data(chosenDepartmentData.department_id, position, s, 0.0f);
-        db.dataDao().incrementValues(chosenDepartmentData.department_id, position - 1);
+    private static void setNewData(int position, String s, int departmentPosition, Float dataQty) {
+        Log.d(TAG, "new data set started");
+        Data newData = new Data(db.departmentDataDao().getChosenDepartment(departmentPosition - 1, chosenListData.list_id).department_id, position, s, dataQty);
+       //Log.d(TAG, " Data newData = new Data ended");
+        db.dataDao().incrementValues(db.departmentDataDao().getChosenDepartment(departmentPosition - 1, chosenListData.list_id).department_id, position - 1);
         db.dataDao().insert(newData);
         //data.add(position, newData);
-        Log.d(TAG, "Test increment data position: " + db.dataDao().getAllPositions(chosenDepartmentData.department_id));
+        //Log.d(TAG, "Test increment data position: " + db.dataDao().getAllPositions(chosenDepartmentData.department_id));
         Log.d(TAG, "new data set ended");
     }
 
@@ -1311,7 +1430,7 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
                 //  data.add(insertIndex, s);
                 //  data.add(insertIndex, s);
                 //  data_qty.add(insertIndex,0.0f);
-              //  setNewData(s, insertIndex);
+                //  setNewData(s, insertIndex);
                 setNavigationDrawerData();
                 adapter.notifyItemInserted(insertIndex);
                 // adapterForDepartments.notifyItemChanged(chosenDepartmentData.department_position);
@@ -1324,7 +1443,7 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
                 setNavigationDrawerData();
                 if (keysForDepartments.size() > 1) {
                     chosenDepartmentData = db.departmentDataDao().getChosenDepartment(1, chosenListData.list_id);
-                    getData();
+                    //getData();
                 } else {
                     data.clear();
                     Log.d(TAG, "data clear");
@@ -1338,7 +1457,7 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
                                             setDefaultList();
                                             setKeysForDepartments();
                                             chosenDepartmentData = db.departmentDataDao().getChosenDepartment(1, chosenListData.list_id);
-                                            getData();
+                                            //getData();
                                             dialog.cancel();
                                             viewPagerAdapter.notifyDataSetChanged();
 
@@ -1459,12 +1578,15 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
         defaultData.put("Вода, напитки", departmentData);
 
         int departmentPosition = 0;
-
+//Log.d(TAG,defaultData+"");
         for (String key : defaultData.keySet()) {
             DepartmentData dpData = new DepartmentData(chosenListData.list_id, departmentPosition, key, 0);
             db.departmentDataDao().insert(dpData);
             chosenDepartmentData = db.departmentDataDao().getChosenDepartment(departmentPosition, chosenListData.list_id);
-            getData();
+
+            //getData();
+            Data dataForInsert = new Data(chosenDepartmentData.department_id, 0, "Добавить", 0);
+            db.dataDao().insert(dataForInsert);
             int dataPosition = 1;
             Log.d(TAG, "all default data: " + defaultData.get(key));
             for (String s : defaultData.get(key)) {
@@ -1563,16 +1685,22 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
         adapter.notifyItemChanged(toPosition);
     }
 
-    private void deleteSingleItem(int position) {
-        if (position >= (data.size() - crossOutNumber)) {
-            crossOutNumber--;
-            setCrossOutNumber();
+    private static void deleteSingleItem(int position, int id) {
+        if (position >= (db.dataDao().getAllNames(db.dataDao().getDepartmentIdByDataId(id)).size() - db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id)).CrossOutNumber)) {
+            DepartmentData temp = db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id));
+            temp.CrossOutNumber--;
+            db.departmentDataDao().update(temp);
         }
+        //  Log.d(TAG,"deleteSingleItem started");
         if (position > 0) {
-            // remove your item from data base
-            data.remove(position);  // remove the item from list
-            db.dataDao().deleteSingleData(position, chosenDepartmentData.department_id);
-            db.dataDao().decrementValues(chosenDepartmentData.department_id, position);
+            int departmentID = db.dataDao().getDepartmentIdByDataId(id);
+            db.dataDao().deleteSingleDataById(id);
+            db.dataDao().decrementValues(departmentID, position);
+
+            adapterListData.clear();
+            adapterListData.addAll(db.dataDao().getAll(
+                    departmentID
+            ));
             adapter.notifyItemRemoved(position); // notify the adapter about the removed item
         }
     }
@@ -1631,15 +1759,20 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
     }
 
     private void parser(String inputText) {
+        String name = new Object() {
+        }.getClass().getEnclosingMethod().getName();
         inputText = parserFilter(inputText);
-
+//Log.d(TAG,"\n" + inputText);
         String[] tokens = inputText.split("");
         String listName = "";
         String departmentName = "";
         String dataName = "";
+        String dataQty = "";
         int index = 0;
         int position = 1;
+        int departmentPosition = 0;
         int dataPosition = 1;
+
         for (String s : tokens) {
             if (s.equals("[") && index == 0) {
                 if (listName.isEmpty()) listName = "Enter list name";
@@ -1667,13 +1800,15 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
             } else if (index == 0 && !s.equals("]")) {
                 listName += s;
             }
+//Log.d(TAG," list name set: " + db.listDataDao().getChosenList(1).getList_name());
+
 
             if (s.equals("[") && index == 1) {
                 if (departmentName.isEmpty()) departmentName = "Enter name";
 
 
                 if (!db.departmentDataDao().getAllNames(chosenListData.list_id).contains(departmentName)) {
-                    setNewDepartmentFromParse(departmentName, position);
+                    setNewDepartmentFromParse(departmentName, departmentPosition);
                 } else {
                     boolean nameSetStatus = true;
                     int copiesCounter = 0;
@@ -1681,7 +1816,7 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
                     do {
                         if (!db.departmentDataDao().getAllNames(chosenListData.list_id).contains(tempDepartmentName)) {
                             departmentName += " (" + copiesCounter + ")";
-                            setNewDepartmentFromParse(departmentName, position);
+                            setNewDepartmentFromParse(departmentName, departmentPosition);
                             nameSetStatus = false;
                         } else {
                             copiesCounter++;
@@ -1691,7 +1826,7 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
                 }
                 departmentName = "";
                 index++;
-                position++;
+                departmentPosition++;
                 //getData();
                 continue;
             } else if (s.equals("]") && index == 1) {
@@ -1701,19 +1836,34 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
                 departmentName += s;
             }
 
-            if (s.equals("]") && index == 2) {
-                if (!dataName.isEmpty()) setNewData(dataName, dataPosition);
-                Log.d(TAG + " parser", "parser: data name: " + dataName + " position: " + dataPosition);
-                dataName = "";
-                index--;
-                dataPosition = 1;
+           /* if (s.equals("]") && index == 2) {
+
             } else if (s.equals(";") && index == 2) {
-                if (!dataName.isEmpty()) setNewData(dataName, dataPosition);
-                Log.d(TAG + " parser", "parser: data name: " + dataName + " position: " + dataPosition + " index: " + index);
-                dataName = "";
-                dataPosition++;
+
+            } else*/ if (s.equals("~") && index == 2) {
+                index++;
+                continue;
             } else if (index == 2) {
                 dataName += s;
+            }
+
+            if (s.equals(";") && index == 3) {
+                index = 2;
+                if (!dataName.isEmpty()) setNewData(dataPosition, dataName, departmentPosition, Float.valueOf(dataQty));
+                Log.d(TAG + " parser", "parser: data name: " + dataName + " position: " + dataPosition + " index: " + index);
+                dataName = "";
+                dataQty = "";
+                dataPosition++;
+            } else if (s.equals("]") && index == 3) {
+                if (!dataName.isEmpty()) setNewData(dataPosition, dataName, departmentPosition, Float.valueOf(dataQty));
+                Log.d(TAG + " parser", "parser: data name: " + dataName + " position: " + dataPosition);
+                dataName = "";
+                dataQty = "";
+                //index--;
+                index = 1;
+                dataPosition = 1;
+            } else if (index == 3) {
+                dataQty += s;
             }
         }
 
@@ -1721,8 +1871,9 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
         if (!departmentName.isEmpty()) setNewDepartmentFromParse(departmentName, position);
         if (!dataName.isEmpty()) {
             // getData();
-            setNewData(dataName, dataPosition);
+            setNewData(dataPosition, dataName, departmentPosition, Float.valueOf(dataQty));
         }
+        Log.d(TAG, "Parser ended");
     }
 
     private String parserFilter(String s) {
@@ -1731,10 +1882,12 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
         s = s.replace("---", "]");
         s = s.replace("--=*=--", "]");
         s = s.replace("\n", "");
+        s = s.replace("-->", "~");
 
         return s;
     }
 
+    //todo не работает
     private String listToStringGenerator() {
         String stringToSend = "";
         Log.d(TAG, "In listToStringGenerator()");
@@ -1742,17 +1895,19 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
         stringToSend += chosenListData.getList_name() + "\n-=***=-\n";
         Log.d(TAG, "In stringToSend += chosenListData.getList_name()" + db.departmentDataDao().getAllPositions(chosenListData.list_id));
 
-        int departmentPosition = 1;
-        if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() > 1)
-            for (String s : db.departmentDataDao().getAllNamesExceptFirst(chosenListData.list_id)) {
-                chosenDepartmentData = db.departmentDataDao().getChosenDepartment(departmentPosition, chosenListData.list_id);
+        int departmentPosition = 0;
+        if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() > 0)
+            for (String s : db.departmentDataDao().getAllNames(chosenListData.list_id)) {
+                //chosenDepartmentData = db.departmentDataDao().getChosenDepartment(departmentPosition, chosenListData.list_id);
+                int chosenDepartmentID = db.departmentDataDao().getChosenDepartment(departmentPosition, chosenListData.list_id).department_id;
                 // stringToSend += s + "[";
                 stringToSend += s + "\n-*-\n";
                 int dataCounter = 0;
-                for (String dataS : db.dataDao().getAllNamesForGenerator(chosenDepartmentData.department_id)) {
-                    stringToSend += dataS + ";\n";
+                for (Data dataS : db.dataDao().getAllForGenerator(chosenDepartmentID)) {
+                    Float data_qty_float = dataS.data_qty;
+                    stringToSend += dataS.data_name + "-->" + data_qty_float.toString().replaceAll("\\.?0*$", "") + ";\n";
                     dataCounter++;
-                    if (dataCounter == (db.dataDao().getAllNamesForGenerator(chosenDepartmentData.department_id).size() - chosenDepartmentData.CrossOutNumber))
+                    if (dataCounter == (db.dataDao().getAllForGenerator(chosenDepartmentID).size() - db.departmentDataDao().getChosenDepartment(departmentPosition, chosenListData.list_id).CrossOutNumber))
                         break;
                 }
                 if (dataCounter > 0)
@@ -1880,37 +2035,40 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
     }*/
 
 
-    private void dataHolderMenuItemButtonClick(View view) {
+    private static void dataHolderMenuItemButtonClick(View view, int position, int id) {
         String name = new Object() {
         }.getClass().getEnclosingMethod().getName();
-        PopupMenu popup = new PopupMenu(this, view);
+        PopupMenu popup = new PopupMenu(view.getContext(), view);
         //popup.setOnMenuItemClickListener(this);
         popup.inflate(R.menu.data_popup_menu);
         popup.setForceShowIcon(true);
         popup.show();
-        Log.d(TAG, name + " popup.menu created" + parentID);
+        //   Log.d(TAG, name + " popup.menu created" + parentID);
         View parentView = (View) view.getParent();
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.data_menu_delete:
-                        deleteSingleItem(dataPosition);
+                        deleteSingleItem(position, id);
                         return true;
                     //Toast.makeText(getBaseContext(), "delete", Toast.LENGTH_SHORT).show();
+                    //todo доделать
                     case R.id.data_menu_edit:
                         //Toast.makeText(getBaseContext(), "edit", Toast.LENGTH_SHORT).show();
-                        deleteFlagForEdit = true;
+                      /*!  deleteFlagForEdit = true;
                         chosenData = db.dataDao().getChosenData(dataPosition, chosenDepartmentData.department_id);
                         Log.d(TAG, name + " data was chosen" + parentID);
                         inputTextDialogWindow(parentView, dataPosition, dataPosition);
-                        Log.d(TAG, name + "inputTextDialogWindow(view, dataPosition, dataPosition, parentID) done");
+                        Log.d(TAG, name + "inputTextDialogWindow(view, dataPosition, dataPosition, parentID) done");*/
+
+                        inputTextDialogWindowForViewHolderItem(view, position, id);
+                        Log.d(TAG, name + " view name: " + view.toString());
                         return true;
                     case R.id.data_menu_move:
                         //Toast.makeText(getBaseContext(), "move", Toast.LENGTH_SHORT).show();
                         //createDataMoveSubMenu(parentView);
-                        createDataMoveSubMenu(view);
-                        // popup.getMenu().addSubMenu("ololo");
+                        createDataMoveSubMenu(view, id, position);
                         return false;
                     default:
                         return false;
@@ -1925,44 +2083,63 @@ et.setText(db.dataDao().getChosenData(position,chosenDepartmentData.department_i
 
     }
 
-    private void createDataMoveSubMenu(View view) {
+    private static void createDataMoveSubMenu(View view, int id, int position) {
         String name = new Object() {
         }.getClass().getEnclosingMethod().getName();
-        PopupMenu popup = new PopupMenu(this, view);
+        Log.d(TAG, name + " started");
+        PopupMenu popup = new PopupMenu(view.getContext(), view);
         // popup.setOnMenuItemClickListener(this);
         //popup2.inflate(R.menu.data_popup_menu);
         // popup2.setForceShowIcon(true);
-
-        for (String s : db.departmentDataDao().getAllNamesExceptFirst(chosenListData.list_id)) {
-            if (!s.equals(chosenDepartmentData.department_name)) popup.getMenu().add(s);
+        Log.d(TAG, name + " popup = new PopupMenu");
+        int depID = db.dataDao().getDepartmentIdByDataId(id);
+        int listID = db.departmentDataDao().getDepartmentDataById(depID).list_id;
+        Log.d(TAG, name + " listID: " + listID);
+        for (DepartmentData s : db.departmentDataDao().getAll(listID)) {
+            if (s.department_id != depID) popup.getMenu().add(s.department_name);
         }
+        Log.d(TAG, name + " for (DepartmentData s");
         popup.show();
+        Log.d(TAG, "createDataMoveSubMenu popup set");
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                TextView text = view.findViewById(R.id.tvAnimalName);
-                Log.d(TAG, name + " ext.getText().toString()");
+                View parent = (View) view.getParent();
+                TextView text = parent.findViewById(R.id.tvAnimalName);
+                EditText dataQty = parent.findViewById(R.id.etAnimalCount);
+                Log.d(TAG, name + " ext.getText().toString() listID: " + text.getText().toString());
                 Data newData = new Data(
                         db.departmentDataDao().getChosenDepartmentByName(item.getTitle().toString(),
-                                chosenListData.list_id).department_id,
+                                listID).department_id,
                         1,
                         text.getText().toString(),
-                        0);
-                deleteSingleItem(dataPosition);
+                        Float.parseFloat(dataQty.getText().toString()));
+                Log.d(TAG, name + " newData = new Data");
+                deleteSingleItem(position, id);
                 db.dataDao().incrementValues(
                         db.departmentDataDao().getChosenDepartmentByName(item.getTitle().toString(),
-                                chosenListData.list_id).department_id, 0);
+                                listID).department_id, 0);
                 db.dataDao().insert(newData);
+                Single.fromCallable(() -> notifyWithDelay()).subscribeOn(Schedulers.io()).subscribe();
                 return false;
             }
         });
     }
 
-
+    static int notifyWithDelay() {
+        SystemClock.sleep(500);
+        mn.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                viewPagerAdapter.notifyDataSetChanged();
+            }
+        });
+        return 0;
+    }
 }
 
 //todo при первом создании листа tablayout (linearlayout на котором он находится) сделать невидимым либо gone или манипулировать с цветом
-//todo при создании пустого листа переход в режим редактирования
+//todo if list deleted next list is emtryб app is crashes
 //todo Добавление списков, отделов, элементов с помощью google assistant
 //todo Обучение интерфейсу при первом старте
 

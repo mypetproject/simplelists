@@ -23,8 +23,8 @@ public interface DataDao {
     @Query("SELECT data_qty FROM data_table WHERE department_id = :department_id ORDER BY data_position ASC")
     List<Float> getAllQty(int department_id);
 
-    @Query("SELECT data_name FROM data_table WHERE department_id = :department_id AND data_position > 0 ORDER BY data_position ASC")
-    List<String> getAllNamesForGenerator(int department_id);
+    @Query("SELECT * FROM data_table WHERE department_id = :department_id AND data_position > 0 ORDER BY data_position ASC")
+    List<Data> getAllForGenerator(int department_id);
 
     @Query("SELECT data_position FROM data_table WHERE department_id = :department_id ORDER BY data_position ASC")
     List<Integer> getAllPositions(int department_id);
@@ -70,14 +70,17 @@ public interface DataDao {
     @Query("DELETE FROM data_table WHERE data_position = :position AND department_id = :department_id ")
     void deleteSingleData(int position, int department_id);
 
-    @Query("UPDATE data_table SET data_qty = data_qty - 1 WHERE data_position = :position AND department_id = :department_id ")
-    void minusQty(int position, int department_id);
+    @Query("DELETE FROM data_table WHERE data_id = :id")
+    void deleteSingleDataById(int id);
 
-    @Query("UPDATE data_table SET data_qty = data_qty + 1 WHERE data_position = :position AND department_id = :department_id ")
-    void plusQty(int position, int department_id);
+    @Query("UPDATE data_table SET data_qty = data_qty - 1 WHERE data_id = :id")
+    void minusQty(int id);
 
-    @Query("UPDATE data_table SET data_qty = :qty WHERE data_position = :position AND department_id = :department_id ")
-    void updateQty(int position, int department_id, Float qty);
+    @Query("UPDATE data_table SET data_qty = data_qty + 1 WHERE data_id = :id")
+    void plusQty(int id);
+
+    @Query("UPDATE data_table SET data_qty = :qty WHERE data_id = :id")
+    void updateQty(int id, Float qty);
 /*
         @Query("DELETE FROM lists_table")
         int deleteAll();

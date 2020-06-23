@@ -60,8 +60,8 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.recycler_layout, parent, false);
-       // return new ViewHolder(view, new MyCustomEditTextListener());
-        return new ViewHolder(view);
+        return new ViewHolder(view, new MyCustomEditTextListener());
+       // return new ViewHolder(view);
     }
 
     // binds the data to the TextView in each row
@@ -130,9 +130,11 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
                 holder.mEditQty.setVisibility(View.GONE);
                 holder.mLowImage.setVisibility(View.GONE);
            // } else if (MainActivity.editButtonClicked || position >= (mData.size() - MainActivity.chosenDepartmentData.CrossOutNumber)) {
-            } else if (MainActivity.editButtonClicked
+          /*  } else if (MainActivity.editButtonClicked
                     || position >= (mData.size()
-                    - MainActivity.db.departmentDataDao().getDepartmentDataById(mData.get(position).department_id).CrossOutNumber)) {
+                    - MainActivity.db.departmentDataDao().getDepartmentDataById(mData.get(position).department_id).CrossOutNumber)) {**/
+            } else if (MainActivity.editButtonClicked
+                    ) {
                 Log.d(TAG, "MyRecyclerViewAdapter onBindViewHolder MainActivity.editButtonClicked || position >= (mData.size() - MainActivity.chosenDepartmentData.CrossOutNumber)");
                 holder.mMoreImage.setVisibility(View.GONE);
                 holder.mLowImage.setVisibility(View.GONE);
@@ -148,7 +150,18 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
                 holder.mCount.setVisibility(View.GONE);
                 holder.mEditQty.setVisibility(View.GONE);
                 holder.mLowImage.setVisibility(View.GONE);
-            } else {
+            }else if (!MainActivity.editButtonClicked
+                    && position >= (mData.size()
+                    - MainActivity.db.departmentDataDao().getDepartmentDataById(mData.get(position).department_id).CrossOutNumber)) {
+                Log.d(TAG, "MyRecyclerViewAdapter onBindViewHolder !MainActivity.editButtonClicked\n" +
+                        "                    && position >= ");
+                holder.mMoreImage.setVisibility(View.VISIBLE);
+                holder.mLowImage.setVisibility(View.GONE);
+                holder.mHighImage.setVisibility(View.GONE);
+                holder.myTextView.setVisibility(View.VISIBLE);
+                holder.mEditQty.setVisibility(View.GONE);
+                holder.mCount.setVisibility(View.VISIBLE);
+            } else if (!MainActivity.editButtonClicked){
                 Log.d(TAG, "MyRecyclerViewAdapter onBindViewHolder else");
                 holder.myTextView.setVisibility(View.VISIBLE);
                 holder.mMoreImage.setVisibility(View.VISIBLE);
@@ -173,9 +186,15 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
             }
         Log.d(TAG, "onBindViewHolder if (position >=... ended");
             holder.myTextView.setText(animal);
+        Log.d(TAG, "onBindViewHolder holder.myTextView.setText(animal); ended");
             holder.mCount.setText(data_qty);
-            holder.mEditQty.setText(data_qty);
-           // holder.myCustomEditTextListener.updatePosition(holder.getAdapterPosition());
+        Log.d(TAG, "onBindViewHolder holder.mCount.setText(data_qty); ended data_qty: " + data_qty);
+        holder.mEditQty.setText(data_qty);
+        Log.d(TAG, "onBindViewHolder holder.mEditQty.setText(data_qty); ended");
+       // holder.myCustomEditTextListener.updatePosition(holder.getAdapterPosition());
+      //  Log.d(TAG, "onBindViewHolder (holder.getAdapterPosition() ended");
+        holder.myCustomEditTextListener.updateID(mData.get(holder.getAdapterPosition()).data_id);
+        Log.d(TAG, "onBindViewHolder mData.get(holder.getAdapterPosition()).data_id ended");
             if (data_qty.equals("0") && position != 0 && MainActivity.editButtonClicked) {
                 holder.mCount.setVisibility(View.INVISIBLE);
             } else if (data_qty.equals("0") && position != 0 && position >= (mData.size() - MainActivity.db.departmentDataDao().getDepartmentDataById(mData.get(position).department_id).CrossOutNumber)) {
@@ -199,7 +218,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     // stores and recycles views as they are scrolled off screen
 
    // public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener, View.OnTouchListener {
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnTouchListener {
        TextView myTextView;
        //ImageView mDeleteImage;
        ImageView mMoreImage;
@@ -207,10 +226,10 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
        ImageView mHighImage;
        TextView mCount;
        EditText mEditQty;
-       //  public MyCustomEditTextListener myCustomEditTextListener;
+       public MyCustomEditTextListener myCustomEditTextListener;
 
-       //  ViewHolder(View itemView, MyCustomEditTextListener myCustomEditTextListener) {
-       ViewHolder(View itemView) {
+       ViewHolder(View itemView, MyCustomEditTextListener myCustomEditTextListener) {
+           // ViewHolder(View itemView) {
            super(itemView);
            myTextView = itemView.findViewById(R.id.tvAnimalName);
            mMoreImage = itemView.findViewById(R.id.image_more);
@@ -220,8 +239,8 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
            mEditQty = itemView.findViewById(R.id.etAnimalCount);
            // if (!MainActivity.dontTouchMLowButton) {
-           //  this.myCustomEditTextListener = myCustomEditTextListener;
-           //  this.mEditQty.addTextChangedListener(myCustomEditTextListener);
+           this.myCustomEditTextListener = myCustomEditTextListener;
+           this.mEditQty.addTextChangedListener(myCustomEditTextListener);
            // }
            mEditQty.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                @Override
@@ -237,10 +256,10 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
            mMoreImage.setOnClickListener(this);
            mLowImage.setOnClickListener(this);
            //mLowImage.setOnLongClickListener(this);
-           //  mLowImage.setOnTouchListener(this);
+           mLowImage.setOnTouchListener(this);
            mHighImage.setOnClickListener(this);
            //mHighImage.setOnLongClickListener(this);
-           //  mHighImage.setOnTouchListener(this);
+           mHighImage.setOnTouchListener(this);
            mCount.setOnClickListener(this);
 
            itemView.setOnClickListener(this);
@@ -262,17 +281,17 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
                mClickListener.onItemClick(view, getAdapterPosition(), mData.get(getAdapterPosition()).data_id);
            }
        }
-   }
-     /*   @Override
-        public boolean onLongClick(View view){
-            mClickListener.onItemLongClick(getAdapterPosition(), view);
-            return true;
-        }
 
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            mClickListener.onItemTouch(v, event, getAdapterPosition());
-            //Single.fromCallable(() -> mClickListener.onItemTouch(v, event, getAdapterPosition())).subscribeOn(Schedulers.io()).subscribe();
+       /*   @Override
+          public boolean onLongClick(View view){
+              mClickListener.onItemLongClick(getAdapterPosition(), view);
+              return true;
+          }
+  */
+       @Override
+       public boolean onTouch(View v, MotionEvent event) {
+           mClickListener.onItemTouch(v, event, mData.get(getAdapterPosition()).data_id);
+           //Single.fromCallable(() -> mClickListener.onItemTouch(v, event, getAdapterPosition())).subscribeOn(Schedulers.io()).subscribe();
            /* final Handler handler = new Handler();
 
             handler.postDelayed(new Runnable() {
@@ -289,16 +308,24 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         }
         //     }
         //  }, delay);*/
-           /* return true;
-        }*/
-    //}
-
-   /*private class MyCustomEditTextListener implements TextWatcher {
-        private int position;
-
-        public void updatePosition(int position) {
-            this.position = position;
+            return true;
         }
+       //}
+   }
+
+   private class MyCustomEditTextListener implements TextWatcher {
+        //private int position;
+        private int dataID;
+
+       /* public void updatePosition(int position) {
+            this.position = position;
+            Log.d(TAG, "updatePosition ended");
+        }*/
+
+      public void updateID(int id) {
+           this.dataID = id;
+           Log.d(TAG, "updateID ended");
+       }
 
         @Override
         public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {
@@ -321,7 +348,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
                 if (MainActivity.canUpdate
                         && Float.parseFloat(editable.toString())
                         != MainActivity.db.dataDao()
-                        .getChosenData(position, MainActivity.chosenDepartmentData.department_id).data_qty) {
+                        .getChosenDataById(dataID).data_qty) {
 
                     // Float roundedQty = Float.parseFloat(editable.toString());
                     //  DecimalFormat df = new DecimalFormat("#.###");
@@ -330,13 +357,14 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
                     //Log.d(TAG, "onBindViewHolder, setRoundingMode implemented " + mDataQty.get(position).toString());
                     //  String data_qty = df.format(roundedQty);
                     // Log.d(TAG, "onBindViewHolder, data_qty: " + data_qty);
-
-                    MainActivity.db.dataDao().updateQty(position, MainActivity.chosenDepartmentData.department_id, Float.parseFloat(editable.toString()));
+//Log.d(TAG, "MyCustomEditTextListener position: " + position);
+                   // MainActivity.db.dataDao().updateQty(position, MainActivity.chosenDepartmentData.department_id, Float.parseFloat(editable.toString()));
+                    MainActivity.db.dataDao().updateQty(dataID, Float.parseFloat(editable.toString()));
                 }
                 }
            // }
         }
-    }*/
+    }
 
     // convenience method for getting data at click position
     String getItem(int id) {
@@ -352,7 +380,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     public interface ItemClickListener {
         void onItemClick(View view, int id, int position);
       //  void onItemLongClick(int position,View view);
-      //  int onItemTouch(View view, MotionEvent event, int position);
+        void onItemTouch(View view, MotionEvent event, int id);
     }
 
 
