@@ -32,6 +32,9 @@ public interface DepartmentDataDao {
         @Query("Update departments_table Set department_position = department_position + 1 WHERE list_id = :list_id AND department_position >= :position")
         void incrementValues(int list_id, int position);
 
+        @Query("Update departments_table Set department_position = department_position + 1 WHERE list_id = :list_id")
+        void incrementAllValues(int list_id);
+
         @Query("Update departments_table Set department_position = department_position - 1 WHERE list_id = :list_id AND department_position > :position")
         void decrementValues(int list_id, int position);
 

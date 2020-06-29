@@ -28,8 +28,8 @@ public interface ListDataDao {
     @Query("DELETE FROM departments_table WHERE department_position = :position AND list_id = :list_id ")
     void deleteSingleData(int position, int list_id);
 
-    @Query("SELECT * FROM lists_table ORDER BY list_position ASC")
-    Flowable<List<ListData>> getAll();
+    @Query("SELECT * FROM lists_table WHERE list_position > 0 ORDER BY list_position ASC")
+    List<ListData> getAll();
 
     @Query("SELECT list_name FROM lists_table ORDER BY list_position ASC")
     Flowable<List<String>> getAllNames();
@@ -43,13 +43,16 @@ public interface ListDataDao {
     @Query("SELECT * FROM lists_table WHERE list_position = :position")
     ListData getChosenList(int position);
 
+    @Query("SELECT * FROM lists_table WHERE list_name = :name")
+    ListData getChosenListByName(String name);
+
     @Query("SELECT * from lists_table ORDER BY list_name ASC")
     LiveData<List<ListData>> getAlphabetizedLists();
 
     @Query("Update lists_table Set list_position = list_position + 1 WHERE list_position > 0")
     int incrementValues();
 
-    @Query("Update lists_table Set list_position = list_position - 1 WHERE list_position > 0 AND list_position > :list_position")
+        @Query("Update lists_table Set list_position = list_position - 1 WHERE list_position > 0 AND list_position > :list_position")
     int decrementValues(int list_position);
 
     @Query("Update lists_table Set list_position = 0 WHERE list_name = 'Добавить'")

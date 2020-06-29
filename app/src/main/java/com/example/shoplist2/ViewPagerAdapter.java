@@ -71,142 +71,164 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
                         MainActivity.chosenListData.list_id
                 ).department_id));
 
-        Log.d(TAG, " temp.addAll");
-      // View parentView = (View) holder.itemView.getParent();
-        RecyclerView recyclerView  = holder.itemView.findViewById(R.id.rvAnimals);
-        recyclerView.getRecycledViewPool().clear();
-                        adapter = new MyRecyclerViewAdapter(holder.itemView.getContext(), temp);
-     //   holder.adapter = new MyRecyclerViewAdapter(parentView.getContext(), temp);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(holder.itemView.getContext());
-      //  LinearLayoutManager layoutManager = new LinearLayoutManager(parentView.getContext());
-        recyclerView.setLayoutManager(layoutManager);
-        // holder.adapter = new MyRecyclerViewAdapter(holder.itemView.getContext(), arrayList);
-        //adapter = new MyRecyclerViewAdapter(itemView.getContext(), temp);
-      //todo if editbutton clicked many times then holder formatting ruins if item decoration are working
-        //  DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(holder.recyclerView.getContext(),
-      //          layoutManager.getOrientation());
-       // holder.recyclerView.addItemDecoration(dividerItemDecoration);
 
-        adapter.setClickListener(new MyRecyclerViewAdapter.ItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position, int id) {
-                Log.d(TAG, position + " <- rv adapter position");
-                MainActivity.ViewPagerItemClicked(view, id, adapter, position, temp);
-            }
 
-            @Override
-            public void onItemTouch(View view, MotionEvent event, int id) {
-               // Toast.makeText(view.getContext(), "item touched", Toast.LENGTH_SHORT).show();
-                MainActivity.viewPagerOnTouchListener(view,event,id, adapter, temp);
-              //  return 0;
-            }
-        });
-        recyclerView.setAdapter(adapter);
-        Log.d(TAG, "adapter.setClickListener");
+      /*  if (temp.size() == 1 && MainActivity.editButtonClicked) {
+holder.itemView.setVisibility(View.GONE);
+//holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+MainActivity.hideTab(position);
+//parent.setVisibility(View.GONE);
+        } else {
 
-//todo после обновления холдеров ломается анимация перетаскивания и после первого перетаскивания меняется ViewPagerHolder и position
+            holder.itemView.setVisibility(View.VISIBLE);
+            //holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            MainActivity.showTab(position);*/
+          //  holder.itemView.setVisibility(View.VISIBLE);
+           // MainActivity.showTab(position);
+           // parent.setVisibility(View.VISIBLE);
 
-        helper = new ItemTouchHelper(new ItemTouchHelper.
-                SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,0) {
 
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder dragged, @NonNull RecyclerView.ViewHolder target) {
-                Log.d(TAG, "adapter.onMove started" + " adapter position: " + adapterPosition);
+            Log.d(TAG, " temp.addAll");
+            // View parentView = (View) holder.itemView.getParent();
+            RecyclerView recyclerView = holder.itemView.findViewById(R.id.rvAnimals);
+            recyclerView.getRecycledViewPool().clear();
+            adapter = new MyRecyclerViewAdapter(holder.itemView.getContext(), temp);
+            //   holder.adapter = new MyRecyclerViewAdapter(parentView.getContext(), temp);
+            LinearLayoutManager layoutManager = new LinearLayoutManager(holder.itemView.getContext());
+            //  LinearLayoutManager layoutManager = new LinearLayoutManager(parentView.getContext());
+            recyclerView.setLayoutManager(layoutManager);
+            // holder.adapter = new MyRecyclerViewAdapter(holder.itemView.getContext(), arrayList);
+            //adapter = new MyRecyclerViewAdapter(itemView.getContext(), temp);
 
-                //adapter = (MyRecyclerViewAdapter) recyclerView.getAdapter();
+              DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
+                      layoutManager.getOrientation());
+             recyclerView.addItemDecoration(dividerItemDecoration);
+
+            adapter.setClickListener(new MyRecyclerViewAdapter.ItemClickListener() {
+                @Override
+                public void onItemClick(View view, int position, int id) {
+                    Log.d(TAG, position + " <- rv adapter position");
+                    MainActivity.ViewPagerItemClicked(view, id, adapter, position, temp);
+                }
+
+                @Override
+                public void onItemTouch(View view, MotionEvent event, int id) {
+                    // Toast.makeText(view.getContext(), "item touched", Toast.LENGTH_SHORT).show();
+                    MainActivity.viewPagerOnTouchListener(view, event, id, adapter, temp);
+                    //  return 0;
+                }
+            });
+            recyclerView.setAdapter(adapter);
+            Log.d(TAG, "adapter.setClickListener");
+
+
+
+            helper = new ItemTouchHelper(new ItemTouchHelper.
+                    SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
+
+                @Override
+                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder dragged, @NonNull RecyclerView.ViewHolder target) {
+                    Log.d(TAG, "adapter.onMove started" + " adapter position: " + adapterPosition);
+
+                    //adapter = (MyRecyclerViewAdapter) recyclerView.getAdapter();
                 /*temp.clear();
                 temp.addAll(MainActivity.db.dataDao().getAll(
                         MainActivity.db.departmentDataDao().getChosenDepartment(
                                 position,
                                 MainActivity.chosenListData.list_id
                         ).department_id));*/
-                Log.d(TAG, "adapter.onMove started" + " adapter name: " + MainActivity.db.departmentDataDao().getDepartmentDataById(temp.get(0).department_id).department_name);
-                int position_dragged = dragged.getAdapterPosition();
-                int position_target = target.getAdapterPosition();
-                //Log.d(TAG, "adapter name: " + MainActivity.db.departmentDataDao().getDepartmentDataById(temp.get(position_dragged).department_id).department_name);
-                int crossOutNumber = MainActivity.db.departmentDataDao().getDepartmentDataById(temp.get(position_dragged).department_id).CrossOutNumber;
-                DepartmentData depData = MainActivity.db.departmentDataDao().getDepartmentDataById(temp.get(position_dragged).department_id);
-                Log.d(TAG, "DepartmentData depData = ");
-                Log.d(TAG, " if (position_dragged >= (temp.size() - crossOutNumber) started dep name: " + depData.department_name + " temp.size():"  + temp.size() + " crossOutNumber: " + crossOutNumber);
-                if (position_dragged >= (temp.size() - crossOutNumber)
-                        || position_dragged == 0) {
-                   // position_target = position_dragged;
-                    Log.d(TAG, " if (position_dragged >= (temp.size() - crossOutNumber)");
+                    //    Log.d(TAG, "adapter.onMove started" + " adapter name: " + MainActivity.db.departmentDataDao().getDepartmentDataById(temp.get(0).department_id).department_name);
+                    int position_dragged = dragged.getAdapterPosition();
+                    int position_target = target.getAdapterPosition();
+                    //Log.d(TAG, "adapter name: " + MainActivity.db.departmentDataDao().getDepartmentDataById(temp.get(position_dragged).department_id).department_name);
+                    int crossOutNumber = MainActivity.db.departmentDataDao().getDepartmentDataById(temp.get(position_dragged).department_id).CrossOutNumber;
+                    DepartmentData depData = MainActivity.db.departmentDataDao().getDepartmentDataById(temp.get(position_dragged).department_id);
+                    //   Log.d(TAG, "DepartmentData depData = ");
+                    //    Log.d(TAG, " if (position_dragged >= (temp.size() - crossOutNumber) started dep name: " + depData.department_name + " temp.size():"  + temp.size() + " crossOutNumber: " + crossOutNumber);
+                    if (position_dragged >= (temp.size() - crossOutNumber)
+                            || position_dragged == 0) {
+                        // position_target = position_dragged;
+                        // Log.d(TAG, " if (position_dragged >= (temp.size() - crossOutNumber)");
+                        return false;
+                    } else if (position_target == 0) {
+                        //  position_target = 1;
+                        //  Log.d(TAG, "if (position_target == 0)");
+                        return false;
+                    } else if (position_target >= (temp.size() - crossOutNumber)) {
+                        //   position_target = temp.size() - crossOutNumber - 1;
+                        // Log.d(TAG, "if (position_target >= (temp.size() - crossOutNumber))");
+                        return false;
+                    } else {
+                        //todo возможно поменять
+                        List<Data> oldTemp = new ArrayList<>();
+                        oldTemp.addAll(temp);
+                        Collections.swap(temp, position_dragged, position_target);
+
+                        // Log.d(TAG, " Collections.swap");
+                        //adapter.notifyItemMoved(position_target, position_dragged);
+
+                        ProductDiffUtilCallback productDiffUtilCallback =
+                                new ProductDiffUtilCallback(oldTemp, temp);
+                        DiffUtil.DiffResult productDiffResult = DiffUtil.calculateDiff(productDiffUtilCallback);
+
+                        //adapter.setData(productList);
+                        productDiffResult.dispatchUpdatesTo(adapter);
+
+                        //holder.adapter.notifyItemChanged(position_dragged);
+                        // holder.adapter.notifyItemChanged(position_target);
+
+                        //   Log.d(TAG, " holder.adapter.notifyItemMoved");
+                    }
+                    temp.clear();
+                    temp.addAll(MainActivity.db.dataDao().getAll(
+                            MainActivity.db.departmentDataDao().getChosenDepartment(
+                                    position,
+                                    MainActivity.chosenListData.list_id
+                            ).department_id));
+
+                    // holder.adapter.notifyItemMoved(position_target,position_dragged);
+
+
+                    Data tempData = MainActivity.db.dataDao().getChosenData(position_dragged, temp.get(position_dragged).department_id);
+                    //Log.d(TAG, " Data tempData = ");
+                    tempData.data_position = position_target;
+                    if (position_dragged > position_target) {
+                        MainActivity.db.dataDao().incrementValuesFromPositionToPosition(tempData.department_id, position_dragged, position_target);
+                    } else {
+                        MainActivity.db.dataDao().decrementValuesFromPositionToPosition(tempData.department_id, position_dragged, position_target);
+                    }
+                    MainActivity.db.dataDao().update(tempData);
+                    // Log.d(TAG, "data keys after swipe: " + db.dataDao().getAllNames(chosenDepartmentData.department_id));
+                    Log.d(TAG, "adapter.onMove ended, pos_dragged: " + position_dragged + " pos_target: " + position_target
+                            + "\nDataset: " + MainActivity.db.dataDao().getAllNames(depData.department_id));
                     return false;
-                } else if (position_target == 0) {
-                  //  position_target = 1;
-                    Log.d(TAG, "if (position_target == 0)");
-                    return false;
-                } else if (position_target >= (temp.size() - crossOutNumber)) {
-                 //   position_target = temp.size() - crossOutNumber - 1;
-                    Log.d(TAG, "if (position_target >= (temp.size() - crossOutNumber))");
-                    return false;
-                } else {
-                    //todo возможно поменять
-                    List<Data> oldTemp = new ArrayList<>();
-                    oldTemp.addAll(temp);
-                    Collections.swap(temp, position_dragged, position_target);
-
-                    Log.d(TAG, " Collections.swap");
-                  //adapter.notifyItemMoved(position_target, position_dragged);
-
-                   ProductDiffUtilCallback productDiffUtilCallback =
-                            new ProductDiffUtilCallback(oldTemp, temp);
-                    DiffUtil.DiffResult productDiffResult = DiffUtil.calculateDiff(productDiffUtilCallback);
-
-                    //adapter.setData(productList);
-                    productDiffResult.dispatchUpdatesTo(adapter);
-
-                    //holder.adapter.notifyItemChanged(position_dragged);
-                   // holder.adapter.notifyItemChanged(position_target);
-
-                    Log.d(TAG, " holder.adapter.notifyItemMoved");
                 }
-                temp.clear();
-                temp.addAll(MainActivity.db.dataDao().getAll(
-                        MainActivity.db.departmentDataDao().getChosenDepartment(
-                                position,
-                                MainActivity.chosenListData.list_id
-                        ).department_id));
 
-               // holder.adapter.notifyItemMoved(position_target,position_dragged);
+                @Override
+                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
 
-
-                Data tempData = MainActivity.db.dataDao().getChosenData(position_dragged, temp.get(position_dragged).department_id);
-                Log.d(TAG, " Data tempData = ");
-                tempData.data_position = position_target;
-                if (position_dragged > position_target) {
-                    MainActivity.db.dataDao().incrementValuesFromPositionToPosition(tempData.department_id, position_dragged, position_target);
-                } else {
-                    MainActivity.db.dataDao().decrementValuesFromPositionToPosition(tempData.department_id, position_dragged, position_target);
                 }
-                MainActivity.db.dataDao().update(tempData);
-               // Log.d(TAG, "data keys after swipe: " + db.dataDao().getAllNames(chosenDepartmentData.department_id));
-                Log.d(TAG, "adapter.onMove ended, pos_dragged: " + position_dragged + " pos_target: " + position_target
-                 + "\nDataset: " + MainActivity.db.dataDao().getAllNames(depData.department_id));
-                return false;
-            }
+            });
+            helper.attachToRecyclerView(recyclerView);
 
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            adapter.notifyDataSetChanged();
 
-            }
-        });
-        helper.attachToRecyclerView(recyclerView);
-
-        adapter.notifyDataSetChanged();
-        MainActivity.canUpdate = true;
+            MainActivity.canUpdate = true;
+       // }
     }
 
     @Override
     public int getItemCount() {
-       // return arrayList.size();
-      //  Log.d(TAG, "getItemCount() started");
+
         int itemCount = 0;
-        /*if (MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id).size() != 0) {
-            itemCount = MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id).size();
-        }*/
-        if (MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id) != null) {
+       /* if (MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id) != null
+        && MainActivity.editButtonClicked) {
+            for (DepartmentData dd : MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id)) {
+                if (MainActivity.db.dataDao().getAllNames(dd.department_id).size() > 1) {
+                    itemCount++;
+                }
+            }
+        } else */if (MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id) != null) {
             itemCount = MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id).size();
         }
        // Log.d(TAG, "getItemCount() ended");

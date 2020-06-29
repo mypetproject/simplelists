@@ -87,7 +87,9 @@
                 app:tabIndicatorColor="#000000"
 
                 app:tabIndicatorHeight="3dp"
-                app:tabMode="scrollable" />
+                app:tabMode="scrollable" >
+
+            </com.google.android.material.tabs.TabLayout>
             <!--app:tabBackground="@drawable/tab_color_selector"-->
         </LinearLayout>
 
