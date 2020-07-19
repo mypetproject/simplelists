@@ -5,6 +5,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import java.util.List;
 
@@ -32,7 +33,7 @@ public interface ListDataDao {
     List<ListData> getAll();
 
     @Query("SELECT list_name FROM lists_table ORDER BY list_position ASC")
-    Flowable<List<String>> getAllNames();
+    List<String> getAllNames();
 
     @Query("SELECT list_name FROM lists_table ORDER BY list_position ASC")
     List<String> getAllNamesNotFlowable();
@@ -46,6 +47,9 @@ public interface ListDataDao {
     @Query("SELECT * FROM lists_table WHERE list_name = :name")
     ListData getChosenListByName(String name);
 
+    @Query("SELECT * FROM lists_table WHERE list_position = :position")
+    ListData getChosenListByPosition(int position);
+
     @Query("SELECT * from lists_table ORDER BY list_name ASC")
     LiveData<List<ListData>> getAlphabetizedLists();
 
@@ -57,4 +61,7 @@ public interface ListDataDao {
 
     @Query("Update lists_table Set list_position = 0 WHERE list_name = 'Добавить'")
     int setDobavitInZero();
+
+    @Update
+    void update(ListData listData);
 }
