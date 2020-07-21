@@ -1016,30 +1016,31 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                     Toast.makeText(view.getContext(), "Введите уникальное название отдела", Toast.LENGTH_SHORT).show();
                 }
 */
-               boolean tempEditFlag = editFlag;
-               if (editFlag) {
-                    editOldData(str, id);
-                   Log.d(TAG," editFlag = false; start");
-                    editFlag = false;
-                    Log.d(TAG," editFlag = false; end");
-                    dialog.setTitle("Добавить");
-                } else {
-                   // setNewData(str, 1, id);
-                   if (position == 0) {
-                       setNewData(str, 1, id);
-                   } else {
-                       setNewData(str, position, id);
-                   }
+                if (!str.isEmpty()) {
+                    boolean tempEditFlag = editFlag;
+                    if (editFlag) {
+                        editOldData(str, id);
+                        Log.d(TAG, " editFlag = false; start");
+                        editFlag = false;
+                        Log.d(TAG, " editFlag = false; end");
+                        dialog.setTitle("Добавить");
+                    } else {
+                        // setNewData(str, 1, id);
+                        if (position == 0) {
+                            setNewData(str, 1, id);
+                        } else {
+                            setNewData(str, position, id);
+                        }
 
-                }
-                et.setText("");
-                Log.d(TAG, name + " neutralButton ended setNewData");
+                    }
+                    et.setText("");
+                    Log.d(TAG, name + " neutralButton ended setNewData");
 
-                adapterListData.clear();
-                adapterListData.addAll(db.dataDao().getAll(
-                        db.dataDao().getDepartmentIdByDataId(id)
-                ));
-                Log.d(TAG, name + " adapterListData.addAll");
+                    adapterListData.clear();
+                    adapterListData.addAll(db.dataDao().getAll(
+                            db.dataDao().getDepartmentIdByDataId(id)
+                    ));
+                    Log.d(TAG, name + " adapterListData.addAll");
               /*  if (!tempEditFlag) {
                     if (position == 0) {
                         adapter.notifyItemInserted(1);
@@ -1055,7 +1056,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
                     adapter.notifyItemChanged(position);
                 }*/
-              viewPagerAdapter.notifyDataSetChanged();
+                    viewPagerAdapter.notifyDataSetChanged();
+                }
                 Log.d(TAG, name + " neutralButton ended");
             }
 
@@ -1171,6 +1173,13 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                     public void onDrawerOpened(View drawerView) {
                         //todo как обновить количество активных позиций в открытом меню или когда slide
                         //  setNavigationDrawerData();
+                        if (activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) > 0) {
+                            drawerResult.updateBadge(drawerResult.getCurrentSelectedPosition() - 1, new StringHolder(activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) + ""));
+                            drawerResult.setSelection(selectedListIndex - 1, false);
+                        } else {
+                            drawerResult.updateBadge(drawerResult.getCurrentSelectedPosition() - 1, null);
+                            drawerResult.setSelection(selectedListIndex - 1, false);
+                        }
                         Log.d(TAG, "drawerView.getVerticalScrollbarPosition() = " + drawerResult.getCurrentSelectedPosition());
                     }
 
@@ -1181,10 +1190,10 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
                     @Override
                     public void onDrawerSlide(View drawerView, float slideOffset) {
-                        if (activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) > 0) {
+                     /*   if (activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) > 0) {
                             drawerResult.updateBadge(drawerResult.getCurrentSelectedPosition() - 1, new StringHolder(activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) + ""));
                             drawerResult.setSelection(selectedListIndex - 1, false);
-                        }
+                        }*/
                     }
                 })
                /* .withOnDrawerItemLongClickListener(new Drawer.OnDrawerItemLongClickListener() {
@@ -1321,11 +1330,20 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     public void onBackPressed() {
 
         // Close Navigation Drawer by press button "Back" if it is in open condition
+
         if (drawerResult.isDrawerOpen()) {
             drawerResult.closeDrawer();
+
+        // Go to first element of ViewPager by press button "Back" if it is position >0
+
+        } else if (myViewPager2.getCurrentItem() != 0) {
+            Log.d(TAG, "onBackPressed() position " + myViewPager2.getCurrentItem());
+            myViewPager2.setCurrentItem(0);
+
         } else {
             super.onBackPressed();
         }
+
     }
 
     public static void setAdapterPosition(int pos) {
@@ -1599,7 +1617,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         return 0;
     }*/
 
-
+//todo!!! анимация удаления крашит приложение после множества удалений
     public void inputTextDialogWindow(final View view, final int insertIndex, final int position) {
         String name = new Object() {
         }.getClass().getEnclosingMethod().getName();
@@ -1689,6 +1707,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                     imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
                     inputButtonClicked(str, insertIndex, view);
                     setTabsOnLongClickListener();
+
                     dialog.dismiss();
                 } else {
                     Toast.makeText(view.getContext(), "Введите уникальное название", Toast.LENGTH_SHORT).show();
@@ -1703,17 +1722,19 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             @Override
             public void onClick(View v) {
                 String str = et.getText().toString();
-                if (uniqueTest(str, view)) {
-                   // InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    //imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
-                    inputButtonClicked(str, insertIndex, view);
-                    et.getText().clear();
-                    et.setHint("Введите сообщение");
-                    dialog.setTitle("Добавить");
-                    setTabsOnLongClickListener();
-                } else {
-                    Toast.makeText(view.getContext(), "Введите уникальное название отдела", Toast.LENGTH_SHORT).show();
-                                }
+                if (!str.isEmpty()) {
+                    if (uniqueTest(str, view)) {
+                        // InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        //imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+                        inputButtonClicked(str, insertIndex, view);
+                        et.getText().clear();
+                        et.setHint("Введите сообщение");
+                        dialog.setTitle("Добавить");
+                        setTabsOnLongClickListener();
+                    } else {
+                        Toast.makeText(view.getContext(), "Введите уникальное название отдела", Toast.LENGTH_SHORT).show();
+                    }
+                }
 
             }
 
@@ -1911,6 +1932,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         );
     }
 
+
+    //todo!! bug with default position of tabs
     private void setNewDepartment(String s) {
 
         DepartmentData departmentData = new DepartmentData(chosenListData.list_id, 0, s, 0);
@@ -1922,6 +1945,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 0, "Добавить", 0.0f);
         db.dataDao().insert(data);
         viewPagerAdapter.notifyDataSetChanged();
+
         Log.d(TAG, "method: 'setNewDepartment'; departments data after insert new in db: " + db.departmentDataDao().getAllNames(chosenListData.list_id));
     }
 
@@ -2280,8 +2304,10 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             adapterListData.addAll(db.dataDao().getAll(
                     departmentID
             ));
-            viewPagerAdapter.notifyItemChanged(position);
+
             adapter.notifyItemRemoved(position); // notify the adapter about the removed item
+            viewPagerAdapter.notifyItemChanged(0);
+           // Single.fromCallable(() -> notifyWithDelay(500)).subscribeOn(Schedulers.io()).subscribe();
         }
     }
 
