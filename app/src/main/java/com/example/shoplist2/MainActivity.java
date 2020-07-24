@@ -120,10 +120,13 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     private ArrayList<String> arrayList = new ArrayList<>();
     private static List<Data> adapterListData;
     ImageButton addDepartmentButton;
+    ImageButton moreMenuButton;
 
     static MainActivity mn;
     static boolean editFlag;
     static boolean stopClick = false;
+
+
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -503,14 +506,19 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             }
         });
 
-setTabsVisibility();
+        setTabsVisibility();
+
+        moreMenuButton = (ImageButton) findViewById(R.id.more_menu_button);
+        if (db.listDataDao().getAllNames().size() < 2) {
+            moreMenuButton.setVisibility(View.GONE);
+        }
 
     }
 
     private void setTabsVisibility() {
         LinearLayout tabsll = (LinearLayout) findViewById(R.id.tabs_linear_layout);
         if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() == 0
-        && editButtonClicked) {
+                && editButtonClicked) {
             tabsll.setVisibility(View.GONE);
         } else {
             tabsll.setVisibility(View.VISIBLE);
@@ -1177,6 +1185,7 @@ setTabsVisibility();
                             int parentID = parent.getId();
                             inputTextDialogWindow(view, 1, position - 1);
                             // drawerResult.setSelection(selectedListIndex,false);
+
                         } else {
                             setActiveList(position);
                             selectedListIndex = position;
@@ -1345,7 +1354,7 @@ setTabsVisibility();
             getCrossOutNumber();
             getData();
         }*/
-     setTabsVisibility();
+        setTabsVisibility();
         viewPagerAdapter.notifyDataSetChanged();
         Log.d(TAG, "setActiveList(int position) ended");
     }
@@ -2100,7 +2109,9 @@ setTabsVisibility();
                     Log.d(TAG, "dialog built");
                 }
                 viewPagerAdapter.notifyDataSetChanged();
-
+                if (moreMenuButton.getVisibility() == View.GONE) {
+                    moreMenuButton.setVisibility(View.VISIBLE);
+                }
                 break;
         }
     }
@@ -2392,7 +2403,14 @@ setTabsVisibility();
         }
         // adapter.notifyDataSetChanged();
         // adapterForDepartments.notifyDataSetChanged();
-          viewPagerAdapter.notifyDataSetChanged();
+        setTabsVisibility();
+        if (db.listDataDao().getAllNames().size() < 2) {
+            moreMenuButton.setVisibility(View.GONE);
+            //addDepartmentButton.setVisibility(View.GONE);
+            LinearLayout tabsll = (LinearLayout) findViewById(R.id.tabs_linear_layout);
+                tabsll.setVisibility(View.GONE);
+        }
+        viewPagerAdapter.notifyDataSetChanged();
     }
 
     private void deleteSingleItemInList(int position) {
@@ -2634,7 +2652,7 @@ setTabsVisibility();
     public void onMoreMenuItemButtonClick(View view) {
         String name = new Object() {
         }.getClass().getEnclosingMethod().getName();
-       // PopupMenu popup = new PopupMenu(this, view);
+        // PopupMenu popup = new PopupMenu(this, view);
         PopupMenu popup = new PopupMenu(this, view);
         //popup.setOnMenuItemClickListener(this);
         popup.inflate(R.menu.popup_menu);
@@ -2994,7 +3012,6 @@ setTabsVisibility();
         return 0;
     }
 }
-
 
 
 //todo Добавление списков, отделов, элементов с помощью google assistant
