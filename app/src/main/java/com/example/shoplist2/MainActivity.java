@@ -2,6 +2,7 @@ package com.example.shoplist2;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.view.menu.MenuPopupHelper;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
@@ -18,6 +19,8 @@ import android.app.usage.UsageEvents;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,10 +28,13 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -126,13 +132,18 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     static boolean editFlag;
     static boolean stopClick = false;
 
-
+    public static final String PREFS_NAME = "MyPrefsFile";
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        AppCompatDelegate.setDefaultNightMode(loadTheme());
+        Log.d(TAG, " AppCompatDelegate.setDefaultNightMode(loadTheme()) = " + loadTheme());
         setContentView(R.layout.activity_main);
+
 
         mn = MainActivity.this;
 
@@ -571,7 +582,6 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         // Toast.makeText(getBaseContext(), "delete " + finalI, Toast.LENGTH_SHORT).show();
                         return true;
                     //Toast.makeText(getBaseContext(), "delete", Toast.LENGTH_SHORT).show();
-                    //todo доделать
                     case R.id.department_menu_edit:
                         //  Toast.makeText(getBaseContext(), "edit " + finalI, Toast.LENGTH_SHORT).show();
                       /*!  deleteFlagForEdit = true;
@@ -612,7 +622,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         int listID = db.departmentDataDao().getDepartmentDataById(id).list_id;
 
         Log.d(TAG, name + " listID: " + listID);
-        if (db.listDataDao().getAll().size() > 2) for (ListData s : db.listDataDao().getAll()) {
+        if (db.listDataDao().getAll().size() > 1) for (ListData s : db.listDataDao().getAll()) {
             if (s.list_id != chosenListData.list_id) popup.getMenu().add(s.getList_name());
         }
         else {
@@ -1164,7 +1174,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             int activeQty = activeQtyForList(i);
             if (activeQty > 0 && i != 0) {
                 //todo заменить keysForLists на запрос из базы
-                iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadge(activeQty + "").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
+                if (loadTheme() == 1) {
+                    iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadge(activeQty + "").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
+                } else {
+                    iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadge(activeQty + "").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_700).withCornersDp(16));
+                }
             } else {
                 iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
             }
@@ -1203,7 +1217,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 .withOnDrawerListener(new Drawer.OnDrawerListener() {
                     @Override
                     public void onDrawerOpened(View drawerView) {
-                        //todo как обновить количество активных позиций в открытом меню или когда slide
+
                         //  setNavigationDrawerData();
                         if (activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) > 0) {
                             drawerResult.updateBadge(drawerResult.getCurrentSelectedPosition() - 1, new StringHolder(activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) + ""));
@@ -2674,6 +2688,32 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
+                    case R.id.menu_edit_style:
+                       /* try {
+                            if (getPackageManager().getActivityInfo(getComponentName(), 0).getThemeResource() == R.style.AppTheme) {
+                                setTheme(R.style.AppDarkTheme);
+                            } else {
+                                setTheme(R.style.AppTheme);
+                            }
+                        } catch (PackageManager.NameNotFoundException e) {
+                            e.printStackTrace();
+                        }*/
+
+                        if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
+                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
+                           // saveTheme(1);
+                        } else {
+                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                           // saveTheme(2);
+                        }
+                        setNavigationDrawerData();
+                        saveTheme(AppCompatDelegate.getDefaultNightMode());
+                        finish();
+                        startActivity(new Intent(MainActivity.this, MainActivity.this.getClass()));
+                       // setContentView(R.layout.activity_main);
+                      //  viewPagerAdapter.notifyDataSetChanged();
+                        return true;
                     case R.id.menu_share:
                         String stringToSend = listToStringGenerator();
                         newShare(item.getActionView(), stringToSend);
@@ -2727,6 +2767,27 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             }
         });
 
+    }
+
+    public void saveTheme(int theme)
+    {
+        //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME,0);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        //!! Не записывается "Theme"?
+        editor.putInt("Theme", theme);
+        editor.commit();
+     //   Log.d(TAG, "saved Theme = " + sharedPreferences.getInt("Theme",1));
+      //  Log.d(TAG, "saved Theme =  " + theme);
+    }
+
+    public int loadTheme(){
+       // SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME,0);
+        //Load theme
+        int theme = sharedPreferences.getInt("Theme",1); //1 is default, when nothing is saved yet
+
+        return theme;
     }
 
     private void editListName(View view) {

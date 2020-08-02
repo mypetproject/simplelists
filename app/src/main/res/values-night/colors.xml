@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#006064</color>
+    <color name="colorPrimaryDark">#00363a</color>
+    <color name="colorAccent">#428e92</color>
+    <color name="tab_background_selected">#00cc99</color>
+    <color name="tab_background_unselected">#03DAC5</color>
+
+    <color name="material_drawer_primary">#4BAE4F</color>
+    <color name="material_drawer_primary_dark">#378D3B</color>
+    <color name="material_drawer_primary_light">#C8E5C9</color>
+    <color name="material_drawer_accent">#FE5621</color>
+
+    <color name="material_drawer_background">#303030</color>
+    <color name="material_drawer_icons">#000</color>
+    <color name="material_drawer_primary_text">#FFF</color>
+    <color name="material_drawer_secondary_text">#DEDEDE</color>
+    <color name="material_drawer_hint_text">#ABABAB</color>
+    <color name="material_drawer_contrast_text">#000</color>
+    <color name="material_drawer_divider">#555555</color>
+    <color name="material_drawer_selected">#262626</color>
+
+</resources>
