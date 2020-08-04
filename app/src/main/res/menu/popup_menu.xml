@@ -4,27 +4,27 @@
     <item
         android:id="@+id/menu_edit_style"
         android:icon="@drawable/ic_brightness"
-        android:title="Сменить тему" />
+        android:title="@string/Change_theme" />
 
     <item
         android:id="@+id/menu_edit_name"
         android:icon="@drawable/ic_edit_black_24dp"
-        android:title="Редактировать название списка" />
+        android:title="@string/edit_list_name" />
 
     <item
         android:id="@+id/menu_edit"
         android:icon="@drawable/ic_edit_black_24dp"
-        android:title="Редактировать список" />
+        android:title="@string/edit_list" />
 
     <item
         android:id="@+id/menu_share"
         android:icon="@drawable/ic_share"
-        android:title="Поделиться в..." />
+        android:title="@string/share" />
 
     <item
         android:id="@+id/menu_delete"
         android:icon="@drawable/ic_delete"
-        android:title="Удалить список" />
+        android:title="@string/delete_list" />
 
 
 

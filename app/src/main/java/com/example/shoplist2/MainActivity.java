@@ -3,61 +3,41 @@ package com.example.shoplist2;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.appcompat.view.menu.MenuPopupHelper;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.view.GravityCompat;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.usage.UsageEvents;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 
 import android.os.CountDownTimer;
-import android.os.Handler;
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
-import android.provider.Settings;
-import android.text.Editable;
 import android.text.InputType;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Adapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
-import android.widget.PopupWindow;
-import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ViewSwitcher;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
-import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
 import com.mikepenz.materialdrawer.holder.BadgeStyle;
@@ -70,8 +50,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Locale;
 
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
@@ -134,6 +113,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
     public static final String PREFS_NAME = "MyPrefsFile";
 
+    //todo!! Если списков нет, то drawer крашит приложение после второго открытия. Возможно связано с установкой выбранного листа
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -170,9 +151,32 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
                 });*/
         ListData firstElementOfList = new ListData();
-        firstElementOfList.setList_name("Добавить список");
-        firstElementOfList.list_position = 0;
-        db.listDataDao().insert(firstElementOfList);
+
+        //todo сохранять язык и делать тут проверку. Если изменился, менять все эементы data с позицией 0 ("Добавить" -> "Add" и наоборот), через strings
+
+        Log.d(TAG, "System language is " + Locale.getDefault().getLanguage());
+
+        if (db.listDataDao().getChosenList(0) == null ) {
+            firstElementOfList.setList_name(getString(R.string.add_list));
+            firstElementOfList.list_position = 0;
+            db.listDataDao().insert(firstElementOfList);
+        } else {
+            firstElementOfList = db.listDataDao().getChosenList(0);
+            firstElementOfList.setList_name(getString(R.string.add_list));
+            db.listDataDao().update(firstElementOfList);
+        }
+
+        Log.d(TAG, "Saved language is " + loadLanguage());
+        if (!Locale.getDefault().getLanguage().equals(loadLanguage()) && Locale.getDefault().getLanguage().equals("ru")) {
+            Single.fromCallable(() -> changeLanguage("ru")).subscribeOn(Schedulers.io()).subscribe();
+          //  changeLanguage("ru");
+        } else if (!Locale.getDefault().getLanguage().equals(loadLanguage()) ) {
+            Single.fromCallable(() -> changeLanguage("en")).subscribeOn(Schedulers.io()).subscribe();
+            //changeLanguage("en");
+        }
+
+        saveLanguage(Locale.getDefault().getLanguage());
+
         Log.d(TAG, "First element to list added " + db.listDataDao().getAllNamesNotFlowable());
         setKeysForLists();
         data = new ArrayList<>();
@@ -524,6 +528,21 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             moreMenuButton.setVisibility(View.GONE);
         }
 
+    }
+
+    private int changeLanguage(String lang) {
+        String str;
+        if (lang.equals("ru")) {
+            str = "Добавить";
+        } else {
+            str = "Add";
+        }
+
+        for (Data d : db.dataDao().getAllZerosElements()) {
+            d.data_name = str;
+            db.dataDao().update(d);
+        }
+        return 0;
     }
 
     private void setTabsVisibility() {
@@ -973,11 +992,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             et.setText(db.dataDao().getChosenDataById(id).data_name + " ");
             Log.d(TAG, name + " et.setText(text.getText().toString()");
             et.setSelection(et.length());
-            title = "Редактировать";
+            title = view.getContext().getString(R.string.to_edit);
         } else {
             editFlag = false;
-            title = "Добавить";
-            et.setHint("Введите сообщение");
+            title = view.getContext().getString(R.string.add);
+            et.setHint(view.getContext().getString(R.string.enter_text));
         }
 
         final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
@@ -985,10 +1004,10 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 //.setMessage("Write your message here")
                 .setCancelable(true)
                 .setView(et)
-                .setPositiveButton("Ok", null)
-                .setNeutralButton("Следующее", null)
+                .setPositiveButton(view.getContext().getString(R.string.ok), null)
+                .setNeutralButton(view.getContext().getString(R.string.next), null)
                 .setNegativeButton(
-                        "Отмена",
+                        view.getContext().getString(R.string.cancel),
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 // deleteFlagForEdit = false;
@@ -1063,7 +1082,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         Log.d(TAG, " editFlag = false; start");
                         editFlag = false;
                         Log.d(TAG, " editFlag = false; end");
-                        dialog.setTitle("Добавить");
+                        dialog.setTitle(view.getContext().getString(R.string.add));
                     } else {
                         // setNewData(str, 1, id);
                         if (position == 0) {
@@ -1701,7 +1720,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             Log.d(TAG, name + " et.setText(text.getText().toString()");
             et.setSelection(et.length());
 
-            title = "Редактировать";
+            title = getString(R.string.to_edit);
         } else if (parentParentID == R.id.tabs) {
             TextView text = new TextView(view.getContext());
             Log.d(TAG, name + " TextView(view.getContext())");
@@ -1718,11 +1737,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             Log.d(TAG, name + " et.setText(text.getText().toString()");
             et.setSelection(et.length());
 
-            title = "Редактировать";
+            title = getString(R.string.to_edit);
         } else {
             deleteFlagForEdit = false;
-            title = "Добавить";
-            et.setHint("Введите сообщение");
+            title = getString(R.string.add);
+            et.setHint(getString(R.string.enter_text));
         }
 
         Log.d(TAG, name + "AlertDialog start building");
@@ -1731,10 +1750,10 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 //.setMessage("Write your message here")
                 .setCancelable(true)
                 .setView(et)
-                .setPositiveButton("Ok", null)
-                .setNeutralButton("Следующее", null)
+                .setPositiveButton(getString(R.string.ok), null)
+                .setNeutralButton(getString(R.string.next), null)
                 .setNegativeButton(
-                        "Отмена",
+                        getString(R.string.cancel),
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 deleteFlagForEdit = false;
@@ -1860,7 +1879,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         Log.d(TAG, name + " et.setText(text.getText().toString()");
         et.setSelection(et.length());
 
-        title = "Редактировать";
+        title = getString(R.string.to_edit);
        /* } else {
             deleteFlagForEdit = false;
             title = "Добавить";
@@ -1873,10 +1892,10 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 //.setMessage("Write your message here")
                 .setCancelable(true)
                 .setView(et)
-                .setPositiveButton("Ok", null)
+                .setPositiveButton(getString(R.string.ok), null)
                 // .setNeutralButton("Следующее", null)
                 .setNegativeButton(
-                        "Отмена",
+                        getString(R.string.cancel),
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 deleteFlagForEdit = false;
@@ -1989,7 +2008,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         // chosenDepartmentData = db.departmentDataDao().getChosenDepartment(1, chosenListData.list_id);
         Data data = new Data(
                 db.departmentDataDao().getChosenDepartment(0, chosenListData.list_id).department_id,
-                0, "Добавить", 0.0f);
+                0, getString(R.string.add), 0.0f);
         db.dataDao().insert(data);
         viewPagerAdapter.notifyDataSetChanged();
 
@@ -2002,7 +2021,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         //chosenDepartmentData = db.departmentDataDao().getChosenDepartment(position, chosenListData.list_id);
         Data data = new Data(
                 db.departmentDataDao().getChosenDepartment(position, chosenListData.list_id).department_id,
-                0, "Добавить", 0.0f);
+                0, getString(R.string.add), 0.0f);
         db.dataDao().insert(data);
         Log.d(TAG, "method: 'setNewDepartmentFromParse'; departments data after insert new in db: " + db.departmentDataDao().getAllNames(chosenListData.list_id));
     }
@@ -2142,93 +2161,91 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         LinkedHashMap<String, List<String>> defaultData = new LinkedHashMap<>();
         List<String> departmentData = new ArrayList<>();
 
-        departmentData.add("Зубная паста");
-        departmentData.add("Средство для мытья посуды");
-        departmentData.add("Мешки для мусора");
-        departmentData.add("Пищевая пленка");
-        departmentData.add("Губки для посуды");
-        departmentData.add("Стиральный порошок");
-        defaultData.put("Хозтовары", departmentData);
+        departmentData.add(getString(R.string.Toothbrush));
+        departmentData.add(getString(R.string.dishwashing_liquid));
+        departmentData.add(getString(R.string.garbage_bags));
+        departmentData.add(getString(R.string.cling_film));
+        departmentData.add(getString(R.string.dish_sponges));
+        departmentData.add(getString(R.string.washing_powder));
+        defaultData.put(getString(R.string.household_goods), departmentData);
         departmentData = new ArrayList<>();
 
-        departmentData.add("Влажные салфетки");
-        departmentData.add("Шампунь");
-        departmentData.add("Мыло");
-        defaultData.put("Косметика", departmentData);
+        departmentData.add(getString(R.string.wet_wipes));
+        departmentData.add(getString(R.string.Shampoo));
+        departmentData.add(getString(R.string.soap));
+        defaultData.put(getString(R.string.cosmetics), departmentData);
         departmentData = new ArrayList<>();
 
-        departmentData.add("Свинина");
-        departmentData.add("Говядина");
-        departmentData.add("Грудка куриная");
-        departmentData.add("Фарш");
-        defaultData.put("Мясная продукция", departmentData);
+        departmentData.add(getString(R.string.pork));
+        departmentData.add(getString(R.string.beef));
+        departmentData.add(getString(R.string.сhicken));
+        departmentData.add(getString(R.string.mincemeat));
+        defaultData.put(getString(R.string.butcher_s), departmentData);
         departmentData = new ArrayList<>();
 
-        departmentData.add("Рыба");
-        departmentData.add("Креветки");
-        defaultData.put("Рыба и морепродукты", departmentData);
+        departmentData.add(getString(R.string.fish));
+        departmentData.add(getString(R.string.shrimp));
+        defaultData.put(getString(R.string.seafood), departmentData);
         departmentData = new ArrayList<>();
 
-        departmentData.add("Яблоки");
-        departmentData.add("Бананы");
-        departmentData.add("Апельсины");
-        departmentData.add("Груши");
-        departmentData.add("Капуста");
-        departmentData.add("Лук");
-        departmentData.add("Морковь");
-        departmentData.add("Картофель");
-        departmentData.add("Зелень");
-        departmentData.add("Помидоры");
-        departmentData.add("Огурцы");
-        departmentData.add("Чеснок");
-        departmentData.add("Грибы");
-        defaultData.put("Овощи и фрукты", departmentData);
+        departmentData.add(getString(R.string.apples));
+        departmentData.add(getString(R.string.bananas));
+        departmentData.add(getString(R.string.oranges));
+        departmentData.add(getString(R.string.pears));
+        departmentData.add(getString(R.string.cabbage));
+        departmentData.add(getString(R.string.onion));
+        departmentData.add(getString(R.string.carrot));
+        departmentData.add(getString(R.string.potatoes));
+        departmentData.add(getString(R.string.greens));
+        departmentData.add(getString(R.string.tomatoes));
+        departmentData.add(getString(R.string.сucumbers));
+        departmentData.add(getString(R.string.garlic));
+        departmentData.add(getString(R.string.mushrooms));
+        defaultData.put(getString(R.string.veggies_fruit), departmentData);
         departmentData = new ArrayList<>();
 
-        departmentData.add("Молоко");
-        departmentData.add("Сметана");
-        departmentData.add("Творог");
-        departmentData.add("Масло сливочное");
-        departmentData.add("Кефир");
-        departmentData.add("Сливки");
-        departmentData.add("Сыр");
-        departmentData.add("Яйца куриные");
-        defaultData.put("Молочные продукты", departmentData);
+        departmentData.add(getString(R.string.milk));
+        departmentData.add(getString(R.string.yogurt));
+        departmentData.add(getString(R.string.butter));
+        departmentData.add(getString(R.string.сream));
+        departmentData.add(getString(R.string.cheese));
+        departmentData.add(getString(R.string.сhicken_eggs));
+        defaultData.put(getString(R.string.dairy), departmentData);
         departmentData = new ArrayList<>();
 
-        departmentData.add("Оливки");
-        departmentData.add("Горошек");
-        departmentData.add("Кукуруза");
-        departmentData.add("Фасоль в томатном соусе");
-        defaultData.put("Консервы, соленья", departmentData);
+        departmentData.add(getString(R.string.olives));
+        departmentData.add(getString(R.string.peas));
+        departmentData.add(getString(R.string.corn));
+        departmentData.add(getString(R.string.beans));
+        defaultData.put(getString(R.string.canned_items), departmentData);
         departmentData = new ArrayList<>();
 
-        departmentData.add("Макароны");
-        departmentData.add("Крупа гречневая");
-        departmentData.add("Рис");
-        departmentData.add("Сахар");
-        departmentData.add("Овсянка");
-        departmentData.add("Чай");
-        departmentData.add("Кофе");
-        departmentData.add("Растительное масло");
-        defaultData.put("Бакалея", departmentData);
+        departmentData.add(getString(R.string.pasta));
+        departmentData.add(getString(R.string.buckwheat));
+        departmentData.add(getString(R.string.rice));
+        departmentData.add(getString(R.string.sugar));
+        departmentData.add(getString(R.string.oatmeal));
+        departmentData.add(getString(R.string.tea));
+        departmentData.add(getString(R.string.coffee));
+        departmentData.add(getString(R.string.olive_oil));
+        defaultData.put(getString(R.string.cereal_coffee), departmentData);
         departmentData = new ArrayList<>();
 
-        departmentData.add("Хлеб");
-        departmentData.add("Булочки");
-        departmentData.add("Кексы с изюмом");
-        departmentData.add("Шоколад");
-        defaultData.put("Хлебобулочные, сладости", departmentData);
+        departmentData.add(getString(R.string.bread));
+        departmentData.add(getString(R.string.cookies));
+        departmentData.add(getString(R.string.muffins));
+        departmentData.add(getString(R.string.chocolate));
+        defaultData.put(getString(R.string.deli), departmentData);
         departmentData = new ArrayList<>();
 
-        departmentData.add("Майонез");
-        departmentData.add("Кетчуп");
-        defaultData.put("Соусы, приправы", departmentData);
+        departmentData.add(getString(R.string.mayonnaise));
+        departmentData.add(getString(R.string.ketchup));
+        defaultData.put(getString(R.string.sauces_spices), departmentData);
         departmentData = new ArrayList<>();
 
-        departmentData.add("Вода бутилированная");
-        departmentData.add("Сок");
-        defaultData.put("Вода, напитки", departmentData);
+        departmentData.add(getString(R.string.bottled_water));
+        departmentData.add(getString(R.string.juice));
+        defaultData.put(getString(R.string.water_drinks), departmentData);
 
         int departmentPosition = 0;
 //Log.d(TAG,defaultData+"");
@@ -2238,7 +2255,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             chosenDepartmentData = db.departmentDataDao().getChosenDepartment(departmentPosition, chosenListData.list_id);
 
             //getData();
-            Data dataForInsert = new Data(chosenDepartmentData.department_id, 0, "Добавить", 0);
+            Data dataForInsert = new Data(chosenDepartmentData.department_id, 0, getString(R.string.add), 0);
             db.dataDao().insert(dataForInsert);
             int dataPosition = 1;
             Log.d(TAG, "all default data: " + defaultData.get(key));
@@ -2679,9 +2696,9 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         popup.show();
 
         if (editButtonClicked) {
-            popup.getMenu().findItem(R.id.menu_edit).setTitle("Режим редактирования");
+            popup.getMenu().findItem(R.id.menu_edit).setTitle(R.string.edit_list);
         } else {
-            popup.getMenu().findItem(R.id.menu_edit).setTitle("Закончить редактирование");
+            popup.getMenu().findItem(R.id.menu_edit).setTitle(R.string.stop_edit_list);
         }
 
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -2774,7 +2791,6 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME,0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        //!! Не записывается "Theme"?
         editor.putInt("Theme", theme);
         editor.commit();
      //   Log.d(TAG, "saved Theme = " + sharedPreferences.getInt("Theme",1));
@@ -2788,6 +2804,26 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         int theme = sharedPreferences.getInt("Theme",1); //1 is default, when nothing is saved yet
 
         return theme;
+    }
+
+    public void saveLanguage(String lang)
+    {
+        //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME,0);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("Language", lang);
+        editor.commit();
+        //   Log.d(TAG, "saved Theme = " + sharedPreferences.getInt("Theme",1));
+        //  Log.d(TAG, "saved Theme =  " + theme);
+    }
+
+    public String loadLanguage(){
+        // SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME,0);
+        //Load theme
+        String lang = sharedPreferences.getString("Language","en"); //en is default, when nothing is saved yet
+
+        return lang;
     }
 
     private void editListName(View view) {
@@ -2810,7 +2846,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         et.setText(chosenListData.getList_name());
         Log.d(TAG, name + " et end building");
 
-        String title = "Редактировать";
+        String title = getString(R.string.to_edit);
        /* if (position != 0 && parentID == R.id.rvAnimals) {
             TextView text = new TextView(view.getContext());
             Log.d(TAG, name + " TextView(view.getContext())");
@@ -2857,10 +2893,10 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 //.setMessage("Write your message here")
                 .setCancelable(true)
                 .setView(et)
-                .setPositiveButton("Ok", null)
+                .setPositiveButton(getString(R.string.ok), null)
                 // .setNeutralButton("Следующее", null)
                 .setNegativeButton(
-                        "Отмена",
+                        getString(R.string.cancel),
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 // deleteFlagForEdit = false;

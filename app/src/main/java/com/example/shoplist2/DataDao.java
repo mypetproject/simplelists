@@ -17,6 +17,9 @@ public interface DataDao {
     @Query("SELECT * FROM data_table WHERE department_id = :department_id ORDER BY data_position ASC ")
     List<Data> getAll(int department_id);
 
+    @Query("SELECT * FROM data_table WHERE data_position == 0")
+    List<Data> getAllZerosElements();
+
     @Query("SELECT data_name FROM data_table WHERE department_id = :department_id ORDER BY data_position ASC")
     List<String> getAllNames(int department_id);
 

@@ -4,15 +4,15 @@
     <item
         android:id="@+id/department_menu_edit"
         android:icon="@drawable/ic_edit_black_24dp"
-        android:title="Редактировать" />
+        android:title="@string/to_edit" />
 
     <item
         android:id="@+id/department_menu_move"
         android:icon="@drawable/ic_move"
-        android:title="Переместить в..." />
+        android:title="@string/move" />
 
     <item
         android:id="@+id/department_menu_delete"
         android:icon="@drawable/ic_delete"
-        android:title="Удалить" />
+        android:title="@string/delete" />
 </menu>
