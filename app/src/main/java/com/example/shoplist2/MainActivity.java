@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     private static List<Data> adapterListData;
     ImageButton addDepartmentButton;
     ImageButton moreMenuButton;
+    ImageButton editButton;
 
     static MainActivity mn;
     static boolean editFlag;
@@ -152,9 +153,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 });*/
         ListData firstElementOfList = new ListData();
 
-        //todo сохранять язык и делать тут проверку. Если изменился, менять все эементы data с позицией 0 ("Добавить" -> "Add" и наоборот), через strings
-
-        Log.d(TAG, "System language is " + Locale.getDefault().getLanguage());
+      //  Log.d(TAG, "System language is " + Locale.getDefault().getLanguage());
 
         if (db.listDataDao().getChosenList(0) == null ) {
             firstElementOfList.setList_name(getString(R.string.add_list));
@@ -166,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             db.listDataDao().update(firstElementOfList);
         }
 
-        Log.d(TAG, "Saved language is " + loadLanguage());
+       // Log.d(TAG, "Saved language is " + loadLanguage());
         if (!Locale.getDefault().getLanguage().equals(loadLanguage()) && Locale.getDefault().getLanguage().equals("ru")) {
             Single.fromCallable(() -> changeLanguage("ru")).subscribeOn(Schedulers.io()).subscribe();
           //  changeLanguage("ru");
@@ -424,26 +423,31 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         helper2.attachToRecyclerView(recyclerViewDepartments);
 
 
-     /*   mShareButton = (ImageButton) findViewById(R.id.share_button);
+        editButton = (ImageButton) findViewById(R.id.edit_button);
 
         if (keysForLists.size() < 2) {
-            mShareButton.setVisibility(View.INVISIBLE);
+            editButton.setVisibility(View.INVISIBLE);
         } else {
-            mShareButton.setVisibility(View.VISIBLE);
+            editButton.setVisibility(View.VISIBLE);
         }
 
-        mShareButton.setOnClickListener(new View.OnClickListener() {
+        editButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "share button clicked");
-                String stringToSend = listToStringGenerator();
-                Log.d(TAG, "string to send generated" + stringToSend);
-                newShare(v, stringToSend);
-                Log.d(TAG, "new share intent");
+                if (editButtonClicked) {
+                    editButtonClicked = false;
+                    addDepartmentButton.setVisibility(View.VISIBLE);
+
+                } else {
+                    editButtonClicked = true;
+                    addDepartmentButton.setVisibility(View.GONE);
+                }
+                setTabsVisibility();
+                viewPagerAdapter.notifyDataSetChanged();
             }
         });
 
-*/
+
         //Get swipes from background
         findViewById(R.id.backgroundLL).setOnTouchListener(new OnSwipeTouchListener(MainActivity.this) {
             int position;
