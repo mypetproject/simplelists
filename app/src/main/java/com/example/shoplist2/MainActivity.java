@@ -1454,6 +1454,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
             // Go to first element of ViewPager by press button "Back" if it is position >0
 
+        } else if (!editButtonClicked) {
+                editButtonClicked = true;
+                addDepartmentButton.setVisibility(View.GONE);
+            setTabsVisibility();
+            viewPagerAdapter.notifyDataSetChanged();
         } else if (myViewPager2.getCurrentItem() != 0) {
             Log.d(TAG, "onBackPressed() position " + myViewPager2.getCurrentItem());
             myViewPager2.setCurrentItem(0);
