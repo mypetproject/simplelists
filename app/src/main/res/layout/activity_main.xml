@@ -33,6 +33,7 @@
             android:layout_gravity="right"
             android:layout_marginEnd="20dp"
             android:background="?attr/colorAccent"
+
             android:src="@drawable/ic_edit_black_24dp"
             android:visibility="visible" />
 
@@ -68,7 +69,7 @@
             android:id="@+id/tabs_linear_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#03DAC5"
+            android:background="?attr/colorAccent"
             android:orientation="horizontal">
 
             <ImageButton
@@ -78,7 +79,7 @@
                 android:layout_gravity="center"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
-                android:background="#03DAC5"
+                android:background="?attr/colorAccent"
                 android:src="@drawable/ic_add_circle"
                 android:visibility="gone" />
 

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -114,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
     public static final String PREFS_NAME = "MyPrefsFile";
 
-    //todo!! Если списков нет, то drawer крашит приложение после второго открытия. Возможно связано с установкой выбранного листа
+
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -248,6 +249,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         // myViewPager2.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         // Log.d(TAG, " myViewPager2.setOrientation ended");
         myViewPager2.setAdapter(viewPagerAdapter);
+
+        //!!todo selected and unselected must have different colors
         tabLayout = findViewById(R.id.tabs);
         new TabLayoutMediator(tabLayout, myViewPager2, new TabLayoutMediator.TabConfigurationStrategy() {
             @Override
@@ -601,9 +604,39 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 switch (item.getItemId()) {
                     case R.id.department_menu_delete:
                         // deleteSingleItem(position, id);
-                        deleteSingleItemInDepartments(position);
-                        // Toast.makeText(getBaseContext(), "delete " + finalI, Toast.LENGTH_SHORT).show();
+                        TextView text = view.findViewById(R.id.tvDepartmentsName);
+                        final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
+                                // final AlertDialog dialog = new AlertDialog.Builder(view.getContext(), R.style.AlertDialog)
+                               // .setMessage(R.string.delete_department + " " + chosenListData.getList_name() + "'?")
+                                .setMessage( getString(R.string.delete_department) + text.getText().toString() + "'?")
+                                .setCancelable(true)
+                                .setPositiveButton(R.string.yes,
+                                        new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                deleteSingleItemInDepartments(position);
+                                                dialog.cancel();
+                                            }
+                                        })
+                                .setNegativeButton(
+                                        R.string.no,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                dialog.cancel();
+                                            }
+                                        })
+                                //  .show();
+                                .create();
+                        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+                            @Override
+                            public void onShow(DialogInterface arg0) {
+                                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                            }
+                        });
+                        dialog.show();
                         return true;
+
                     //Toast.makeText(getBaseContext(), "delete", Toast.LENGTH_SHORT).show();
                     case R.id.department_menu_edit:
                         //  Toast.makeText(getBaseContext(), "edit " + finalI, Toast.LENGTH_SHORT).show();
@@ -1018,7 +1051,16 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                 dialog.cancel();
                             }
                         })
-                .show();
+                .create();
+        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface arg0) {
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+            }
+        });
+        dialog.show();
         Log.d(TAG, name + "AlertDialog end building");
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         Log.d(TAG, name + "positiveButton start setOnClickListener");
@@ -1244,10 +1286,10 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         //  setNavigationDrawerData();
                         if (activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) > 0) {
                             drawerResult.updateBadge(drawerResult.getCurrentSelectedPosition() - 1, new StringHolder(activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) + ""));
-                            drawerResult.setSelection(selectedListIndex - 1, false);
+                           if (db.listDataDao().getAllPositions().size() > 1) drawerResult.setSelection(selectedListIndex - 1, false);
                         } else {
                             drawerResult.updateBadge(drawerResult.getCurrentSelectedPosition() - 1, null);
-                            drawerResult.setSelection(selectedListIndex - 1, false);
+                            if (db.listDataDao().getAllPositions().size() > 1) drawerResult.setSelection(selectedListIndex - 1, false);
                         }
                         Log.d(TAG, "drawerView.getVerticalScrollbarPosition() = " + drawerResult.getCurrentSelectedPosition());
                     }
@@ -1356,11 +1398,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
         if (keysForLists.size() > 1) {
             setTitle(chosenListData.getList_name());
-            drawerResult.setSelection(selectedListIndex - 1, false);
+            if (db.listDataDao().getAllPositions().size() > 1)  drawerResult.setSelection(selectedListIndex - 1, false);
             Log.d(TAG, " if (keysForLists.size() > 1) pos: " + drawerResult.getCurrentSelectedPosition());
 
         } else {
-            setTitle("<- Нажмите");
+            setTitle(getString(R.string.press_here));
         }
         Log.d(TAG, "setNavigationDrawerData() ended");
     }
@@ -1540,9 +1582,9 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             case R.id.depLl:
                 TextView text = parent.findViewById(R.id.tvDepartmentsName);
                 final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
-                        .setMessage("Удалить отдел '" + text.getText().toString() + "'?")
+                        .setMessage(R.string.delete_department + text.getText().toString() + "'?")
                         .setCancelable(true)
-                        .setPositiveButton("Да",
+                        .setPositiveButton(R.string.yes,
                                 new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
@@ -1551,7 +1593,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                     }
                                 })
                         .setNegativeButton(
-                                "Нет",
+                                R.string.no,
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
                                         dialog.cancel();
@@ -1764,7 +1806,16 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                 dialog.cancel();
                             }
                         })
-                .show();
+                .create();
+        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface arg0) {
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+            }
+        });
+        dialog.show();
         Log.d(TAG, name + "AlertDialog end building");
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         Log.d(TAG, name + "positiveButton start setOnClickListener");
@@ -1906,7 +1957,15 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                 dialog.cancel();
                             }
                         })
-                .show();
+                .create();
+        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface arg0) {
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+            }
+        });
+        dialog.show();
         Log.d(TAG, name + "AlertDialog end building");
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         Log.d(TAG, name + "positiveButton start setOnClickListener");
@@ -2113,9 +2172,9 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                     data.clear();
                     Log.d(TAG, "data clear");
                     final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
-                            .setMessage("Заполнить списком по умолчанию?")
+                            .setMessage(R.string.fill_list_with_default_values)
                             .setCancelable(true)
-                            .setPositiveButton("Да",
+                            .setPositiveButton(R.string.yes,
                                     new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
@@ -2133,7 +2192,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                         }
                                     })
                             .setNegativeButton(
-                                    "Нет",
+                                    R.string.no,
                                     new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int id) {
                                             editButtonClicked = false;
@@ -2142,7 +2201,15 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                             dialog.cancel();
                                         }
                                     })
-                            .show();
+                            .create();
+                    dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+                        @Override
+                        public void onShow(DialogInterface arg0) {
+                            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                        }
+                    });
+                    dialog.show();
                     Log.d(TAG, "dialog built");
                 }
                 viewPagerAdapter.notifyDataSetChanged();
@@ -2755,9 +2822,10 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         return true;
                     case R.id.menu_delete:
                         final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
-                                .setMessage("Удалить список '" + chosenListData.getList_name() + "'?")
+                       // final AlertDialog dialog = new AlertDialog.Builder(view.getContext(), R.style.AlertDialog)
+                                .setMessage(getString(R.string.delete_list) + chosenListData.getList_name() + "'?")
                                 .setCancelable(true)
-                                .setPositiveButton("Да",
+                                .setPositiveButton(R.string.yes,
                                         new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
@@ -2766,14 +2834,22 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                             }
                                         })
                                 .setNegativeButton(
-                                        "Нет",
+                                        R.string.no,
                                         new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int id) {
                                                 dialog.cancel();
                                             }
                                         })
-                                .show();
-
+                              //  .show();
+                                .create();
+                        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+                            @Override
+                            public void onShow(DialogInterface arg0) {
+                                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                            }
+                        });
+                        dialog.show();
                         return true;
                     case R.id.menu_edit_name:
                         //addDepartmentButton = (ImageButton) findViewById(R.id.add_department_button);
@@ -2907,7 +2983,15 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                 dialog.cancel();
                             }
                         })
-                .show();
+                .create();
+        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface arg0) {
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+            }
+        });
+        dialog.show();
         Log.d(TAG, name + "AlertDialog end building");
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         Log.d(TAG, name + "positiveButton start setOnClickListener");

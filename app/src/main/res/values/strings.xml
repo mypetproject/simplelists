@@ -87,9 +87,17 @@
     <string name="edit_list">Edit list</string>
     <string name="stop_edit_list">Stop edit list</string>
     <string name="share">Share</string>
-    <string name="delete_list">Delete list</string>
+    <string name="delete_list">Delete list \'\</string>
+    <string name="toolbar_delete_list">Delete list</string>
     <string name="to_edit">Edit</string>
     <string name="move">Move</string>
     <string name="delete">Delete</string>
         <string name="add">Add</string>
+    <string name="press_here"><![CDATA[<- Press]]></string>
+    <string name="delete_department">Delete department \'\</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="fill_list_with_default_values">Fill list with default values?</string>
+
+
 </resources>

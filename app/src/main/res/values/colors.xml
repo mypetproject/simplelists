@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#03DAC5</color>
+    <color name="colorPrimary">#000000</color> <!-- drawer text color -->
+    <color name="colorPrimaryDark">#ca9b52</color>
+    <color name="colorPrimaryLight">#ffffb0</color>
+    <color name="colorAccent">#ffcc80</color>
     <color name="tab_background_selected">#00cc99</color>
     <color name="tab_background_unselected">#03DAC5</color>
-
+    <color name="image_btn">#FF000000</color>
+    <color name="add_department_button">#FF000000</color>
 
 
 </resources>
+
+<!--
+<color name="colorPrimary">#ffffb0</color>
+<color name="colorPrimary">#6200EE</color>
+<color name="colorPrimaryDark">#3700B3</color>
+ <color name="colorAccent">#03DAC5</color>
+-->

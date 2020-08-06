@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">#006064</color>
-    <color name="colorPrimaryDark">#00363a</color>
-    <color name="colorAccent">#428e92</color>
+    <color name="colorPrimaryDark">#000a12</color>
+    <color name="colorPrimaryLight">#4f5b62</color>
+    <color name="colorAccent">#263238</color>
     <color name="tab_background_selected">#00cc99</color>
     <color name="tab_background_unselected">#03DAC5</color>
 
-    <color name="material_drawer_primary">#4BAE4F</color>
+    <color name="material_drawer_primary">#ffffff</color> <!-- drawer text color -->
     <color name="material_drawer_primary_dark">#378D3B</color>
     <color name="material_drawer_primary_light">#C8E5C9</color>
     <color name="material_drawer_accent">#FE5621</color>
@@ -19,5 +20,8 @@
     <color name="material_drawer_contrast_text">#000</color>
     <color name="material_drawer_divider">#555555</color>
     <color name="material_drawer_selected">#262626</color>
+
+    <color name="image_btn">#ffefef</color>
+    <color name="add_department_button">#FFF</color>
 
 </resources>

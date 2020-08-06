@@ -44,6 +44,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
     // ListDataDatabase db = App.getInstance().getDatabase();
     private static final String TAG = "myLogs";
+    private Context context;
 
 
     // data is passed into the constructor
@@ -54,6 +55,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         //List<Data> datax = MainActivity.db.dataDao().getAll(MainActivity.chosenDepartmentData.department_id);
        this.mData = data;
       //  this.mDataQty = data_qty;
+        context = context;
     }
 
     // inflates the row layout from xml when needed
@@ -180,9 +182,9 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
                 holder.mCount.setTextColor(Color.parseColor("#808080"));
             } else {
                 holder.myTextView.setPaintFlags(holder.myTextView.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
-                holder.myTextView.setTextColor(Color.parseColor("#000000"));
+                holder.myTextView.setTextColor(ContextCompat.getColor(holder.myTextView.getContext(), R.color.image_btn));
                 holder.mCount.setPaintFlags(holder.myTextView.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
-                holder.mCount.setTextColor(Color.parseColor("#000000"));
+                holder.mCount.setTextColor(ContextCompat.getColor(holder.mCount.getContext(), R.color.image_btn));
             }
         Log.d(TAG, "onBindViewHolder if (position >=... ended");
             holder.myTextView.setText(animal);
