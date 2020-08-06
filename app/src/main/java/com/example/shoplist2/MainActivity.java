@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
     public static final String PREFS_NAME = "MyPrefsFile";
 
-
+//todo! killer feature: block list by fingerprint and pin
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -428,11 +428,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
         editButton = (ImageButton) findViewById(R.id.edit_button);
 
-        if (keysForLists.size() < 2) {
-            editButton.setVisibility(View.INVISIBLE);
-        } else {
-            editButton.setVisibility(View.VISIBLE);
-        }
+
+        setEditButtonVisibility();
+
 
         editButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -535,6 +533,14 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             moreMenuButton.setVisibility(View.GONE);
         }
 
+    }
+
+    private void setEditButtonVisibility() {
+        if (keysForLists.size() < 2) {
+            editButton.setVisibility(View.INVISIBLE);
+        } else {
+            editButton.setVisibility(View.VISIBLE);
+        }
     }
 
     private int changeLanguage(String lang) {
@@ -2216,6 +2222,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 if (moreMenuButton.getVisibility() == View.GONE) {
                     moreMenuButton.setVisibility(View.VISIBLE);
                 }
+                setEditButtonVisibility();
                 break;
         }
     }
@@ -2513,6 +2520,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 tabsll.setVisibility(View.GONE);
         }
         viewPagerAdapter.notifyDataSetChanged();
+        setEditButtonVisibility();
     }
 
     private void deleteSingleItemInList(int position) {
