@@ -96,5 +96,8 @@
     <string name="yes">Да</string>
     <string name="no">Нет</string>
     <string name="fill_list_with_default_values">Заполнить списком по умолчанию?</string>
+    <string name="add_department">Добавить отдел</string>
+    <string name="add_new_list">Добавить список</string>
+    <string name="unique_alert">Введите уникальное название</string>
 
 </resources>

@@ -1795,6 +1795,14 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             et.setSelection(et.length());
 
             title = getString(R.string.to_edit);
+        } else if (view.getId() == R.id.add_department_button) {
+            deleteFlagForEdit = false;
+            title = getString(R.string.add_department);
+            et.setHint(getString(R.string.enter_text));
+        } else if (parentID == R.id.material_drawer_recycler_view) {
+            deleteFlagForEdit = false;
+            title = getString(R.string.add_new_list);
+            et.setHint(getString(R.string.enter_text));
         } else {
             deleteFlagForEdit = false;
             title = getString(R.string.add);
@@ -1802,22 +1810,25 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         }
 
         Log.d(TAG, name + "AlertDialog start building");
-        final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
-                .setTitle(title)
+       // final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
+        final AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                builder.setTitle(title);
                 //.setMessage("Write your message here")
-                .setCancelable(true)
-                .setView(et)
-                .setPositiveButton(getString(R.string.ok), null)
-                .setNeutralButton(getString(R.string.next), null)
-                .setNegativeButton(
+                builder.setCancelable(true);
+                builder.setView(et);
+                builder.setPositiveButton(getString(R.string.ok), null);
+                if (parentID != R.id.material_drawer_recycler_view) builder.setNeutralButton(getString(R.string.next), null);
+                builder.setNegativeButton(
                         getString(R.string.cancel),
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 deleteFlagForEdit = false;
                                 dialog.cancel();
                             }
-                        })
-                .create();
+                        });
+
+                AlertDialog dialog = builder.create();
+
         dialog.setOnShowListener( new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface arg0) {
@@ -1842,7 +1853,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
                     dialog.dismiss();
                 } else {
-                    Toast.makeText(view.getContext(), "Введите уникальное название", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -1860,12 +1871,21 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         //imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
                         inputButtonClicked(str, insertIndex, view);
                         et.getText().clear();
-                        et.setHint("Введите сообщение");
-                        dialog.setTitle("Добавить");
+                        et.setHint(getString(R.string.enter_text));
+                       //dialog.setTitle("Добавить");
+                        String title;
+                        if (view.getId() == R.id.add_department_button) {
+                            title = getString(R.string.add_department);
+                        } else if (parentID == R.id.material_drawer_recycler_view) {
+                            title = getString(R.string.add_new_list);
+                        } else {
+                            title = getString(R.string.add);
+                        }
+                        dialog.setTitle(title);
                         setTabsOnLongClickListener();
 
                     } else {
-                        Toast.makeText(view.getContext(), "Введите уникальное название отдела", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
                     }
                 }
 
@@ -1990,7 +2010,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                     inputButtonClicked(str, insertIndex, view);
                     dialog.dismiss();
                 } else {
-                    Toast.makeText(view.getContext(), "Введите уникальное название", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -2209,6 +2229,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                             editButtonClicked = false;
                                             setTabsVisibility();
                                             addDepartmentButton.setVisibility(View.VISIBLE);
+                                            inputTextDialogWindow(findViewById(R.id.add_department_button), 1, 0);
                                             dialog.cancel();
                                         }
                                     })
@@ -3019,7 +3040,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                     saveEditedListName(str);
                     dialog.dismiss();
                 } else {
-                    Toast.makeText(view.getContext(), "Введите уникальное название", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
                 }
 
             }
