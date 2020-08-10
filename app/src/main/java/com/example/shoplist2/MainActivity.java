@@ -22,7 +22,9 @@ import android.os.Bundle;
 
 import android.os.CountDownTimer;
 import android.os.SystemClock;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -154,9 +156,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 });*/
         ListData firstElementOfList = new ListData();
 
-      //  Log.d(TAG, "System language is " + Locale.getDefault().getLanguage());
+        //  Log.d(TAG, "System language is " + Locale.getDefault().getLanguage());
 
-        if (db.listDataDao().getChosenList(0) == null ) {
+        if (db.listDataDao().getChosenList(0) == null) {
             firstElementOfList.setList_name(getString(R.string.add_list));
             firstElementOfList.list_position = 0;
             db.listDataDao().insert(firstElementOfList);
@@ -166,11 +168,11 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             db.listDataDao().update(firstElementOfList);
         }
 
-       // Log.d(TAG, "Saved language is " + loadLanguage());
+        // Log.d(TAG, "Saved language is " + loadLanguage());
         if (!Locale.getDefault().getLanguage().equals(loadLanguage()) && Locale.getDefault().getLanguage().equals("ru")) {
             Single.fromCallable(() -> changeLanguage("ru")).subscribeOn(Schedulers.io()).subscribe();
-          //  changeLanguage("ru");
-        } else if (!Locale.getDefault().getLanguage().equals(loadLanguage()) ) {
+            //  changeLanguage("ru");
+        } else if (!Locale.getDefault().getLanguage().equals(loadLanguage())) {
             Single.fromCallable(() -> changeLanguage("en")).subscribeOn(Schedulers.io()).subscribe();
             //changeLanguage("en");
         }
@@ -250,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         // Log.d(TAG, " myViewPager2.setOrientation ended");
         myViewPager2.setAdapter(viewPagerAdapter);
 
-        //!!todo selected and unselected must have different colors
+        //todo selected and unselected must have different background colors
         tabLayout = findViewById(R.id.tabs);
         new TabLayoutMediator(tabLayout, myViewPager2, new TabLayoutMediator.TabConfigurationStrategy() {
             @Override
@@ -273,7 +275,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 } else {
                     textViewQty.setVisibility(View.GONE);
                 }
+
                 tab.setCustomView(view);
+
                 /*LinearLayout tabsll = (LinearLayout) findViewById(R.id.tabs_linear_layout);
                 if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() == 0) {
                     tabsll.setVisibility(View.GONE);
@@ -295,6 +299,34 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
             }
         }).attach();
+//tabLayout.setTabTextColors(Color.parseColor("#727272"), Color.parseColor("#ffffff"));
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                View view = tab.getCustomView();
+               //LinearLayout linearLayout = (LinearLayout) findViewById(R.id.custom_tab_ll);
+              //  linearLayout.setBackgroundColor(Color.parseColor(getString(R.color.image_btn)));
+                TextView selectedText = (TextView) view.findViewById(R.id.tvDepartmentsName);
+                selectedText.setTextColor(Color.parseColor(getString(R.color.selected_tab_text)));
+             //   selectedText.setBackgroundColor(Color.parseColor("#ffb74d"));
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+                View view = tab.getCustomView();
+                // RelativeLayout relativeLayout = (RelativeLayout) view.findViewById(R.id.layout_background);
+                // relativeLayout.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.white));
+                TextView selectedText = (TextView) view.findViewById(R.id.tvDepartmentsName);
+                selectedText.setTextColor(Color.parseColor(getString(R.color.image_btn)));
+              //  selectedText.setBackgroundColor(Color.parseColor(getString(R.color.colorAccent)));
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
 
         setTabsOnLongClickListener();
 
@@ -533,6 +565,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             moreMenuButton.setVisibility(View.GONE);
         }
 
+        //for bug with tab text color when app started
+        viewPagerAdapter.notifyDataSetChanged();
     }
 
     private void setEditButtonVisibility() {
@@ -613,8 +647,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         TextView text = view.findViewById(R.id.tvDepartmentsName);
                         final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
                                 // final AlertDialog dialog = new AlertDialog.Builder(view.getContext(), R.style.AlertDialog)
-                               // .setMessage(R.string.delete_department + " " + chosenListData.getList_name() + "'?")
-                                .setMessage( getString(R.string.delete_department) + text.getText().toString() + "'?")
+                                // .setMessage(R.string.delete_department + " " + chosenListData.getList_name() + "'?")
+                                .setMessage(getString(R.string.delete_department) + text.getText().toString() + "'?")
                                 .setCancelable(true)
                                 .setPositiveButton(R.string.yes,
                                         new DialogInterface.OnClickListener() {
@@ -633,11 +667,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                         })
                                 //  .show();
                                 .create();
-                        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+                        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
                             @Override
                             public void onShow(DialogInterface arg0) {
-                                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
-                                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
+                                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
                             }
                         });
                         dialog.show();
@@ -1058,12 +1092,12 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                             }
                         })
                 .create();
-        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface arg0) {
-                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
-                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
             }
         });
         dialog.show();
@@ -1292,10 +1326,12 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         //  setNavigationDrawerData();
                         if (activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) > 0) {
                             drawerResult.updateBadge(drawerResult.getCurrentSelectedPosition() - 1, new StringHolder(activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) + ""));
-                           if (db.listDataDao().getAllPositions().size() > 1) drawerResult.setSelection(selectedListIndex - 1, false);
+                            if (db.listDataDao().getAllPositions().size() > 1)
+                                drawerResult.setSelection(selectedListIndex - 1, false);
                         } else {
                             drawerResult.updateBadge(drawerResult.getCurrentSelectedPosition() - 1, null);
-                            if (db.listDataDao().getAllPositions().size() > 1) drawerResult.setSelection(selectedListIndex - 1, false);
+                            if (db.listDataDao().getAllPositions().size() > 1)
+                                drawerResult.setSelection(selectedListIndex - 1, false);
                         }
                         Log.d(TAG, "drawerView.getVerticalScrollbarPosition() = " + drawerResult.getCurrentSelectedPosition());
                     }
@@ -1404,7 +1440,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
         if (keysForLists.size() > 1) {
             setTitle(chosenListData.getList_name());
-            if (db.listDataDao().getAllPositions().size() > 1)  drawerResult.setSelection(selectedListIndex - 1, false);
+            if (db.listDataDao().getAllPositions().size() > 1)
+                drawerResult.setSelection(selectedListIndex - 1, false);
             Log.d(TAG, " if (keysForLists.size() > 1) pos: " + drawerResult.getCurrentSelectedPosition());
 
         } else {
@@ -1455,8 +1492,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             // Go to first element of ViewPager by press button "Back" if it is position >0
 
         } else if (!editButtonClicked) {
-                editButtonClicked = true;
-                addDepartmentButton.setVisibility(View.GONE);
+            editButtonClicked = true;
+            addDepartmentButton.setVisibility(View.GONE);
             setTabsVisibility();
             viewPagerAdapter.notifyDataSetChanged();
         } else if (myViewPager2.getCurrentItem() != 0) {
@@ -1810,50 +1847,56 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         }
 
         Log.d(TAG, name + "AlertDialog start building");
-       // final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
+        // final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
         final AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
-                builder.setTitle(title);
-                //.setMessage("Write your message here")
-                builder.setCancelable(true);
-                builder.setView(et);
-                builder.setPositiveButton(getString(R.string.ok), null);
-                if (parentID != R.id.material_drawer_recycler_view) builder.setNeutralButton(getString(R.string.next), null);
-                builder.setNegativeButton(
-                        getString(R.string.cancel),
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                deleteFlagForEdit = false;
-                                dialog.cancel();
-                            }
-                        });
+        builder.setTitle(title)
+        //.setMessage("Write your message here")
+        .setCancelable(true)
+        .setView(et)
+        .setPositiveButton(getString(R.string.ok), null);
+        if (parentID != R.id.material_drawer_recycler_view)
+            builder.setNeutralButton(getString(R.string.next), null);
+        builder.setNegativeButton(
+                getString(R.string.cancel),
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        deleteFlagForEdit = false;
+                        dialog.cancel();
+                    }
+                });
 
-                AlertDialog dialog = builder.create();
+        AlertDialog dialog = builder.create();
 
-        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface arg0) {
-                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
-                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
             }
         });
         dialog.show();
         Log.d(TAG, name + "AlertDialog end building");
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         Log.d(TAG, name + "positiveButton start setOnClickListener");
+        //todo If last characters is space, than delete them all by do while cycle
         positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String str = et.getText().toString();
-                if (uniqueTest(str, view)) {
-                    InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
-                    inputButtonClicked(str, insertIndex, view);
-                    setTabsOnLongClickListener();
+                if (str.length() <= 12) {
+                    if (uniqueTest(str, view)) {
+                        InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+                        inputButtonClicked(str, insertIndex, view);
+                        setTabsOnLongClickListener();
 
-                    dialog.dismiss();
+                        dialog.dismiss();
+                    } else {
+                        Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, R.string.too_large_name, Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -1865,6 +1908,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             @Override
             public void onClick(View v) {
                 String str = et.getText().toString();
+                if (str.length() <= 12) {
                 if (!str.isEmpty()) {
                     if (uniqueTest(str, view)) {
                         // InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -1872,7 +1916,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         inputButtonClicked(str, insertIndex, view);
                         et.getText().clear();
                         et.setHint(getString(R.string.enter_text));
-                       //dialog.setTitle("Добавить");
+                        //dialog.setTitle("Добавить");
                         String title;
                         if (view.getId() == R.id.add_department_button) {
                             title = getString(R.string.add_department);
@@ -1887,6 +1931,9 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                     } else {
                         Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
                     }
+                }
+                } else {
+                    Toast.makeText(MainActivity.this, R.string.too_large_name, Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -1910,6 +1957,48 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         Log.d(TAG, name + "et start et.requestFocus()");
         et.requestFocus();
         Log.d(TAG, name + "et end et.requestFocus()");
+
+        et.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+               // Log.d(TAG, name + " s: '" + s.toString()+"' s size: " + s.toString().length() + " count: " + count);
+
+                if (s.toString().length() > 9) {
+                    dialog.setTitle(title + "                     " + (12 - s.toString().length()));
+                } else {
+                    dialog.setTitle(title);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+               /* Log.d(TAG, name + " s: '" + s.toString()+"' s size: " + s.toString().length());
+                if (s.toString().length() > 9) {
+
+                    Toast toast = Toast.makeText(MainActivity.this, "" + (12 - s.toString().length()), Toast.LENGTH_SHORT);
+                    //Toast toast = Toast.makeText(view.getContext(), "" + db.dataDao().getChosenDataById(id).data_qty, Toast.LENGTH_SHORT);
+                    CountDownTimer toastCountDown;
+                    toastCountDown = new CountDownTimer(100, 10) {
+                        @Override
+                        public void onTick(long millisUntilFinished) {
+                            toast.show();
+                        }
+
+                        @Override
+                        public void onFinish() {
+                            toast.cancel();
+                        }
+                    };
+                    toast.show();
+                    toastCountDown.start();
+                }*/
+            }
+        });
     }
 
     public void editDepartmentDialogWindow(final View view, final int insertIndex, final int position) {
@@ -1989,11 +2078,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                             }
                         })
                 .create();
-        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface arg0) {
-                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
             }
         });
         dialog.show();
@@ -2234,11 +2323,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                         }
                                     })
                             .create();
-                    dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+                    dialog.setOnShowListener(new DialogInterface.OnShowListener() {
                         @Override
                         public void onShow(DialogInterface arg0) {
-                            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
-                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
+                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
                         }
                     });
                     dialog.show();
@@ -2543,7 +2632,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             moreMenuButton.setVisibility(View.GONE);
             //addDepartmentButton.setVisibility(View.GONE);
             LinearLayout tabsll = (LinearLayout) findViewById(R.id.tabs_linear_layout);
-                tabsll.setVisibility(View.GONE);
+            tabsll.setVisibility(View.GONE);
         }
         viewPagerAdapter.notifyDataSetChanged();
         setEditButtonVisibility();
@@ -2824,17 +2913,17 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
                             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
-                           // saveTheme(1);
+                            // saveTheme(1);
                         } else {
                             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                           // saveTheme(2);
+                            // saveTheme(2);
                         }
                         setNavigationDrawerData();
                         saveTheme(AppCompatDelegate.getDefaultNightMode());
                         finish();
                         startActivity(new Intent(MainActivity.this, MainActivity.this.getClass()));
-                       // setContentView(R.layout.activity_main);
-                      //  viewPagerAdapter.notifyDataSetChanged();
+                        // setContentView(R.layout.activity_main);
+                        //  viewPagerAdapter.notifyDataSetChanged();
                         return true;
                     case R.id.menu_share:
                         String stringToSend = listToStringGenerator();
@@ -2856,7 +2945,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         return true;
                     case R.id.menu_delete:
                         final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
-                       // final AlertDialog dialog = new AlertDialog.Builder(view.getContext(), R.style.AlertDialog)
+                                // final AlertDialog dialog = new AlertDialog.Builder(view.getContext(), R.style.AlertDialog)
                                 .setMessage(getString(R.string.delete_list) + chosenListData.getList_name() + "'?")
                                 .setCancelable(true)
                                 .setPositiveButton(R.string.yes,
@@ -2874,13 +2963,13 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                                 dialog.cancel();
                                             }
                                         })
-                              //  .show();
+                                //  .show();
                                 .create();
-                        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+                        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
                             @Override
                             public void onShow(DialogInterface arg0) {
-                                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
-                                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
+                                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
                             }
                         });
                         dialog.show();
@@ -2900,30 +2989,28 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
     }
 
-    public void saveTheme(int theme)
-    {
+    public void saveTheme(int theme) {
         //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME,0);
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("Theme", theme);
         editor.commit();
-     //   Log.d(TAG, "saved Theme = " + sharedPreferences.getInt("Theme",1));
-      //  Log.d(TAG, "saved Theme =  " + theme);
+        //   Log.d(TAG, "saved Theme = " + sharedPreferences.getInt("Theme",1));
+        //  Log.d(TAG, "saved Theme =  " + theme);
     }
 
-    public int loadTheme(){
-       // SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME,0);
+    public int loadTheme() {
+        // SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, 0);
         //Load theme
-        int theme = sharedPreferences.getInt("Theme",1); //1 is default, when nothing is saved yet
+        int theme = sharedPreferences.getInt("Theme", 1); //1 is default, when nothing is saved yet
 
         return theme;
     }
 
-    public void saveLanguage(String lang)
-    {
+    public void saveLanguage(String lang) {
         //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME,0);
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("Language", lang);
         editor.commit();
@@ -2931,11 +3018,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         //  Log.d(TAG, "saved Theme =  " + theme);
     }
 
-    public String loadLanguage(){
+    public String loadLanguage() {
         // SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME,0);
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, 0);
         //Load theme
-        String lang = sharedPreferences.getString("Language","en"); //en is default, when nothing is saved yet
+        String lang = sharedPreferences.getString("Language", "en"); //en is default, when nothing is saved yet
 
         return lang;
     }
@@ -3018,11 +3105,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                             }
                         })
                 .create();
-        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface arg0) {
-                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(),R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
             }
         });
         dialog.show();

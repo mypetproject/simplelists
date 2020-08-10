@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+ <!-- https://material.io/resources/color/#!/?view.left=0&view.right=0&primary.color=263238 -->
     <color name="colorPrimary">#006064</color>
     <color name="colorPrimaryDark">#000a12</color>
     <color name="colorPrimaryLight">#4f5b62</color>
@@ -24,4 +25,6 @@
     <color name="image_btn">#ffefef</color>
     <color name="add_department_button">#FFF</color>
 
+    <color name="selected_tab_text">#b0bec5</color>
+    <color name="tab_indicator">#819ca9</color>
 </resources>
