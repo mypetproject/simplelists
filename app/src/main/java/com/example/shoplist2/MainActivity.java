@@ -1884,21 +1884,23 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             @Override
             public void onClick(View v) {
                 String str = et.getText().toString();
-                if (str.length() <= 12) {
-                    if (uniqueTest(str, view)) {
-                        InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
-                        inputButtonClicked(str, insertIndex, view);
-                        setTabsOnLongClickListener();
+                 str = deleteSpacesInTheEnd(str);
+                if (str.length() > 0) {
+                    if (str.length() <= 12) {
+                        if (uniqueTest(str, view)) {
+                            InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+                            inputButtonClicked(str, insertIndex, view);
+                            setTabsOnLongClickListener();
 
-                        dialog.dismiss();
+                            dialog.dismiss();
+                        } else {
+                            Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
+                        }
                     } else {
-                        Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, R.string.too_large_name, Toast.LENGTH_SHORT).show();
                     }
-                } else {
-                    Toast.makeText(MainActivity.this, R.string.too_large_name, Toast.LENGTH_SHORT).show();
                 }
-
             }
 
         });
@@ -1908,6 +1910,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             @Override
             public void onClick(View v) {
                 String str = et.getText().toString();
+                str = deleteSpacesInTheEnd(str);
                 if (str.length() <= 12) {
                 if (!str.isEmpty()) {
                     if (uniqueTest(str, view)) {
@@ -2000,6 +2003,22 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             }
         });
     }
+
+    private String deleteSpacesInTheEnd(String str) {
+       // String name = new Object() {
+      //  }.getClass().getEnclosingMethod().getName();
+        if (str.length() > 0) {
+            while (str.charAt(str.length()-1) == ' ') {
+             //   Log.d(TAG, name + " department name in while start: '" + str + "'");
+                str = str.substring(0,str.length()-1);
+             //   Log.d(TAG, name + " department name in while end: '" + str + "'");
+                if (str.length() == 0) break;
+            };
+        };
+      //  Log.d(TAG, name + " department name: " + str);
+        return str;
+    }
+
 
     public void editDepartmentDialogWindow(final View view, final int insertIndex, final int position) {
         String name = new Object() {
