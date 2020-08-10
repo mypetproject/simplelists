@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- https://material.io/resources/color/#!/?view.left=0&view.right=0&primary.color=FFCC80 -->
     <color name="colorPrimary">#000000</color> <!-- drawer text color -->
     <color name="colorPrimaryDark">#ca9b52</color>
     <color name="colorPrimaryLight">#ffffb0</color>
@@ -10,6 +11,8 @@
     <color name="add_department_button">#FF000000</color>
 
 
+    <color name="selected_tab_text">#005662</color>
+    <color name="tab_indicator">#000000</color>
 </resources>
 
 <!--
