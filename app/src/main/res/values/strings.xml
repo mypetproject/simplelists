@@ -94,11 +94,11 @@
     <string name="delete">Delete</string>
         <string name="add">Add item</string>
     <string name="press_here"><![CDATA[<- Press]]></string>
-    <string name="delete_department">Delete department \'\</string>
+    <string name="delete_department">Delete section \'\</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="fill_list_with_default_values">Fill list with default values?</string>
-    <string name="add_department">Add department</string>
+    <string name="add_department">Add section</string>
     <string name="add_new_list">Add list</string>
     <string name="unique_alert">Enter a unique name</string>
     <string name="too_large_name">Name is too long</string>

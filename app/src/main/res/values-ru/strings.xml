@@ -92,11 +92,11 @@
     <string name="delete">Удалить</string>
     <string name="add">Добавить</string>
     <string name="press_here"><![CDATA[<- Нажмите]]></string>
-    <string name="delete_department">Удалить отдел \'</string>
+    <string name="delete_department">Удалить раздел \'</string>
     <string name="yes">Да</string>
     <string name="no">Нет</string>
     <string name="fill_list_with_default_values">Заполнить списком по умолчанию?</string>
-    <string name="add_department">Добавить отдел</string>
+    <string name="add_department">Добавить раздел</string>
     <string name="add_new_list">Добавить список</string>
     <string name="unique_alert">Введите уникальное название</string>
     <string name="too_large_name">Слишком длинное название</string>
