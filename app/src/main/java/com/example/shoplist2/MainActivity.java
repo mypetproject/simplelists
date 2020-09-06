@@ -305,11 +305,11 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 View view = tab.getCustomView();
-               //LinearLayout linearLayout = (LinearLayout) findViewById(R.id.custom_tab_ll);
-              //  linearLayout.setBackgroundColor(Color.parseColor(getString(R.color.image_btn)));
+                //LinearLayout linearLayout = (LinearLayout) findViewById(R.id.custom_tab_ll);
+                //  linearLayout.setBackgroundColor(Color.parseColor(getString(R.color.image_btn)));
                 TextView selectedText = (TextView) view.findViewById(R.id.tvDepartmentsName);
                 selectedText.setTextColor(Color.parseColor(getString(R.color.selected_tab_text)));
-             //   selectedText.setBackgroundColor(Color.parseColor("#ffb74d"));
+                //   selectedText.setBackgroundColor(Color.parseColor("#ffb74d"));
             }
 
             @Override
@@ -319,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 // relativeLayout.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.white));
                 TextView selectedText = (TextView) view.findViewById(R.id.tvDepartmentsName);
                 selectedText.setTextColor(Color.parseColor(getString(R.color.image_btn)));
-              //  selectedText.setBackgroundColor(Color.parseColor(getString(R.color.colorAccent)));
+                //  selectedText.setBackgroundColor(Color.parseColor(getString(R.color.colorAccent)));
             }
 
             @Override
@@ -1112,22 +1112,24 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 // if (uniqueTest(str, view)) {
                 // InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 //  imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
-                if (editFlag) {
-                    editOldData(str, id);
-                } else {
-                    if (position == 0) {
-                        setNewData(str, 1, id);
+                str = deleteSpacesInTheEndInItem(str);
+                if (!str.isEmpty()) {
+                    if (editFlag) {
+                        editOldData(str, id);
                     } else {
-                        setNewData(str, position, id);
+                        if (position == 0) {
+                            setNewData(str, 1, id);
+                        } else {
+                            setNewData(str, position, id);
+                        }
                     }
-                }
-                Log.d(TAG, name + "positiveButton ended setNewData");
+                    Log.d(TAG, name + "positiveButton ended setNewData");
 
-                adapterListData.clear();
-                adapterListData.addAll(db.dataDao().getAll(
-                        db.dataDao().getDepartmentIdByDataId(id)
-                ));
-                Log.d(TAG, name + " adapterListData.addAll");
+                    adapterListData.clear();
+                    adapterListData.addAll(db.dataDao().getAll(
+                            db.dataDao().getDepartmentIdByDataId(id)
+                    ));
+                    Log.d(TAG, name + " adapterListData.addAll");
                 /*if (!editFlag) {
 
                     adapter.notifyItemInserted(1);
@@ -1135,11 +1137,12 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 } else {
                     adapter.notifyItemChanged(position);
                 }*/
-                viewPagerAdapter.notifyDataSetChanged();
-                dialog.dismiss();
+                    viewPagerAdapter.notifyDataSetChanged();
+                    dialog.dismiss();
               /*  } else {
                     Toast.makeText(view.getContext(), "Введите уникальное название", Toast.LENGTH_SHORT).show();
                 }*/
+                }
                 Log.d(TAG, name + "positiveButton ended onClick");
             }
 
@@ -1161,6 +1164,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                     Toast.makeText(view.getContext(), "Введите уникальное название отдела", Toast.LENGTH_SHORT).show();
                 }
 */
+                str = deleteSpacesInTheEndInItem(str);
                 if (!str.isEmpty()) {
                     boolean tempEditFlag = editFlag;
                     if (editFlag) {
@@ -1850,10 +1854,10 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         // final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
         final AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
         builder.setTitle(title)
-        //.setMessage("Write your message here")
-        .setCancelable(true)
-        .setView(et)
-        .setPositiveButton(getString(R.string.ok), null);
+                //.setMessage("Write your message here")
+                .setCancelable(true)
+                .setView(et)
+                .setPositiveButton(getString(R.string.ok), null);
         if (parentID != R.id.material_drawer_recycler_view)
             builder.setNeutralButton(getString(R.string.next), null);
         builder.setNegativeButton(
@@ -1884,8 +1888,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             @Override
             public void onClick(View v) {
                 String str = et.getText().toString();
-                 str = deleteSpacesInTheEnd(str);
-                 boolean isItShare = isItShare(str);
+                str = deleteSpacesInTheEnd(str);
+                boolean isItShare = isItShare(str);
                 if (str.length() > 0) {
                     if (str.length() <= 12 || isItShare) {
                         if (uniqueTest(str, view)) {
@@ -1913,29 +1917,29 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 String str = et.getText().toString();
                 str = deleteSpacesInTheEnd(str);
                 if (str.length() <= 12) {
-                if (!str.isEmpty()) {
-                    if (uniqueTest(str, view)) {
-                        // InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        //imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
-                        inputButtonClicked(str, insertIndex, view);
-                        et.getText().clear();
-                        et.setHint(getString(R.string.enter_text));
-                        //dialog.setTitle("Добавить");
-                        String title;
-                        if (view.getId() == R.id.add_department_button) {
-                            title = getString(R.string.add_department);
-                        } else if (parentID == R.id.material_drawer_recycler_view) {
-                            title = getString(R.string.add_new_list);
-                        } else {
-                            title = getString(R.string.add);
-                        }
-                        dialog.setTitle(title);
-                        setTabsOnLongClickListener();
+                    if (!str.isEmpty()) {
+                        if (uniqueTest(str, view)) {
+                            // InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            //imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+                            inputButtonClicked(str, insertIndex, view);
+                            et.getText().clear();
+                            et.setHint(getString(R.string.enter_text));
+                            //dialog.setTitle("Добавить");
+                            String title;
+                            if (view.getId() == R.id.add_department_button) {
+                                title = getString(R.string.add_department);
+                            } else if (parentID == R.id.material_drawer_recycler_view) {
+                                title = getString(R.string.add_new_list);
+                            } else {
+                                title = getString(R.string.add);
+                            }
+                            dialog.setTitle(title);
+                            setTabsOnLongClickListener();
 
-                    } else {
-                        Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
+                        }
                     }
-                }
                 } else {
                     Toast.makeText(MainActivity.this, R.string.too_large_name, Toast.LENGTH_SHORT).show();
                 }
@@ -1970,7 +1974,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-               // Log.d(TAG, name + " s: '" + s.toString()+"' s size: " + s.toString().length() + " count: " + count);
+                // Log.d(TAG, name + " s: '" + s.toString()+"' s size: " + s.toString().length() + " count: " + count);
 
                 if (s.toString().length() > 9) {
                     dialog.setTitle(title + "                     " + (12 - s.toString().length()));
@@ -2010,17 +2014,36 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     }
 
     private String deleteSpacesInTheEnd(String str) {
-       // String name = new Object() {
-      //  }.getClass().getEnclosingMethod().getName();
+        // String name = new Object() {
+        //  }.getClass().getEnclosingMethod().getName();
         if (str.length() > 0) {
-            while (str.charAt(str.length()-1) == ' ') {
-             //   Log.d(TAG, name + " department name in while start: '" + str + "'");
-                str = str.substring(0,str.length()-1);
-             //   Log.d(TAG, name + " department name in while end: '" + str + "'");
+            while (str.charAt(str.length() - 1) == ' ') {
+                //   Log.d(TAG, name + " department name in while start: '" + str + "'");
+                str = str.substring(0, str.length() - 1);
+                //   Log.d(TAG, name + " department name in while end: '" + str + "'");
                 if (str.length() == 0) break;
-            };
-        };
-      //  Log.d(TAG, name + " department name: " + str);
+            }
+            ;
+        }
+        ;
+        //  Log.d(TAG, name + " department name: " + str);
+        return str;
+    }
+
+    static private String deleteSpacesInTheEndInItem(String str) {
+        // String name = new Object() {
+        //  }.getClass().getEnclosingMethod().getName();
+        if (str.length() > 0) {
+            while (str.charAt(str.length() - 1) == ' ') {
+                //   Log.d(TAG, name + " department name in while start: '" + str + "'");
+                str = str.substring(0, str.length() - 1);
+                //   Log.d(TAG, name + " department name in while end: '" + str + "'");
+                if (str.length() == 0) break;
+            }
+            ;
+        }
+        ;
+        //  Log.d(TAG, name + " department name: " + str);
         return str;
     }
 
@@ -2591,7 +2614,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
             adapter.notifyItemRemoved(position); // notify the adapter about the removed item
             viewPagerAdapter.notifyItemChanged(position);
-          //   Single.fromCallable(() -> notifyWithDelay(800,0)).subscribeOn(Schedulers.io()).subscribe();
+            //   Single.fromCallable(() -> notifyWithDelay(800,0)).subscribeOn(Schedulers.io()).subscribe();
         }
     }
 
@@ -3335,8 +3358,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         mn.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                   viewPagerAdapter.notifyItemChanged(0);
-              //  viewPagerAdapter.notifyDataSetChanged();
+                viewPagerAdapter.notifyItemChanged(0);
+                //  viewPagerAdapter.notifyDataSetChanged();
             }
         });
         return 0;
