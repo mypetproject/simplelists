@@ -1885,8 +1885,9 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             public void onClick(View v) {
                 String str = et.getText().toString();
                  str = deleteSpacesInTheEnd(str);
+                 boolean isItShare = isItShare(str);
                 if (str.length() > 0) {
-                    if (str.length() <= 12) {
+                    if (str.length() <= 12 || isItShare) {
                         if (uniqueTest(str, view)) {
                             InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                             imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
@@ -2002,6 +2003,10 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 }*/
             }
         });
+    }
+
+    private boolean isItShare(String str) {
+        return str.contains("-=***=-");
     }
 
     private String deleteSpacesInTheEnd(String str) {
@@ -2585,8 +2590,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             ));
 
             adapter.notifyItemRemoved(position); // notify the adapter about the removed item
-            viewPagerAdapter.notifyItemChanged(0);
-            // Single.fromCallable(() -> notifyWithDelay(500)).subscribeOn(Schedulers.io()).subscribe();
+            viewPagerAdapter.notifyItemChanged(position);
+          //   Single.fromCallable(() -> notifyWithDelay(800,0)).subscribeOn(Schedulers.io()).subscribe();
         }
     }
 
@@ -3330,8 +3335,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         mn.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                //   viewPagerAdapter.notifyItemChanged(0);
-                viewPagerAdapter.notifyDataSetChanged();
+                   viewPagerAdapter.notifyItemChanged(0);
+              //  viewPagerAdapter.notifyDataSetChanged();
             }
         });
         return 0;

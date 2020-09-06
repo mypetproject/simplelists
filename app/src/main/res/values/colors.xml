@@ -13,6 +13,7 @@
 
     <color name="selected_tab_text">#005662</color>
     <color name="tab_indicator">#000000</color>
+    <color name="header">@drawable/header2</color>
 </resources>
 
 <!--
