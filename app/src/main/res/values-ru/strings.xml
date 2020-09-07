@@ -100,5 +100,6 @@
     <string name="add_new_list">Добавить список</string>
     <string name="unique_alert">Введите уникальное название</string>
     <string name="too_large_name">Слишком длинное название</string>
+    <string name="holy_spirit_space">Место для Святого Духа</string>
 
 </resources>

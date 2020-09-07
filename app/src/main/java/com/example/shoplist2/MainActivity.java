@@ -108,6 +108,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     private ArrayList<String> arrayList = new ArrayList<>();
     private static List<Data> adapterListData;
     ImageButton addDepartmentButton;
+    ImageButton addDepartmentEndButton;
+    TextView holySpiritTV;
     ImageButton moreMenuButton;
     ImageButton editButton;
 
@@ -470,10 +472,13 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 if (editButtonClicked) {
                     editButtonClicked = false;
                     addDepartmentButton.setVisibility(View.VISIBLE);
-
+                    addDepartmentEndButton.setVisibility(View.VISIBLE);
+                    holySpiritTV.setVisibility(View.VISIBLE);
                 } else {
                     editButtonClicked = true;
                     addDepartmentButton.setVisibility(View.GONE);
+                    addDepartmentEndButton.setVisibility(View.GONE);
+                    holySpiritTV.setVisibility(View.GONE);
                 }
                 setTabsVisibility();
                 viewPagerAdapter.notifyDataSetChanged();
@@ -548,8 +553,20 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             }
         });*/
 
+        holySpiritTV = (TextView) findViewById(R.id.holy_spirit_tv);
+
         addDepartmentButton = (ImageButton) findViewById(R.id.add_department_button);
         addDepartmentButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //todo переделать inputTextDialogWindow?
+                inputTextDialogWindow(v, 1, 0);
+                Log.d(TAG, "addDepartmentButton id" + v.toString());
+            }
+        });
+
+        addDepartmentEndButton = (ImageButton) findViewById(R.id.add_department_button_in_the_end);
+        addDepartmentEndButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //todo переделать inputTextDialogWindow?
@@ -877,6 +894,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             switch (view.getId()) {
                 case R.id.image_more:
                     dataHolderMenuItemButtonClick(view, position, id);
+
                     break;
                 default:
                     inputTextDialogWindowForViewHolderItem(view, position, id);
@@ -1498,6 +1516,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         } else if (!editButtonClicked) {
             editButtonClicked = true;
             addDepartmentButton.setVisibility(View.GONE);
+            addDepartmentEndButton.setVisibility(View.GONE);
+            holySpiritTV.setVisibility(View.GONE);
             setTabsVisibility();
             viewPagerAdapter.notifyDataSetChanged();
         } else if (myViewPager2.getCurrentItem() != 0) {
@@ -1836,7 +1856,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             et.setSelection(et.length());
 
             title = getString(R.string.to_edit);
-        } else if (view.getId() == R.id.add_department_button) {
+        } else if (view.getId() == R.id.add_department_button
+        || view.getId() == R.id.add_department_button_in_the_end) {
             deleteFlagForEdit = false;
             title = getString(R.string.add_department);
             et.setHint(getString(R.string.enter_text));
@@ -1926,7 +1947,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                             et.setHint(getString(R.string.enter_text));
                             //dialog.setTitle("Добавить");
                             String title;
-                            if (view.getId() == R.id.add_department_button) {
+                            if (view.getId() == R.id.add_department_button
+                                    || view.getId() == R.id.add_department_button_in_the_end ) {
                                 title = getString(R.string.add_department);
                             } else if (parentID == R.id.material_drawer_recycler_view) {
                                 title = getString(R.string.add_new_list);
@@ -2222,10 +2244,10 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         //return ((!db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str) && parentID == R.id.rvDepartments) ||
         return (parentID == R.id.rvAnimals
                 || (!db.listDataDao().getAllNamesNotFlowable().contains(str) && parentID == R.id.material_drawer_recycler_view)
-                || (view.getId() == R.id.add_department_button && !db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str))
+                || ((view.getId() == R.id.add_department_button || view.getId() == R.id.add_department_button_in_the_end) && !db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str))
                 || (parentParentID == R.id.tabs && !db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str))
                 || (view.getId() == R.id.more_menu_button && !db.listDataDao().getAllNames().contains(str))
-                || (view.getId() == R.id.add_department_button && !db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str))
+                || ((view.getId() == R.id.add_department_button || view.getId() == R.id.add_department_button) && !db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str))
         );
     }
 
@@ -2302,7 +2324,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         View parentParent = (View) view.getParent().getParent();
         int parentParentID = parentParent.getId();
 
-        if (view.getId() == R.id.add_department_button) {
+        if (view.getId() == R.id.add_department_button
+        || view.getId() == R.id.add_department_button_in_the_end) {
             setNewDepartment(s);
         } else if (parentParentID == R.id.tabs) {
             int id = db.departmentDataDao().getChosenDepartment(insertIndex, chosenListData.list_id).department_id;
@@ -2353,6 +2376,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                             viewPagerAdapter.notifyDataSetChanged();
 
                                             addDepartmentButton.setVisibility(View.GONE);
+                                            addDepartmentEndButton.setVisibility(View.GONE);
+                                            holySpiritTV.setVisibility(View.GONE);
                                             editButtonClicked = true;
                                             setNavigationDrawerData();
                                             setTabsVisibility();
@@ -2365,6 +2390,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                             editButtonClicked = false;
                                             setTabsVisibility();
                                             addDepartmentButton.setVisibility(View.VISIBLE);
+                                            addDepartmentEndButton.setVisibility(View.VISIBLE);
+                                            holySpiritTV.setVisibility(View.VISIBLE);
                                             inputTextDialogWindow(findViewById(R.id.add_department_button), 1, 0);
                                             dialog.cancel();
                                         }
@@ -2596,6 +2623,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     }
 
     private static void deleteSingleItem(int position, int id) {
+        int departmentID;
         if (position >= (db.dataDao().getAllNames(db.dataDao().getDepartmentIdByDataId(id)).size() - db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id)).CrossOutNumber)) {
             DepartmentData temp = db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id));
             temp.CrossOutNumber--;
@@ -2603,7 +2631,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         }
         //  Log.d(TAG,"deleteSingleItem started");
         if (position > 0) {
-            int departmentID = db.dataDao().getDepartmentIdByDataId(id);
+            departmentID = db.dataDao().getDepartmentIdByDataId(id);
             db.dataDao().deleteSingleDataById(id);
             db.dataDao().decrementValues(departmentID, position);
 
@@ -2613,7 +2641,31 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             ));
 
             adapter.notifyItemRemoved(position); // notify the adapter about the removed item
-            viewPagerAdapter.notifyItemChanged(position);
+
+            TabLayout.Tab tab = tabLayout.getTabAt(myViewPager2.getCurrentItem());
+            View tabView = tab.getCustomView();
+            TextView textViewQty = (TextView) tabView.findViewById(R.id.tvDepartmentsQty);
+            //TextView textView = (TextView) tabView.findViewById(R.id.tvDepartmentsName);
+            Log.d(TAG, "TextView textView ");
+            int activeItem = db.dataDao().getAllNames(departmentID).size()
+                    - db.departmentDataDao().getDepartmentDataById(departmentID).CrossOutNumber - 1;
+            Log.d(TAG, "int activeItem");
+
+            // textView.setText(db.departmentDataDao().getAll(chosenListData.list_id).get(myViewPager2.getCurrentItem()).department_name);
+            //  textView.setText(db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id)).department_name);
+            Log.d(TAG, " textView.setText");
+            if (activeItem != 0) {
+                textViewQty.setVisibility(View.VISIBLE);
+                textViewQty.setText(String.valueOf(activeItem));
+            } else {
+                textViewQty.setVisibility(View.GONE);
+            }
+            Log.d(TAG, " if (activeItem != 0) ");
+            tab.setCustomView(tabView);
+            Log.d(TAG, "tab.setCustomView(tabView);");
+
+            // viewPagerAdapter.notifyItemChanged(position);
+
             //   Single.fromCallable(() -> notifyWithDelay(800,0)).subscribeOn(Schedulers.io()).subscribe();
         }
     }
@@ -2981,9 +3033,13 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         if (editButtonClicked) {
                             editButtonClicked = false;
                             addDepartmentButton.setVisibility(View.VISIBLE);
+                            addDepartmentEndButton.setVisibility(View.VISIBLE);
+                            holySpiritTV.setVisibility(View.VISIBLE);
                         } else {
                             editButtonClicked = true;
                             addDepartmentButton.setVisibility(View.GONE);
+                            addDepartmentEndButton.setVisibility(View.GONE);
+                            holySpiritTV.setVisibility(View.GONE);
                         }
                         setTabsVisibility();
                         viewPagerAdapter.notifyDataSetChanged();

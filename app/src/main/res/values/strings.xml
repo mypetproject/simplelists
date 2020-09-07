@@ -102,6 +102,7 @@
     <string name="add_new_list">Add list</string>
     <string name="unique_alert">Enter a unique name</string>
     <string name="too_large_name">Name is too long</string>
+    <string name="holy_spirit_space">Holy Spirit space</string>
 
 
 </resources>
