@@ -2906,22 +2906,36 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         int departmentPosition = 0;
         if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() > 0)
             for (String s : db.departmentDataDao().getAllNames(chosenListData.list_id)) {
-                //chosenDepartmentData = db.departmentDataDao().getChosenDepartment(departmentPosition, chosenListData.list_id);
+
                 int chosenDepartmentID = db.departmentDataDao().getChosenDepartment(departmentPosition, chosenListData.list_id).department_id;
                 // stringToSend += s + "[";
-                stringToSend += s + "\n-*-\n";
-                int dataCounter = 0;
-                for (Data dataS : db.dataDao().getAllForGenerator(chosenDepartmentID)) {
-                    Float data_qty_float = dataS.data_qty;
-                    stringToSend += dataS.data_name + "-->" + data_qty_float.toString().replaceAll("\\.?0*$", "") + ";\n";
-                    dataCounter++;
-                    if (dataCounter == (db.dataDao().getAllForGenerator(chosenDepartmentID).size() - db.departmentDataDao().getChosenDepartment(departmentPosition, chosenListData.list_id).CrossOutNumber))
-                        break;
+                if ((db.dataDao().getAllForGenerator(chosenDepartmentID).size() - db.departmentDataDao().getDepartmentDataById(chosenDepartmentID).CrossOutNumber) != 0) {
+                    stringToSend += s + "\n-*-\n";
+                    int dataCounter = 0;
+                    for (Data dataS : db.dataDao().getAllForGenerator(chosenDepartmentID)) {
+                        if (dataCounter == (db.dataDao().getAllForGenerator(chosenDepartmentID).size() - db.departmentDataDao().getDepartmentDataById(chosenDepartmentID).CrossOutNumber)) {
+                            Log.d(TAG, "BREAKER dataCounter: " + dataCounter + " size: " + db.dataDao().getAllForGenerator(chosenDepartmentID).size() + " CrossOutNumber: "
+                                    + db.departmentDataDao().getDepartmentDataById(chosenDepartmentID).CrossOutNumber
+                                    + " department position: " + departmentPosition);
+                            break;
+                        }
+                        Log.d(TAG, "dataCounter: " + dataCounter + " size: " + db.dataDao().getAllForGenerator(chosenDepartmentID).size() +
+                                " CrossOutNumber: " + db.departmentDataDao().getDepartmentDataById(chosenDepartmentID).CrossOutNumber
+                                + " department position: " + departmentPosition);
+
+                        Float data_qty_float = dataS.data_qty;
+                        stringToSend += dataS.data_name + "-->" + data_qty_float.toString().replaceAll("\\.?0*$", "") + ";\n";
+                        dataCounter++;
+
+                    }
+                    if (dataCounter > 0) {
+                        stringToSend = stringToSend.substring(0, stringToSend.length() - 2);
+                    } else {
+                        stringToSend = stringToSend.substring(0, stringToSend.length() - 1);
+                    }
+                    //stringToSend += "]";
+                    stringToSend += "\n---\n";
                 }
-                if (dataCounter > 0)
-                    stringToSend = stringToSend.substring(0, stringToSend.length() - 2);
-                //stringToSend += "]";
-                stringToSend += "\n---\n";
                 departmentPosition++;
             }
         // stringToSend += "]";
