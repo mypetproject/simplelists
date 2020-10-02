@@ -24,6 +24,8 @@ public class DepartmentData {
 
         public int CrossOutNumber;
 
+        public int visibility = 0;
+
         public DepartmentData(int list_id, int department_position, String department_name, int CrossOutNumber) {
                 this.list_id = list_id;
                 this.department_position = department_position;

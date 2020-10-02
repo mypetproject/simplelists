@@ -15,7 +15,7 @@ public class App extends Application {
         super.onCreate();
         instance = this;
         database = Room.databaseBuilder(this, ListDataDatabase.class, "lists_database")
-                .addMigrations(ListDataDatabase.MIGRATION_1_2)
+                .addMigrations(ListDataDatabase.MIGRATION_1_2, ListDataDatabase.MIGRATION_2_3)
                 .allowMainThreadQueries()
                 .build();
     }

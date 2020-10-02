@@ -12,6 +12,11 @@
         android:title="@string/move" />
 
     <item
+        android:id="@+id/department_menu_hide_or_show"
+        android:icon="@drawable/ic_visibility_off_black"
+        android:title="@string/hide_department" />
+
+    <item
         android:id="@+id/department_menu_delete"
         android:icon="@drawable/ic_delete"
         android:title="@string/delete" />

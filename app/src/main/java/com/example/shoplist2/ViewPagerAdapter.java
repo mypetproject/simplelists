@@ -65,11 +65,28 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
       //  holder.itemView.setBackgroundColor(color);
         List<Data> temp = new ArrayList<>();
         Log.d(TAG, " temp " + MainActivity.chosenListData.getList_name());
-        temp.addAll(MainActivity.db.dataDao().getAll(
+
+        if (!MainActivity.editButtonClicked) {
+            temp.addAll(MainActivity.db.dataDao().getAll(
+                    MainActivity.db.departmentDataDao().getChosenDepartment(
+                            adapterPosition,
+                            MainActivity.chosenListData.list_id
+                    ).department_id));
+        } else {
+            List<Integer> allVisibleDepartmentsID = MainActivity.db.departmentDataDao().getAllVisibleDepartmentsID(MainActivity.chosenListData.list_id);
+            temp.addAll(MainActivity.db.dataDao().getAll(
+                    allVisibleDepartmentsID.get(adapterPosition)));
+
+        }
+
+        /*temp.addAll(MainActivity.db.dataDao().getAll(
                 MainActivity.db.departmentDataDao().getChosenDepartment(
                         adapterPosition,
                         MainActivity.chosenListData.list_id
-                ).department_id));
+                ).department_id));*/
+       /* List<Integer> allVisibleDepartmentsID = MainActivity.db.departmentDataDao().getAllVisibleDepartmentsID(MainActivity.chosenListData.list_id);
+        temp.addAll(MainActivity.db.dataDao().getAll(
+                allVisibleDepartmentsID.get(adapterPosition)));*/
 
 
 
@@ -229,10 +246,21 @@ MainActivity.hideTab(position);
                 }
             }
         } else */if (MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id) != null) {
-            itemCount = MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id).size();
+            if (!MainActivity.editButtonClicked) {
+                itemCount = MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id).size();
+                Log.d(TAG, "getItemCount() !MainActivity.editButtonClicked) item count: " + itemCount);
+            } else {
+                itemCount = MainActivity.db.departmentDataDao().getAllVisibleDepartmentsID(MainActivity.chosenListData.list_id).size();
+                Log.d(TAG, "getItemCount() MainActivity.editButtonClicked) item count: " + itemCount);
+
+            }
+
+
+
         }
-       // Log.d(TAG, "getItemCount() ended");
+        Log.d(TAG, "getItemCount() ended");
     return itemCount;
+     //   return 20;
     }
 
     /*@Override

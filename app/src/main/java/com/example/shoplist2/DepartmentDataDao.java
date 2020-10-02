@@ -44,14 +44,20 @@ public interface DepartmentDataDao {
         @Query("SELECT * FROM departments_table WHERE department_position = :position AND list_id = :list_id")
         DepartmentData getChosenDepartment(int position, int list_id);
 
+        @Query("SELECT department_id FROM departments_table WHERE visibility == 1 AND list_id = :list_id ORDER BY department_position ASC")
+        List<Integer> getAllVisibleDepartmentsID(int list_id);
+
+        @Query("SELECT department_name FROM departments_table WHERE visibility == 1 AND list_id = :list_id ORDER BY department_position ASC")
+        List<String> getAllVisibleDepartmentNames(int list_id);
+
         @Query("SELECT * FROM departments_table WHERE department_name = :name AND list_id = :list_id")
         DepartmentData getChosenDepartmentByName(String name, int list_id);
 
         @Query("SELECT * FROM departments_table WHERE department_id = :department_id")
         DepartmentData getDepartmentDataById(int department_id);
 
-        @Query("DELETE FROM departments_table WHERE department_position = :position AND list_id = :list_id ")
-        void deleteSingleData(int position, int list_id);
+        @Query("DELETE FROM departments_table WHERE department_id = :id AND list_id = :list_id ")
+        void deleteSingleData(int id, int list_id);
 
         @Update
         void update(DepartmentData departmentData);

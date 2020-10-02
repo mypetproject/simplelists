@@ -280,6 +280,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
                //Toast.makeText(view.getContext(), "Departments " + view.getResources().getResourceName(view.getId()), Toast.LENGTH_SHORT).show();
                // mClickListener.onItemClick(view, getAdapterPosition());
+
                mClickListener.onItemClick(view, getAdapterPosition(), mData.get(getAdapterPosition()).data_id);
            }
        }
