@@ -106,6 +106,8 @@
     <string name="hide_department">Hide</string>
     <string name="show_department">Show</string>
     <string name="hide_section">Hide section?</string>
+    <string name="import_list">Import list</string>
+    <string name="import_list_dialog">Import list?</string>
 
 
 </resources>

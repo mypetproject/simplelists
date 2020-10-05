@@ -17,6 +17,11 @@
         android:title="@string/edit_list" />
 
     <item
+        android:id="@+id/menu_import"
+        android:icon="@drawable/ic_import_export_black_24dp"
+        android:title="@string/import_list" />
+
+    <item
         android:id="@+id/menu_share"
         android:icon="@drawable/ic_share"
         android:title="@string/share" />

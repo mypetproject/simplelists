@@ -2406,14 +2406,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 break;
             case R.id.material_drawer_recycler_view:
                 parser(s);
-                setKeysForLists();
-                setKeysForDepartments();
-                selectedListIndex = 2;
-                setNavigationDrawerData();
-                // if (keysForDepartments.size() > 1) {
+
+                updateNavigationDrawer();
+
                 if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() > 0) {
                     chosenDepartmentData = db.departmentDataDao().getChosenDepartment(0, chosenListData.list_id);
-                    //getData();
                 } else {
                     data.clear();
                     Log.d(TAG, "data clear");
@@ -2453,13 +2450,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                         }
                                     })
                             .create();
-                    dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-                        @Override
-                        public void onShow(DialogInterface arg0) {
-                            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
-                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
-                        }
-                    });
+                    setAlertDialogButtonsColor(view,dialog);
                     dialog.show();
                     Log.d(TAG, "dialog built");
                 }
@@ -2571,9 +2562,10 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         defaultData.put(getString(R.string.water_drinks), departmentData);
 
         int departmentPosition = 0;
-//Log.d(TAG,defaultData+"");
+
         for (String key : defaultData.keySet()) {
             DepartmentData dpData = new DepartmentData(chosenListData.list_id, departmentPosition, key, 0);
+            dpData.visibility = 1;
             db.departmentDataDao().insert(dpData);
             chosenDepartmentData = db.departmentDataDao().getChosenDepartment(departmentPosition, chosenListData.list_id);
 
@@ -3152,12 +3144,62 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         // adapter.notifyDataSetChanged();
                         // adapterForDepartments.notifyDataSetChanged();
                         return true;
+                    case R.id.menu_import:
+                        setAlertDialogForImport(view);
+
+
+                        return true;
                     default:
                         return false;
                 }
             }
         });
 
+    }
+
+    private void setAlertDialogForImport(View view) {
+
+        final EditText et = new EditText(view.getContext());
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        et.setLayoutParams(lp);
+        et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+        et.setHint(R.string.enter_text);
+
+        final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
+                .setMessage(R.string.import_list_dialog)
+                .setView(et)
+                .setCancelable(true)
+                .setPositiveButton(R.string.ok,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String str = et.getText().toString();
+                                if (!str.isEmpty()) parser(str);
+
+                                updateNavigationDrawer();
+
+                                dialog.cancel();
+                            }
+                        })
+                .setNegativeButton(
+                        R.string.cancel,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        })
+                .create();
+        setAlertDialogButtonsColor(view,dialog);
+        dialog.show();
+    }
+
+    private void updateNavigationDrawer() {
+        setKeysForLists();
+        setKeysForDepartments();
+        selectedListIndex = 2;
+        setNavigationDrawerData();
     }
 
     public void saveTheme(int theme) {
