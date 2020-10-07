@@ -76,6 +76,9 @@ public interface DataDao {
     @Query("DELETE FROM data_table WHERE data_id = :id")
     void deleteSingleDataById(int id);
 
+    @Query("DELETE FROM data_table WHERE department_id = :id AND data_position > 0")
+    void deleteAllDataByDepartmentID(int id);
+
     @Query("UPDATE data_table SET data_qty = data_qty - 1 WHERE data_id = :id")
     void minusQty(int id);
 

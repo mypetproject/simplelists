@@ -104,6 +104,7 @@
     <string name="too_large_name">Name is too long</string>
     <string name="holy_spirit_space">Holy Spirit space</string>
     <string name="hide_department">Hide</string>
+    <string name="clean_department">Clean section</string>
     <string name="show_department">Show</string>
     <string name="hide_section">Hide section?</string>
     <string name="import_list">Import list</string>

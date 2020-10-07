@@ -104,6 +104,7 @@
     <string name="hide_department">Скрыть</string>
     <string name="show_department">Показать</string>
     <string name="hide_section">Скрыть раздел?</string>
+    <string name="clean_department">Очистить раздел</string>
     <string name="import_list">Импортировать список</string>
     <string name="import_list_dialog">Импортировать список?</string>
 

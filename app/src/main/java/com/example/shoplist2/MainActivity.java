@@ -664,7 +664,6 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.department_menu_delete:
-                        // deleteSingleItem(position, id);
                         TextView text = view.findViewById(R.id.tvDepartmentsName);
                         final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
                                 // final AlertDialog dialog = new AlertDialog.Builder(view.getContext(), R.style.AlertDialog)
@@ -686,7 +685,6 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                                 dialog.cancel();
                                             }
                                         })
-                                //  .show();
                                 .create();
                         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
                             @Override
@@ -718,12 +716,43 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         createDepartmentMoveSubMenu(view, id, position);
                     case R.id.department_menu_hide_or_show:
                         hideOrShowDepartment(id);
-                        return false;
+                        return true;
+                    case R.id.department_clean:
+                       cleanDepartmentAlertDialog(view, id);
+                        return true;
                     default:
                         return false;
                 }
             }
         });
+    }
+
+    private void cleanDepartmentAlertDialog(View view, int id) {
+
+        TextView text = view.findViewById(R.id.tvDepartmentsName);
+
+        final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
+                .setMessage(getString(R.string.clean_department) + "'" + text.getText().toString() + "'?")
+                .setCancelable(true)
+                .setPositiveButton(R.string.yes,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                deleteAllItemInDepartment(id);
+                                dialog.cancel();
+                            }
+                        })
+                .setNegativeButton(
+                        R.string.no,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        })
+                .create();
+
+        setAlertDialogButtonsColor(view,dialog);
+        dialog.show();
     }
 
     private void hideOrShowDepartment(int id) {
@@ -819,39 +848,6 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 return false;
             }
         });
-    }
-
-    static void hideTab(int position) {
-
-        //   tabLayout.removeTab(tabLayout.getTabAt(position));
-
-        ((LinearLayout) tabLayout.getTabAt(position).view).setVisibility(View.GONE);
-        //TabLayout.Tab tab = tabLayout.getTabAt(position+1);
-        //tab.select();
-        //View view =  tabLayout.getTabAt(position).getCustomView();
-        //  tabLayout.removeTab(tabLayout.getTabAt(position));
-        //view.setVisibility(View.GONE);
-        //  view.setLayoutParams(new RecyclerView.LayoutParams(0,0));
-//View parent = (View) tabLayout.getParent();
-//parent.setVisibility(View.GONE);
-        //To hide the first tab
-        //((LinearLayout) parent.getTabAt(position).view).setVisibility(View.GONE);
-        //Set the next  tab as selected tab
-        // TabLayout.Tab tab = tabLayout.getTabAt(0);
-        //  tab.select();
-
-    }
-
-    static void showTab(int position) {
-
-        ((LinearLayout) tabLayout.getTabAt(position).view).setVisibility(View.VISIBLE);
-
-        //To hide the first tab
-        //((ViewGroup) tabLayout.getChildAt(position)).getChildAt(position).setVisibility(View.VISIBLE);
-        //Set the next  tab as selected tab
-        // TabLayout.Tab tab = tabLayout.getTabAt(0);
-        //  tab.select();
-
     }
 
     private void getListOfDepartmentsData() {
@@ -1296,7 +1292,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     }
 
 
-    private static void setAdapterData(List<Data> adapterData) {
+    public static void setAdapterData(List<Data> adapterData) {
         adapterListData = adapterData;
     }
 
@@ -2716,6 +2712,39 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         }
     }
 
+    private static void deleteAllItemInDepartment(int departmentID) {
+
+            db.dataDao().deleteAllDataByDepartmentID(departmentID);
+            changeTabQty(departmentID);
+            viewPagerAdapter.notifyDataSetChanged();
+
+    }
+
+    private static void changeTabQty(int departmentID) {
+        TabLayout.Tab tab = tabLayout.getTabAt(myViewPager2.getCurrentItem());
+        View tabView = tab.getCustomView();
+        TextView textViewQty = (TextView) tabView.findViewById(R.id.tvDepartmentsQty);
+        Log.d(TAG, "TextView textView ");
+        int activeItem = db.dataDao().getAllNames(departmentID).size()
+                - db.departmentDataDao().getDepartmentDataById(departmentID).CrossOutNumber - 1;
+        Log.d(TAG, "int activeItem");
+
+        // textView.setText(db.departmentDataDao().getAll(chosenListData.list_id).get(myViewPager2.getCurrentItem()).department_name);
+        //  textView.setText(db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id)).department_name);
+        Log.d(TAG, " textView.setText");
+        if (activeItem != 0) {
+            textViewQty.setVisibility(View.VISIBLE);
+            textViewQty.setText(String.valueOf(activeItem));
+        } else {
+            textViewQty.setVisibility(View.GONE);
+            if (db.dataDao().getAllNames(departmentID).size() < 2) {
+                setDepartmentInvisible(departmentID);
+            } else {
+                setHideDepartmentAlertDialog(myViewPager2.getRootView());
+            }
+        }
+        tab.setCustomView(tabView);
+    }
 
     private void deleteSingleItemInDepartments(int departmentID) {
         String name = new Object() {
@@ -3454,51 +3483,70 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
     }
 
-    private static void createDataMoveSubMenu(View view, int id, int position) {
+    private static void createDataMoveSubMenu(View view, int dataID, int dataPosition) {
         String name = new Object() {
         }.getClass().getEnclosingMethod().getName();
         Log.d(TAG, name + " started");
+
         PopupMenu popup = new PopupMenu(view.getContext(), view);
-        // popup.setOnMenuItemClickListener(this);
-        //popup2.inflate(R.menu.data_popup_menu);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             popup.setForceShowIcon(true);
         }
-        Log.d(TAG, name + " popup = new PopupMenu");
-        int depID = db.dataDao().getDepartmentIdByDataId(id);
+
+        int depID = db.dataDao().getDepartmentIdByDataId(dataID);
         int listID = db.departmentDataDao().getDepartmentDataById(depID).list_id;
-        Log.d(TAG, name + " listID: " + listID);
+
         for (DepartmentData s : db.departmentDataDao().getAll(listID)) {
             if (s.department_id != depID) popup.getMenu().add(s.department_name);
         }
-        Log.d(TAG, name + " for (DepartmentData s");
+
         popup.show();
-        Log.d(TAG, "createDataMoveSubMenu popup set");
+
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 View parent = (View) view.getParent();
                 TextView text = parent.findViewById(R.id.tvAnimalName);
                 EditText dataQty = parent.findViewById(R.id.etAnimalCount);
-                Log.d(TAG, name + " ext.getText().toString() listID: " + text.getText().toString());
+
+                DepartmentData newDepartmentData = db.departmentDataDao().getChosenDepartmentByName(item.getTitle().toString(), listID);
+
                 Data newData = new Data(
-                        db.departmentDataDao().getChosenDepartmentByName(item.getTitle().toString(),
-                                listID).department_id,
+                        newDepartmentData.department_id,
                         1,
                         text.getText().toString(),
                         Float.parseFloat(dataQty.getText().toString()));
-                Log.d(TAG, name + " newData = new Data");
-                deleteSingleItem(position, id);
+
+                deleteSingleItem(dataPosition, dataID);
+
                 db.dataDao().incrementValues(
                         db.departmentDataDao().getChosenDepartmentByName(item.getTitle().toString(),
                                 listID).department_id, 0);
                 db.dataDao().insert(newData);
+
+                setDepartmentVisible(newDepartmentData.department_id);
+                hideDepartmentIfLastActiveItemOut(depID);
                 Single.fromCallable(() -> notifyWithDelay(500)).subscribeOn(Schedulers.io()).subscribe();
                 return false;
             }
         });
     }
 
+    private static void hideDepartmentIfLastActiveItemOut(int depID) {
+
+        int activeItem = db.dataDao().getAllNames(depID).size()
+                - db.departmentDataDao().getDepartmentDataById(depID).CrossOutNumber - 1;
+
+        if (activeItem == 0) {
+            if (db.dataDao().getAllNames(depID).size() < 2) {
+                setDepartmentInvisible(depID);
+            } else {
+                setHideDepartmentAlertDialog(myViewPager2.getRootView());
+            }
+        }
+    }
+
+    //TODO!!! При наличии скрытых разделов в списке, если выбрать в конце списка раздел при переходе из одного режима в другой перескакивает на другой раздел
     static int notifyWithDelay(int delay) {
         SystemClock.sleep(delay);
         mn.runOnUiThread(new Runnable() {
