@@ -36,6 +36,5 @@ public class ProductDiffUtilCallback extends DiffUtil.Callback {
         Data oldProduct = oldList.get(oldItemPosition);
         Data newProduct = newList.get(newItemPosition);
         return oldProduct.data_id == newProduct.data_id;
-             //   && oldProduct.getPrice() == newProduct.getPrice();
     }
 }

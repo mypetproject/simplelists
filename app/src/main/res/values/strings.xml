@@ -89,7 +89,7 @@
     <string name="share">Share</string>
     <string name="delete_list">Delete list \'\</string>
     <string name="toolbar_delete_list">Delete list</string>
-    <string name="to_edit">Edit</string>
+    <string name="to_edit">Edit item</string>
     <string name="move">Move</string>
     <string name="delete">Delete</string>
         <string name="add">Add item</string>

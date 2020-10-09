@@ -54,7 +54,13 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
     @Override
     public void onBindViewHolder(@NonNull ViewPagerHolder holder, int position) {
         Log.d(TAG, "vp onBindViewHolder started, position: " + position);
+
+       // DepartmentData chosenDepartmentData;
+
         MainActivity.canUpdate = false;
+
+       // chosenDepartmentData = MainActivity.getChosenDepartmentData(position);
+
         //если recyclable, то onMove не работает после перезаполнения
         holder.setIsRecyclable(false);
        int adapterPosition = holder.getAdapterPosition();
@@ -76,7 +82,6 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
             List<Integer> allVisibleDepartmentsID = MainActivity.db.departmentDataDao().getAllVisibleDepartmentsID(MainActivity.chosenListData.list_id);
             temp.addAll(MainActivity.db.dataDao().getAll(
                     allVisibleDepartmentsID.get(adapterPosition)));
-
         }
 
         /*temp.addAll(MainActivity.db.dataDao().getAll(
@@ -87,9 +92,6 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
        /* List<Integer> allVisibleDepartmentsID = MainActivity.db.departmentDataDao().getAllVisibleDepartmentsID(MainActivity.chosenListData.list_id);
         temp.addAll(MainActivity.db.dataDao().getAll(
                 allVisibleDepartmentsID.get(adapterPosition)));*/
-
-
-
       /*  if (temp.size() == 1 && MainActivity.editButtonClicked) {
 holder.itemView.setVisibility(View.GONE);
 //holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
@@ -147,6 +149,8 @@ MainActivity.hideTab(position);
                 public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder dragged, @NonNull RecyclerView.ViewHolder target) {
                     Log.d(TAG, "adapter.onMove started" + " adapter position: " + adapterPosition);
 
+                    DepartmentData chosenDepartmentData = MainActivity.getChosenDepartmentData(position);
+
                     //adapter = (MyRecyclerViewAdapter) recyclerView.getAdapter();
                 /*temp.clear();
                 temp.addAll(MainActivity.db.dataDao().getAll(
@@ -158,8 +162,9 @@ MainActivity.hideTab(position);
                     int position_dragged = dragged.getAdapterPosition();
                     int position_target = target.getAdapterPosition();
                     //Log.d(TAG, "adapter name: " + MainActivity.db.departmentDataDao().getDepartmentDataById(temp.get(position_dragged).department_id).department_name);
-                    int crossOutNumber = MainActivity.db.departmentDataDao().getDepartmentDataById(temp.get(position_dragged).department_id).CrossOutNumber;
-                    DepartmentData depData = MainActivity.db.departmentDataDao().getDepartmentDataById(temp.get(position_dragged).department_id);
+                   // int crossOutNumber = MainActivity.db.departmentDataDao().getDepartmentDataById(temp.get(position_dragged).department_id).CrossOutNumber;
+                    int crossOutNumber = chosenDepartmentData.CrossOutNumber;
+                    //!!DepartmentData depData = MainActivity.db.departmentDataDao().getDepartmentDataById(temp.get(position_dragged).department_id);
                     //   Log.d(TAG, "DepartmentData depData = ");
                     //    Log.d(TAG, " if (position_dragged >= (temp.size() - crossOutNumber) started dep name: " + depData.department_name + " temp.size():"  + temp.size() + " crossOutNumber: " + crossOutNumber);
                     if (position_dragged >= (temp.size() - crossOutNumber)
@@ -180,44 +185,44 @@ MainActivity.hideTab(position);
                         List<Data> oldTemp = new ArrayList<>();
                         oldTemp.addAll(temp);
                         Collections.swap(temp, position_dragged, position_target);
-
                         // Log.d(TAG, " Collections.swap");
                         //adapter.notifyItemMoved(position_target, position_dragged);
 
                         ProductDiffUtilCallback productDiffUtilCallback =
                                 new ProductDiffUtilCallback(oldTemp, temp);
                         DiffUtil.DiffResult productDiffResult = DiffUtil.calculateDiff(productDiffUtilCallback);
-
                         //adapter.setData(productList);
                         productDiffResult.dispatchUpdatesTo(adapter);
-
                         //holder.adapter.notifyItemChanged(position_dragged);
                         // holder.adapter.notifyItemChanged(position_target);
 
                         //   Log.d(TAG, " holder.adapter.notifyItemMoved");
                     }
-                    temp.clear();
-                    temp.addAll(MainActivity.db.dataDao().getAll(
+                   // temp.clear();
+                   /* temp.addAll(MainActivity.db.dataDao().getAll(
                             MainActivity.db.departmentDataDao().getChosenDepartment(
                                     position,
                                     MainActivity.chosenListData.list_id
-                            ).department_id));
-
+                            ).department_id));*/
+                   // temp.addAll(MainActivity.db.dataDao().getAll(chosenDepartmentData.department_id));
                     // holder.adapter.notifyItemMoved(position_target,position_dragged);
 
 
-                    Data tempData = MainActivity.db.dataDao().getChosenData(position_dragged, temp.get(position_dragged).department_id);
-                    //Log.d(TAG, " Data tempData = ");
-                    tempData.data_position = position_target;
+                  //  Data tempData = MainActivity.db.dataDao().getChosenData(position_dragged, temp.get(position_dragged).department_id);
+                    Data tempData = MainActivity.db.dataDao().getChosenData(position_dragged, chosenDepartmentData.department_id);
+
                     if (position_dragged > position_target) {
-                        MainActivity.db.dataDao().incrementValuesFromPositionToPosition(tempData.department_id, position_dragged, position_target);
+                        MainActivity.db.dataDao().incrementValuesFromPositionToPosition(chosenDepartmentData.department_id, position_dragged, position_target);
                     } else {
-                        MainActivity.db.dataDao().decrementValuesFromPositionToPosition(tempData.department_id, position_dragged, position_target);
+                        MainActivity.db.dataDao().decrementValuesFromPositionToPosition(chosenDepartmentData.department_id, position_dragged, position_target);
                     }
+                    tempData.data_position = position_target;
+
                     MainActivity.db.dataDao().update(tempData);
+
                     // Log.d(TAG, "data keys after swipe: " + db.dataDao().getAllNames(chosenDepartmentData.department_id));
                     Log.d(TAG, "adapter.onMove ended, pos_dragged: " + position_dragged + " pos_target: " + position_target
-                            + "\nDataset: " + MainActivity.db.dataDao().getAllNames(depData.department_id));
+                            + "\nDataset: " + MainActivity.db.dataDao().getAllNames(chosenDepartmentData.department_id));
                     return false;
                 }
 
@@ -248,17 +253,17 @@ MainActivity.hideTab(position);
         } else */if (MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id) != null) {
             if (!MainActivity.editButtonClicked) {
                 itemCount = MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id).size();
-                Log.d(TAG, "getItemCount() !MainActivity.editButtonClicked) item count: " + itemCount);
+              //  Log.d(TAG, "getItemCount() !MainActivity.editButtonClicked) item count: " + itemCount);
             } else {
                 itemCount = MainActivity.db.departmentDataDao().getAllVisibleDepartmentsID(MainActivity.chosenListData.list_id).size();
-                Log.d(TAG, "getItemCount() MainActivity.editButtonClicked) item count: " + itemCount);
+               // Log.d(TAG, "getItemCount() MainActivity.editButtonClicked) item count: " + itemCount);
 
             }
 
 
 
         }
-        Log.d(TAG, "getItemCount() ended");
+       // Log.d(TAG, "getItemCount() ended");
     return itemCount;
      //   return 20;
     }

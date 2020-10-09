@@ -87,10 +87,10 @@
     <string name="delete_list">Удалить список \'\</string>
     <string name="toolbar_delete_list">Удалить список</string>
     <string name="share">Поделиться в...</string>
-    <string name="to_edit">Редактировать</string>
+    <string name="to_edit">Редактировать пункт</string>
     <string name="move">Переместить в...</string>
     <string name="delete">Удалить</string>
-    <string name="add">Добавить</string>
+    <string name="add">Добавить пункт</string>
     <string name="press_here"><![CDATA[<- Нажмите]]></string>
     <string name="delete_department">Удалить раздел \'</string>
     <string name="yes">Да</string>

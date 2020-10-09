@@ -584,6 +584,16 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         return departmentID;
     }
 
+    public static DepartmentData getChosenDepartmentData(int position) {
+        DepartmentData departmentData;
+        if (!editButtonClicked) {
+            departmentData = db.departmentDataDao().getChosenDepartment(position, chosenListData.list_id);
+        } else {
+            List<Integer> allVisibleDepartmentsID = db.departmentDataDao().getAllVisibleDepartmentsID(chosenListData.list_id);
+            departmentData = db.departmentDataDao().getDepartmentDataById(allVisibleDepartmentsID.get(position));
+        }
+        return departmentData;
+    }
 
     private void setEditButtonVisibility() {
         if (keysForLists.size() < 2) {
@@ -718,7 +728,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         hideOrShowDepartment(id);
                         return true;
                     case R.id.department_clean:
-                       cleanDepartmentAlertDialog(view, id);
+                        cleanDepartmentAlertDialog(view, id);
                         return true;
                     default:
                         return false;
@@ -751,7 +761,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         })
                 .create();
 
-        setAlertDialogButtonsColor(view,dialog);
+        setAlertDialogButtonsColor(view, dialog);
         dialog.show();
     }
 
@@ -858,22 +868,22 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         this.adapter = adapter;
     }*/
 
-    public static void ViewPagerItemClicked(View view, int id, MyRecyclerViewAdapter adapter, int position, List<Data> adapterData) {
+    public static void ViewPagerItemClicked(View view, int dataID, MyRecyclerViewAdapter adapter, int position, List<Data> adapterData) {
 
         setAdapter(adapter);
         setAdapterData(adapterData);
 
         if (editButtonClicked) {
-            DepartmentData temp = db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id));
-            if (position < (db.dataDao().getAllNames(db.dataDao().getDepartmentIdByDataId(id)).size()
-                    - db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id)).CrossOutNumber)) {
+            DepartmentData temp = db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(dataID));
+            if (position < (db.dataDao().getAllNames(db.dataDao().getDepartmentIdByDataId(dataID)).size()
+                    - db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(dataID)).CrossOutNumber)) {
                 temp.CrossOutNumber++;
-                moveItemToBottom(id, position);
+                moveItemToBottom(dataID, position);
                 Log.d(TAG, "moveItemToBottom");
             } else {
-                db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id)).CrossOutNumber--;
+                db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(dataID)).CrossOutNumber--;
                 temp.CrossOutNumber--;
-                moveItemToTop(id, position);
+                moveItemToTop(dataID, position);
                 Log.d(TAG, " moveItemToTop");
             }
             db.departmentDataDao().update(temp);
@@ -881,8 +891,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             View tabView = tab.getCustomView();
             TextView textViewQty = (TextView) tabView.findViewById(R.id.tvDepartmentsQty);
             Log.d(TAG, "TextView textView ");
-            int activeItem = db.dataDao().getAllNames(db.dataDao().getDepartmentIdByDataId(id)).size()
-                    - db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id)).CrossOutNumber - 1;
+            int activeItem = db.dataDao().getAllNames(db.dataDao().getDepartmentIdByDataId(dataID)).size()
+                    - db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(dataID)).CrossOutNumber - 1;
             Log.d(TAG, "int activeItem");
 
             if (activeItem != 0) {
@@ -898,10 +908,10 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         } else {
             switch (view.getId()) {
                 case R.id.image_more:
-                    dataHolderMenuItemButtonClick(view, position, id);
+                    dataHolderMenuItemButtonClick(view, position, dataID);
                     break;
                 default:
-                    inputTextDialogWindowForViewHolderItem(view, position, id);
+                    inputTextDialogWindowForViewHolderItem(view, position, dataID);
             }
         }
     }
@@ -913,12 +923,12 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 .setPositiveButton(
                         view.getContext().getString(R.string.ok),
                         new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        setDepartmentInvisible(getChosenDepartmentID(myViewPager2.getCurrentItem()));
-                        viewPagerAdapter.notifyDataSetChanged();
-                        dialog.cancel();
-                    }
-                })
+                            public void onClick(DialogInterface dialog, int id) {
+                                setDepartmentInvisible(getChosenDepartmentID(myViewPager2.getCurrentItem()));
+                                viewPagerAdapter.notifyDataSetChanged();
+                                dialog.cancel();
+                            }
+                        })
                 .setNegativeButton(
                         view.getContext().getString(R.string.cancel),
                         new DialogInterface.OnClickListener() {
@@ -929,7 +939,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         })
                 .create();
 
-                setAlertDialogButtonsColor(view, dialog);
+        setAlertDialogButtonsColor(view, dialog);
 
         dialog.show();
     }
@@ -1139,7 +1149,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         })
                 .create();
 
-                setAlertDialogButtonsColor(view, dialog);
+        setAlertDialogButtonsColor(view, dialog);
 
         dialog.show();
         Log.d(TAG, name + "AlertDialog end building");
@@ -1282,7 +1292,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
             }
         });
- }
+    }
 
     private static void editOldData(String str, int id) {
         Data tempData = db.dataDao().getChosenDataById(id);
@@ -1891,7 +1901,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
             title = getString(R.string.to_edit);
         } else if (view.getId() == R.id.add_department_button
-        || view.getId() == R.id.add_department_button_in_the_end) {
+                || view.getId() == R.id.add_department_button_in_the_end) {
             deleteFlagForEdit = false;
             title = getString(R.string.add_department);
             et.setHint(getString(R.string.enter_text));
@@ -1982,7 +1992,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                             //dialog.setTitle("Добавить");
                             String title;
                             if (view.getId() == R.id.add_department_button
-                                    || view.getId() == R.id.add_department_button_in_the_end ) {
+                                    || view.getId() == R.id.add_department_button_in_the_end) {
                                 title = getString(R.string.add_department);
                             } else if (parentID == R.id.material_drawer_recycler_view) {
                                 title = getString(R.string.add_new_list);
@@ -2328,7 +2338,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     private static void setNewData(int position, String s, int departmentPosition, Float dataQty) {
         Log.d(TAG, "new data set started");
         int departmentID = db.departmentDataDao().getChosenDepartment(departmentPosition - 1, chosenListData.list_id).department_id;
-                Data newData = new Data(departmentID, position, s, dataQty);
+        Data newData = new Data(departmentID, position, s, dataQty);
         //Log.d(TAG, " Data newData = new Data ended");
         db.dataDao().incrementValues(db.departmentDataDao().getChosenDepartment(departmentPosition - 1, chosenListData.list_id).department_id, position - 1);
         db.dataDao().insert(newData);
@@ -2348,12 +2358,15 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     }
 
     private static void setDepartmentVisible(int departmentID) {
-    DepartmentData departmentData = db.departmentDataDao().getDepartmentDataById(departmentID);
-    departmentData.visibility = 1;
-    db.departmentDataDao().update(departmentData);
+        DepartmentData departmentData = db.departmentDataDao().getDepartmentDataById(departmentID);
+
+        if (departmentData.visibility != 1) {
+            departmentData.visibility = 1;
+            db.departmentDataDao().update(departmentData);
+        }
     }
 
-    private static void setDepartmentInvisible(int departmentID){
+    private static void setDepartmentInvisible(int departmentID) {
         DepartmentData departmentData = db.departmentDataDao().getDepartmentDataById(departmentID);
         departmentData.visibility = 0;
         db.departmentDataDao().update(departmentData);
@@ -2377,7 +2390,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         int parentParentID = parentParent.getId();
 
         if (view.getId() == R.id.add_department_button
-        || view.getId() == R.id.add_department_button_in_the_end) {
+                || view.getId() == R.id.add_department_button_in_the_end) {
             setNewDepartment(s);
         } else if (parentParentID == R.id.tabs) {
             int id = db.departmentDataDao().getChosenDepartment(insertIndex, chosenListData.list_id).department_id;
@@ -2446,7 +2459,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                                         }
                                     })
                             .create();
-                    setAlertDialogButtonsColor(view,dialog);
+                    setAlertDialogButtonsColor(view, dialog);
                     dialog.show();
                     Log.d(TAG, "dialog built");
                 }
@@ -2714,9 +2727,9 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
     private static void deleteAllItemInDepartment(int departmentID) {
 
-            db.dataDao().deleteAllDataByDepartmentID(departmentID);
-            changeTabQty(departmentID);
-            viewPagerAdapter.notifyDataSetChanged();
+        db.dataDao().deleteAllDataByDepartmentID(departmentID);
+        changeTabQty(departmentID);
+        viewPagerAdapter.notifyDataSetChanged();
 
     }
 
@@ -3220,7 +3233,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                             }
                         })
                 .create();
-        setAlertDialogButtonsColor(view,dialog);
+        setAlertDialogButtonsColor(view, dialog);
         dialog.show();
     }
 
@@ -3239,8 +3252,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     }
 
     public int loadTheme() {
-          SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, 0);
-          int theme = sharedPreferences.getInt("Theme", 1); //1 is default, when nothing is saved yet
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, 0);
+        int theme = sharedPreferences.getInt("Theme", 1); //1 is default, when nothing is saved yet
         return theme;
     }
 
@@ -3494,9 +3507,9 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         }
 
         int depID = db.dataDao().getDepartmentIdByDataId(dataID);
-        int listID = db.departmentDataDao().getDepartmentDataById(depID).list_id;
 
-        for (DepartmentData s : db.departmentDataDao().getAll(listID)) {
+
+        for (DepartmentData s : db.departmentDataDao().getAll(chosenListData.list_id)) {
             if (s.department_id != depID) popup.getMenu().add(s.department_name);
         }
 
@@ -3505,31 +3518,44 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                View parent = (View) view.getParent();
-                TextView text = parent.findViewById(R.id.tvAnimalName);
-                EditText dataQty = parent.findViewById(R.id.etAnimalCount);
+                DepartmentData destinationDepartmentData = db.departmentDataDao().getChosenDepartmentByName(item.getTitle().toString(), chosenListData.list_id);
 
-                DepartmentData newDepartmentData = db.departmentDataDao().getChosenDepartmentByName(item.getTitle().toString(), listID);
+                Data newData = createNewDataForDestinationDepartment(item, view, destinationDepartmentData);
+                insertDataToDestinationDepartment(newData, item);
 
-                Data newData = new Data(
-                        newDepartmentData.department_id,
-                        1,
-                        text.getText().toString(),
-                        Float.parseFloat(dataQty.getText().toString()));
+                deleteMovedItemFromOldDepartment(dataPosition, dataID);
 
-                deleteSingleItem(dataPosition, dataID);
-
-                db.dataDao().incrementValues(
-                        db.departmentDataDao().getChosenDepartmentByName(item.getTitle().toString(),
-                                listID).department_id, 0);
-                db.dataDao().insert(newData);
-
-                setDepartmentVisible(newDepartmentData.department_id);
+                setDepartmentVisible(destinationDepartmentData.department_id);
                 hideDepartmentIfLastActiveItemOut(depID);
+
                 Single.fromCallable(() -> notifyWithDelay(500)).subscribeOn(Schedulers.io()).subscribe();
                 return false;
             }
         });
+    }
+//TODO BAG!!!!!!!!!!!!!!!! При перемещении одного item в одном отделе вверх-вниз появляются item с соседнего отдела
+    private static void deleteMovedItemFromOldDepartment(int dataPosition, int dataID) {
+        deleteSingleItem(dataPosition, dataID);
+    }
+
+    private static void insertDataToDestinationDepartment(Data newData, MenuItem item) {
+        db.dataDao().incrementValues(
+                db.departmentDataDao().getChosenDepartmentByName(item.getTitle().toString(),
+                        chosenListData.list_id).department_id, 0);
+        db.dataDao().insert(newData);
+    }
+
+    private static Data createNewDataForDestinationDepartment(MenuItem item, View view, DepartmentData destinationDepartmentData) {
+        View parent = (View) view.getParent();
+        TextView text = parent.findViewById(R.id.tvAnimalName);
+        EditText dataQty = parent.findViewById(R.id.etAnimalCount);
+
+        Data newData = new Data(
+                destinationDepartmentData.department_id,
+                1,
+                text.getText().toString(),
+                Float.parseFloat(dataQty.getText().toString()));
+        return newData;
     }
 
     private static void hideDepartmentIfLastActiveItemOut(int depID) {
