@@ -109,6 +109,8 @@
     <string name="hide_section">Hide section?</string>
     <string name="import_list">Import list</string>
     <string name="import_list_dialog">Import list?</string>
+    <string name="settings">Settings</string>
+    <string name="enable_dark_theme">Enable dark theme</string>
 
 
 </resources>

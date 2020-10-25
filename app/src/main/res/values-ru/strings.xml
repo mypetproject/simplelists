@@ -107,5 +107,7 @@
     <string name="clean_department">Очистить раздел</string>
     <string name="import_list">Импортировать список</string>
     <string name="import_list_dialog">Импортировать список?</string>
+    <string name="settings">Настройки</string>
+    <string name="enable_dark_theme">Тёмная тема</string>
 
 </resources>

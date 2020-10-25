@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/menu_settings"
+        android:icon="@drawable/ic_settings_black_24dp"
+        android:title="@string/settings" />
+
+    <item
         android:id="@+id/menu_edit_style"
         android:icon="@drawable/ic_brightness"
         android:title="@string/Change_theme" />
@@ -11,11 +16,11 @@
         android:icon="@drawable/ic_edit_black_24dp"
         android:title="@string/edit_list_name" />
 
-    <item
+   <!-- <item
         android:id="@+id/menu_edit"
         android:icon="@drawable/ic_edit_black_24dp"
         android:title="@string/edit_list" />
-
+-->
     <item
         android:id="@+id/menu_import"
         android:icon="@drawable/ic_import_export_black_24dp"
