@@ -7,11 +7,6 @@
         android:title="@string/settings" />
 
     <item
-        android:id="@+id/menu_edit_style"
-        android:icon="@drawable/ic_brightness"
-        android:title="@string/Change_theme" />
-
-    <item
         android:id="@+id/menu_edit_name"
         android:icon="@drawable/ic_edit_black_24dp"
         android:title="@string/edit_list_name" />

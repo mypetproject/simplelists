@@ -14,6 +14,13 @@
     <color name="selected_tab_text">#005662</color>
     <color name="tab_indicator">#000000</color>
     <color name="header">@drawable/header2</color>
+
+    <color name="colorPrimarySwitch">#005662</color> <!-- switch colors -->
+    <color name="colorPrimaryDarkSwitch">#ca9b52</color>
+    <color name="colorAccentSwitch">#ffcc80</color>
+    <color name="colorPrimaryLightSwitch">#ffffb0</color>
+    <color name="switch_thumb_normal_material_dark">#ffcc80</color>
+    <color name="switch_thumb_normal_material_light">#ffcc80</color>
 </resources>
 
 <!--

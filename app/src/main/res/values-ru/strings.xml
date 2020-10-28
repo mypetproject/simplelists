@@ -107,7 +107,14 @@
     <string name="clean_department">Очистить раздел</string>
     <string name="import_list">Импортировать список</string>
     <string name="import_list_dialog">Импортировать список?</string>
+
     <string name="settings">Настройки</string>
     <string name="enable_dark_theme">Тёмная тема</string>
+    <string name="apps_version">Simple lists for Android v28.10.2020</string>
+    <string name="privacy_policy">Политика конфиденциальности</string>
+    <string name="history_of_changes">История изменений</string>
+    <string name="about_category">О приложении</string>
+    <string name="hide_empty_department">Скрывать раздел, если все пункты вычеркнуты</string>
+    <string name="general_settings">Основные настройки</string>
 
 </resources>

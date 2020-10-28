@@ -119,6 +119,11 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
     public static final String PREFS_NAME = "MyPrefsFile";
     public static final String PREF_DARK_THEME = "enable_dark_theme";
+    public static final String PREF_HIDE_EMPTY_DEPARTMENT = "hide_empty_department";
+
+    public static boolean hideEmptyDepartmentPreference;
+
+    private static Context context;
 
 //todo! killerfeature: block list by fingerprint and pin
 
@@ -126,8 +131,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        MainActivity.context = getApplicationContext();
+        setPreferences();
 
-loadTheme();
        // AppCompatDelegate.setDefaultNightMode(loadTheme());
        // AppCompatDelegate.setDefaultNightMode(1);
        // Log.d(TAG, " AppCompatDelegate.setDefaultNightMode(loadTheme()) = " + loadTheme());
@@ -557,6 +563,21 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         viewPagerAdapter.notifyDataSetChanged();
     }
 
+    public static Context getAppContext() {
+        return MainActivity.context;
+    }
+
+    private void setPreferences() {
+        loadTheme();
+        getHideEmptyDepartmentPreference();
+    }
+
+    public static void getHideEmptyDepartmentPreference() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        hideEmptyDepartmentPreference = sharedPreferences.getBoolean(PREF_HIDE_EMPTY_DEPARTMENT,false);
+        Log.d(TAG, "getHideEmptyDepartmentPreference() " + hideEmptyDepartmentPreference);
+    }
+
     private DepartmentData getCurrentDepartment(int position) {
         DepartmentData currentDepartment;
         if (!editButtonClicked) {
@@ -899,15 +920,21 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                     - db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(dataID)).CrossOutNumber - 1;
             Log.d(TAG, "int activeItem");
 
-            if (activeItem != 0) {
+            if (activeItem != 0 ) {
                 textViewQty.setVisibility(View.VISIBLE);
                 textViewQty.setText(String.valueOf(activeItem));
+                tab.setCustomView(tabView);
+            } else if (hideEmptyDepartmentPreference){
+                setDepartmentInvisible(getChosenDepartmentID(myViewPager2.getCurrentItem()));
+                viewPagerAdapter.notifyDataSetChanged();
             } else {
+                textViewQty.setVisibility(View.VISIBLE);
                 textViewQty.setVisibility(View.GONE);
-                setHideDepartmentAlertDialog(view);
+                tab.setCustomView(tabView);
             }
             Log.d(TAG, " if (activeItem != 0) ");
-            tab.setCustomView(tabView);
+
+
             Log.d(TAG, "viewPagerAdapter.notifyItemChanged(position);: " + position);
         } else {
             switch (view.getId()) {
@@ -1349,9 +1376,9 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             int activeQty = activeQtyForList(i);
             if (activeQty > 0 && i != 0) {
                 //todo заменить keysForLists на запрос из базы
+                //!! todo вынести в отдельный метод строки ниже и менять тему из settingsFragment
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-               // if (loadTheme() == 1) {
                 if (sharedPreferences.getBoolean(PREF_DARK_THEME,true)) {
                     iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadge(activeQty + "").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
                 } else {
@@ -2374,6 +2401,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     }
 
     private static void setDepartmentInvisible(int departmentID) {
+        Log.d(TAG, "setDepartmentInvisible started");
         DepartmentData departmentData = db.departmentDataDao().getDepartmentDataById(departmentID);
         departmentData.visibility = 0;
         db.departmentDataDao().update(departmentData);
@@ -2722,11 +2750,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 textViewQty.setText(String.valueOf(activeItem));
             } else {
                 textViewQty.setVisibility(View.GONE);
-                if (db.dataDao().getAllNames(departmentID).size() < 2) {
+                if (db.dataDao().getAllNames(departmentID).size() < 2 && hideEmptyDepartmentPreference) {
                     setDepartmentInvisible(departmentID);
-                } else {
+                } /*else {
                     setHideDepartmentAlertDialog(myViewPager2.getRootView());
-                }
+                }*/
             }
             tab.setCustomView(tabView);
         }
@@ -2757,11 +2785,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             textViewQty.setText(String.valueOf(activeItem));
         } else {
             textViewQty.setVisibility(View.GONE);
-            if (db.dataDao().getAllNames(departmentID).size() < 2) {
+            if (db.dataDao().getAllNames(departmentID).size() < 2 && hideEmptyDepartmentPreference) {
                 setDepartmentInvisible(departmentID);
-            } else {
+            } /*else {
                 setHideDepartmentAlertDialog(myViewPager2.getRootView());
-            }
+            }*/
         }
         tab.setCustomView(tabView);
     }
@@ -3111,32 +3139,6 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                         startActivity(intent);
                         return true;
-                    case R.id.menu_edit_style:
-                       /* try {
-                            if (getPackageManager().getActivityInfo(getComponentName(), 0).getThemeResource() == R.style.AppTheme) {
-                                setTheme(R.style.AppDarkTheme);
-                            } else {
-                                setTheme(R.style.AppTheme);
-                            }
-                        } catch (PackageManager.NameNotFoundException e) {
-                            e.printStackTrace();
-                        }*/
-
-                        if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
-                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-
-                            // saveTheme(1);
-                        } else {
-                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                            // saveTheme(2);
-                        }
-                        setNavigationDrawerData();
-                        saveTheme(AppCompatDelegate.getDefaultNightMode());
-                        finish();
-                        startActivity(new Intent(MainActivity.this, MainActivity.this.getClass()));
-                        // setContentView(R.layout.activity_main);
-                        //  viewPagerAdapter.notifyDataSetChanged();
-                        return true;
                     case R.id.menu_share:
                         String stringToSend = listToStringGenerator();
                         newShare(item.getActionView(), stringToSend);
@@ -3255,30 +3257,15 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         setNavigationDrawerData();
     }
 
-    public void saveTheme(int theme) {
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, 0);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("Theme", theme);
-        editor.commit();
-    }
-
     public void loadTheme() {
-        /*SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, 0);
-        int theme = sharedPreferences.getInt("Theme", 1); //1 is default, when nothing is saved yet*/
 
-        //int theme;
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        if (sharedPreferences.getBoolean(PREF_DARK_THEME,true)) {
+        if (sharedPreferences.getBoolean(PREF_DARK_THEME,false)) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-            Log.d(TAG,"sharedPreferences.getBoolean == true");
-           // theme = 1;
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-            Log.d(TAG,"sharedPreferences.getBoolean == false");
-           // theme = 0;
         }
-       // return theme;
     }
 
     public void saveLanguage(String lang) {
@@ -3557,7 +3544,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             }
         });
     }
-//TODO BAG!!!!!!!!!!!!!!!! При перемещении одного item в одном отделе вверх-вниз появляются item с соседнего отдела
+
     private static void deleteMovedItemFromOldDepartment(int dataPosition, int dataID) {
         deleteSingleItem(dataPosition, dataID);
     }
@@ -3588,11 +3575,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 - db.departmentDataDao().getDepartmentDataById(depID).CrossOutNumber - 1;
 
         if (activeItem == 0) {
-            if (db.dataDao().getAllNames(depID).size() < 2) {
+            if (db.dataDao().getAllNames(depID).size() < 2 && hideEmptyDepartmentPreference) {
                 setDepartmentInvisible(depID);
-            } else {
+            } /*else {
                 setHideDepartmentAlertDialog(myViewPager2.getRootView());
-            }
+            }*/
         }
     }
 
@@ -3619,6 +3606,14 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         });
         return 0;
     }
+
+    public static void setHideEmptyDepartmentPreference(boolean status) {
+        hideEmptyDepartmentPreference = status;
+        Log.d(TAG, "setHideEmptyDepartmentPreference() " + hideEmptyDepartmentPreference);
+    }
+
+
+
 }
 
 
