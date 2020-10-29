@@ -646,16 +646,30 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     }
 
     private void setTabsVisibility() {
+
         LinearLayout tabsll = (LinearLayout) findViewById(R.id.tabs_linear_layout);
         //  if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() == 0
-        if (activeQtyForList(chosenListData.list_position) < 1
-                && editButtonClicked
-                && !haveVisibleDepartmentInList()
-        ) {
+        if (!haveVisibleDepartmentInList() && editButtonClicked) {
+            tabsll.setVisibility(View.GONE);
+        } else if (activeQtyForList(chosenListData.list_position) < 1 && editButtonClicked) {
             tabsll.setVisibility(View.GONE);
         } else {
             tabsll.setVisibility(View.VISIBLE);
         }
+        //setTabsOnLongClickListener();
+        Single.fromCallable(() -> setTabsOnLongClickListenerWithDelay(100)).subscribeOn(Schedulers.io()).subscribe();
+
+    }
+
+    int setTabsOnLongClickListenerWithDelay(int delay) {
+        SystemClock.sleep(delay);
+        mn.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setTabsOnLongClickListener();
+            }
+        });
+        return 0;
     }
 
     private void setTabsOnLongClickListener() {
@@ -972,11 +986,14 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         View view = tabLayout.getRootView();
         LinearLayout tabsll = (LinearLayout) view.findViewById(R.id.tabs_linear_layout);
 
-        if (getTotalActiveItemsCountForChosenList() < 1 && !haveVisibleDepartmentInListStatic() && editButtonClicked) {
+        if (!haveVisibleDepartmentInListStatic() && editButtonClicked) {
+            tabsll.setVisibility(View.GONE);
+        } else if (getTotalActiveItemsCountForChosenList() < 1 && editButtonClicked) {
             tabsll.setVisibility(View.GONE);
         } else {
             tabsll.setVisibility(View.VISIBLE);
         }
+
     }
 
     private static boolean haveVisibleDepartmentInListStatic() {
@@ -2465,6 +2482,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         DepartmentData departmentData = db.departmentDataDao().getDepartmentDataById(departmentID);
         departmentData.visibility = 0;
         db.departmentDataDao().update(departmentData);
+        setStaticTabsVisibility();
     }
 
     /* //was used for rxjava
