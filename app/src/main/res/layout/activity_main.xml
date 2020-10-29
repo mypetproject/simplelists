@@ -37,7 +37,18 @@
             android:src="@drawable/ic_edit_black_24dp"
             android:visibility="visible" />
 
+        <TextView
+            android:id="@+id/tvListQty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="17dp"
+            android:gravity="center"
+            android:textColor="#03DAC5"
+            android:textSize="12sp"
+            android:layout_marginRight="20dp"
+            android:layout_gravity="right"
 
+            android:background="@drawable/department_holder_qty"/>
 
     </androidx.appcompat.widget.Toolbar>
 

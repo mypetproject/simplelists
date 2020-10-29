@@ -134,9 +134,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         MainActivity.context = getApplicationContext();
         setPreferences();
 
-       // AppCompatDelegate.setDefaultNightMode(loadTheme());
-       // AppCompatDelegate.setDefaultNightMode(1);
-       // Log.d(TAG, " AppCompatDelegate.setDefaultNightMode(loadTheme()) = " + loadTheme());
+        // AppCompatDelegate.setDefaultNightMode(loadTheme());
+        // AppCompatDelegate.setDefaultNightMode(1);
+        // Log.d(TAG, " AppCompatDelegate.setDefaultNightMode(loadTheme()) = " + loadTheme());
         setContentView(R.layout.activity_main);
 
 
@@ -559,6 +559,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             moreMenuButton.setVisibility(View.GONE);
         }
 
+        changeTotalActiveItemsCountInTab();
+
         //for bug with tab text color when app started
         viewPagerAdapter.notifyDataSetChanged();
     }
@@ -574,7 +576,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
     public static void getHideEmptyDepartmentPreference() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        hideEmptyDepartmentPreference = sharedPreferences.getBoolean(PREF_HIDE_EMPTY_DEPARTMENT,false);
+        hideEmptyDepartmentPreference = sharedPreferences.getBoolean(PREF_HIDE_EMPTY_DEPARTMENT, false);
         Log.d(TAG, "getHideEmptyDepartmentPreference() " + hideEmptyDepartmentPreference);
     }
 
@@ -645,8 +647,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
     private void setTabsVisibility() {
         LinearLayout tabsll = (LinearLayout) findViewById(R.id.tabs_linear_layout);
-        if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() == 0
-                && editButtonClicked) {
+        //  if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() == 0
+        if (activeQtyForList(chosenListData.list_position) < 1
+                && editButtonClicked
+                && !haveVisibleDepartmentInList()
+        ) {
             tabsll.setVisibility(View.GONE);
         } else {
             tabsll.setVisibility(View.VISIBLE);
@@ -920,11 +925,11 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                     - db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(dataID)).CrossOutNumber - 1;
             Log.d(TAG, "int activeItem");
 
-            if (activeItem != 0 ) {
+            if (activeItem != 0) {
                 textViewQty.setVisibility(View.VISIBLE);
                 textViewQty.setText(String.valueOf(activeItem));
                 tab.setCustomView(tabView);
-            } else if (hideEmptyDepartmentPreference){
+            } else if (hideEmptyDepartmentPreference) {
                 setDepartmentInvisible(getChosenDepartmentID(myViewPager2.getCurrentItem()));
                 viewPagerAdapter.notifyDataSetChanged();
             } else {
@@ -934,8 +939,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             }
             Log.d(TAG, " if (activeItem != 0) ");
 
+            changeTotalActiveItemsCountInTab();
 
-            Log.d(TAG, "viewPagerAdapter.notifyItemChanged(position);: " + position);
         } else {
             switch (view.getId()) {
                 case R.id.image_more:
@@ -945,6 +950,59 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                     inputTextDialogWindowForViewHolderItem(view, position, dataID);
             }
         }
+    }
+
+    private static void changeTotalActiveItemsCountInTab() {
+        View view = tabLayout.getRootView();
+        int activeItemsQtyForList = getTotalActiveItemsCountForChosenList();
+        TextView textViewQtyForList = (TextView) view.findViewById(R.id.tvListQty);
+
+        if (activeItemsQtyForList > 0) {
+            textViewQtyForList.setText(String.valueOf(activeItemsQtyForList));
+            textViewQtyForList.setVisibility(View.VISIBLE);
+        } else {
+            textViewQtyForList.setVisibility(View.GONE);
+            setStaticTabsVisibility();
+        }
+
+    }
+
+    private static void setStaticTabsVisibility() {
+
+        View view = tabLayout.getRootView();
+        LinearLayout tabsll = (LinearLayout) view.findViewById(R.id.tabs_linear_layout);
+
+        if (getTotalActiveItemsCountForChosenList() < 1 && !haveVisibleDepartmentInListStatic() && editButtonClicked) {
+            tabsll.setVisibility(View.GONE);
+        } else {
+            tabsll.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private static boolean haveVisibleDepartmentInListStatic() {
+        if (db.departmentDataDao().getAllVisibleDepartmentNames(chosenListData.list_id).size() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean haveVisibleDepartmentInList() {
+        if (db.departmentDataDao().getAllVisibleDepartmentNames(chosenListData.list_id).size() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private static int getTotalActiveItemsCountForChosenList() {
+        List<DepartmentData> listOfDepartmentsData = new ArrayList<DepartmentData>(db.departmentDataDao().getAll(chosenListData.list_id));
+        int sumOfActive = 0;
+        for (DepartmentData dd : listOfDepartmentsData) {
+            sumOfActive += MainActivity.db.dataDao().getAll(dd.department_id).size() - dd.CrossOutNumber - 1;
+        }
+
+        return sumOfActive;
     }
 
     private static void setHideDepartmentAlertDialog(View view) {
@@ -1312,6 +1370,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         et.requestFocus();
         Log.d(TAG, name + "et end et.requestFocus()");
         Log.d(TAG, name + " ended");
+
     }
 
     private static void setAlertDialogButtonsColor(View view, AlertDialog dialog) {
@@ -1379,7 +1438,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 //!! todo вынести в отдельный метод строки ниже и менять тему из settingsFragment
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-                if (sharedPreferences.getBoolean(PREF_DARK_THEME,true)) {
+                if (sharedPreferences.getBoolean(PREF_DARK_THEME, true)) {
                     iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadge(activeQty + "").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
                 } else {
                     iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadge(activeQty + "").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_700).withCornersDp(16));
@@ -2366,6 +2425,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         //data.add(position, newData);
         //Log.d(TAG, "Test increment data position: " + db.dataDao().getAllPositions(chosenDepartmentData.department_id));
         setDepartmentVisible(departmentID);
+        changeTotalActiveItemsCountInTab();
         Log.d(TAG, "new data set ended");
     }
 
@@ -2758,12 +2818,15 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             }
             tab.setCustomView(tabView);
         }
+        setStaticTabsVisibility();
     }
 
     private static void deleteAllItemInDepartment(int departmentID) {
 
         db.dataDao().deleteAllDataByDepartmentID(departmentID);
         changeTabQty(departmentID);
+        changeTotalActiveItemsCountInTab();
+        setStaticTabsVisibility();
         viewPagerAdapter.notifyDataSetChanged();
 
     }
@@ -2823,6 +2886,8 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         db.departmentDataDao().deleteSingleData(departmentID, chosenListData.list_id);
         db.departmentDataDao().decrementValues(chosenListData.list_id, departmentData.department_position);
         //adapter.notifyDataSetChanged();
+        changeTotalActiveItemsCountInTab();
+        setTabsVisibility();
         viewPagerAdapter.notifyDataSetChanged();
         //   viewPagerAdapter.notifyItemChanged(position);
         //    viewPagerAdapter.notifyItemChanged(position);
@@ -3261,7 +3326,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        if (sharedPreferences.getBoolean(PREF_DARK_THEME,false)) {
+        if (sharedPreferences.getBoolean(PREF_DARK_THEME, false)) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
@@ -3611,8 +3676,6 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         hideEmptyDepartmentPreference = status;
         Log.d(TAG, "setHideEmptyDepartmentPreference() " + hideEmptyDepartmentPreference);
     }
-
-
 
 }
 
