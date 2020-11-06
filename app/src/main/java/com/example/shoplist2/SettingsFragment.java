@@ -14,6 +14,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
     public static final String PREF_DARK_THEME = "enable_dark_theme";
     public static final String PREF_HIDE_EMPTY_DEPARTMENT = "hide_empty_department";
+    public static final String PREF_HISTORY_OF_CHANGES = "history_of_changes";
     private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
     @Override
@@ -31,6 +32,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         break;
                     case PREF_HIDE_EMPTY_DEPARTMENT:
                         changeHideEmptyDepartmentStatus(sharedPreferences);
+                        break;
+                    case PREF_HISTORY_OF_CHANGES:
+                        break;
                 }
             }
         };

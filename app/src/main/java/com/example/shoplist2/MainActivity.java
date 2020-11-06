@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -123,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
     public static boolean hideEmptyDepartmentPreference;
 
-    private static Context context;
+    public static Context context;
 
 //todo! killerfeature: block list by fingerprint and pin
 
@@ -320,6 +321,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         Log.d(TAG, "onCreate myViewPager2.setAdapter(viewPagerAdapter);");
 
         //Animation for drag & drop for list
+
 
         /*ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.
                 SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,
@@ -698,7 +700,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     private void menuForDepartments(View view, int position) {
         String name = new Object() {
         }.getClass().getEnclosingMethod().getName();
-        //todo возможны баги при обращении к разделу из-за строки ниже
+
         //int id = db.departmentDataDao().getChosenDepartment(position, chosenListData.list_id).department_id;
         int id = getChosenDepartmentID(position);
 
@@ -1452,7 +1454,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             int activeQty = activeQtyForList(i);
             if (activeQty > 0 && i != 0) {
                 //todo заменить keysForLists на запрос из базы
-                //!! todo вынести в отдельный метод строки ниже и менять тему из settingsFragment
+                //!! todo вынести в отдельный метод строки ниже
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
                 if (sharedPreferences.getBoolean(PREF_DARK_THEME, true)) {

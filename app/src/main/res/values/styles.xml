@@ -10,7 +10,7 @@
     <!--when the check box is checked -->
 
             <!--when the check box is unchecked -->
-            <item name="colorControlActivated">#fff</item>
+            <item name="colorControlActivated">#ABABAB</item>
 
         </style>
 

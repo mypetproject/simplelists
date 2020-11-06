@@ -29,11 +29,11 @@
         <Preference
             app:key="history_of_changes"
             app:title="@string/history_of_changes" />
-
+<!--
         <Preference
             app:key="privacy_policy"
             app:title="@string/privacy_policy" />
-
+-->
     <Preference
         app:key="version"
         app:summary="@string/apps_version"
