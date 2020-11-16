@@ -653,9 +653,9 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         //  if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() == 0
         if (!haveVisibleDepartmentInList() && editButtonClicked) {
             tabsll.setVisibility(View.GONE);
-        } else if (activeQtyForList(chosenListData.list_position) < 1 && editButtonClicked) {
+        } /*else if (activeQtyForList(chosenListData.list_position) < 1 && editButtonClicked) {
             tabsll.setVisibility(View.GONE);
-        } else {
+        } */else {
             tabsll.setVisibility(View.VISIBLE);
         }
         //setTabsOnLongClickListener();
@@ -990,9 +990,9 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
         if (!haveVisibleDepartmentInListStatic() && editButtonClicked) {
             tabsll.setVisibility(View.GONE);
-        } else if (getTotalActiveItemsCountForChosenList() < 1 && editButtonClicked) {
+        } /*else if (getTotalActiveItemsCountForChosenList() < 1 && editButtonClicked) {
             tabsll.setVisibility(View.GONE);
-        } else {
+        } */else {
             tabsll.setVisibility(View.VISIBLE);
         }
 
@@ -1493,7 +1493,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         Log.d(TAG, "view drawer id: " + view.toString());
                         setNavigationDrawerData();
                         setTabsOnLongClickListener();
-
+                        changeTotalActiveItemsCountInTab();
                         return false;
                     }
                 })
@@ -1625,6 +1625,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         } else {
             setTitle(getString(R.string.press_here));
         }
+
         Log.d(TAG, "setNavigationDrawerData() ended");
     }
 
