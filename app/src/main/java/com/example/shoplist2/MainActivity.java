@@ -5,10 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
-import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -131,72 +129,25 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        MainActivity.context = getApplicationContext();
-        setPreferences();
-
-        // AppCompatDelegate.setDefaultNightMode(loadTheme());
-        // AppCompatDelegate.setDefaultNightMode(1);
-        // Log.d(TAG, " AppCompatDelegate.setDefaultNightMode(loadTheme()) = " + loadTheme());
-        setContentView(R.layout.activity_main);
-
 
         mn = MainActivity.this;
-
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-
-        // data to populate the RecyclerView with
         db = App.getInstance().getDatabase();
         keysForLists = new ArrayList<>();
         keysForDepartments = new ArrayList<>();
 
-       /* //Flowable example
-       db.listDataDao().getAllNames()
-                // .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<String>>() {
-                    @Override
-                    public void accept(List<String> names) {
-                        // ...
-                       if (names != null) keysForLists.addAll(names);
-                    }
+        super.onCreate(savedInstanceState);
+        MainActivity.context = getApplicationContext();
+        setPreferences();
+        setContentView(R.layout.activity_main);
 
-                });*/
-        ListData firstElementOfList = new ListData();
+        setToolbar();
+        setFirstElementOfList();
+        setFirstElementInAllSections();
 
-        //  Log.d(TAG, "System language is " + Locale.getDefault().getLanguage());
-
-        if (db.listDataDao().getChosenList(0) == null) {
-            firstElementOfList.setList_name(getString(R.string.add_list));
-            firstElementOfList.list_position = 0;
-            db.listDataDao().insert(firstElementOfList);
-        } else {
-            firstElementOfList = db.listDataDao().getChosenList(0);
-            firstElementOfList.setList_name(getString(R.string.add_list));
-            db.listDataDao().update(firstElementOfList);
-        }
-
-        // Log.d(TAG, "Saved language is " + loadLanguage());
-        if (!Locale.getDefault().getLanguage().equals(loadLanguage()) && Locale.getDefault().getLanguage().equals("ru")) {
-            Single.fromCallable(() -> changeLanguage("ru")).subscribeOn(Schedulers.io()).subscribe();
-            //  changeLanguage("ru");
-        } else if (!Locale.getDefault().getLanguage().equals(loadLanguage())) {
-            Single.fromCallable(() -> changeLanguage("en")).subscribeOn(Schedulers.io()).subscribe();
-            //changeLanguage("en");
-        }
-
-        saveLanguage(Locale.getDefault().getLanguage());
-
-        Log.d(TAG, "First element to list added " + db.listDataDao().getAllNamesNotFlowable());
         setKeysForLists();
         data = new ArrayList<>();
         listOfDepartmentsData = new ArrayList<>();
-      /*  //Single.fromCallable(() example
-                Single.fromCallable(() -> db.listDataDao().insert(listData)).subscribeOn(Schedulers.io()).subscribe();
-*/
+
 
         // set up the RecyclerView
       /*  recyclerView = findViewById(R.id.rvAnimals);
@@ -261,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
         myViewPager2.setAdapter(viewPagerAdapter);
 
-        //todo selected and unselected must have different background colors?
+
         tabLayout = findViewById(R.id.tabs);
         new TabLayoutMediator(tabLayout, myViewPager2, new TabLayoutMediator.TabConfigurationStrategy() {
             @Override
@@ -567,6 +518,35 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         viewPagerAdapter.notifyDataSetChanged();
     }
 
+    private void setFirstElementInAllSections() {
+        if (!Locale.getDefault().getLanguage().equals(loadLanguage()) && Locale.getDefault().getLanguage().equals("ru")) {
+            Single.fromCallable(() -> changeLanguage("ru")).subscribeOn(Schedulers.io()).subscribe();
+        } else if (!Locale.getDefault().getLanguage().equals(loadLanguage())) {
+            Single.fromCallable(() -> changeLanguage("en")).subscribeOn(Schedulers.io()).subscribe();
+        }
+        saveLanguage(Locale.getDefault().getLanguage());
+    }
+
+    private void setFirstElementOfList() {
+        ListData firstElementOfList = new ListData();
+
+        if (db.listDataDao().getChosenList(0) == null) {
+            firstElementOfList.setList_name(getString(R.string.add_list));
+            firstElementOfList.list_position = 0;
+            db.listDataDao().insert(firstElementOfList);
+        } else {
+            firstElementOfList = db.listDataDao().getChosenList(0);
+            firstElementOfList.setList_name(getString(R.string.add_list));
+            db.listDataDao().update(firstElementOfList);
+        }
+    }
+
+    private void setToolbar() {
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
     public static Context getAppContext() {
         return MainActivity.context;
     }
@@ -650,15 +630,13 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     private void setTabsVisibility() {
 
         LinearLayout tabsll = (LinearLayout) findViewById(R.id.tabs_linear_layout);
-        //  if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() == 0
+
         if (!haveVisibleDepartmentInList() && editButtonClicked) {
             tabsll.setVisibility(View.GONE);
-        } /*else if (activeQtyForList(chosenListData.list_position) < 1 && editButtonClicked) {
-            tabsll.setVisibility(View.GONE);
-        } */else {
+        } else {
             tabsll.setVisibility(View.VISIBLE);
         }
-        //setTabsOnLongClickListener();
+
         Single.fromCallable(() -> setTabsOnLongClickListenerWithDelay(100)).subscribeOn(Schedulers.io()).subscribe();
 
     }
@@ -675,28 +653,24 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     }
 
     private void setTabsOnLongClickListener() {
+        Log.d(TAG, "setTabsOnLongClickListener()");
         LinearLayout tabStrip = (LinearLayout) tabLayout.getChildAt(0);
 
         for (int i = 0; i < tabStrip.getChildCount(); i++) {
 
-            // Set LongClick listener to each Tab
             int finalI = i;
             tabStrip.getChildAt(i).setOnLongClickListener(new View.OnLongClickListener() {
 
                 @Override
                 public boolean onLongClick(View v) {
-
-                    View parent = (View) v.getParent().getParent();
-
                     menuForDepartments(v, finalI);
-                    Log.d(TAG, "onLongClick tab view: " + R.id.tabs + " == " + parent.getId());
-                    //Toast.makeText(getApplicationContext(), "Tab clicked at " + finalI, Toast.LENGTH_SHORT).show();
                     return true;
                 }
             });
         }
     }
 
+    //todo! оптимизировать метод ниже
     private void menuForDepartments(View view, int position) {
         String name = new Object() {
         }.getClass().getEnclosingMethod().getName();
@@ -770,6 +744,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                         //Toast.makeText(getBaseContext(), "move", Toast.LENGTH_SHORT).show();
                         //createDataMoveSubMenu(parentView);
                         createDepartmentMoveSubMenu(view, id, position);
+                        return true;
                     case R.id.department_menu_hide_or_show:
                         hideOrShowDepartment(id);
                         return true;
@@ -783,12 +758,13 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         });
     }
 
+    //todo!!! BUG если очистить раздел, где были вычернуты пунты - то общее количество активных станет отрицательным
     private void cleanDepartmentAlertDialog(View view, int id) {
 
         TextView text = view.findViewById(R.id.tvDepartmentsName);
 
         final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
-                .setMessage(getString(R.string.clean_department) + "'" + text.getText().toString() + "'?")
+                .setMessage(getString(R.string.clean_department) + " '" + text.getText().toString() + "'?")
                 .setCancelable(true)
                 .setPositiveButton(R.string.yes,
                         new DialogInterface.OnClickListener() {
@@ -832,6 +808,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         }
     }
 
+    //todo переделать
     private void createDepartmentMoveSubMenu(View view, int id, int position) {
         String name = new Object() {
         }.getClass().getEnclosingMethod().getName();
@@ -850,7 +827,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
             if (s.list_id != chosenListData.list_id) popup.getMenu().add(s.getList_name());
         }
         else {
-            Toast.makeText(this, "Слишком мало списков", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.too_few_lists, Toast.LENGTH_SHORT).show();
         }
         Log.d(TAG, name + " for (DepartmentData s");
         popup.show();
@@ -1449,48 +1426,28 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
 
     void setNavigationDrawerData() {
         Log.d(TAG, "setNavigationDrawerData() started");
-        IDrawerItem[] iDrawerItems = new IDrawerItem[1000];
-        for (int i = 0; i < keysForLists.size(); i++) {
-            int activeQty = activeQtyForList(i);
-            if (activeQty > 0 && i != 0) {
-                //todo заменить keysForLists на запрос из базы
-                //!! todo вынести в отдельный метод строки ниже
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+//todo при добавлении нового списка проверять на максимальное количество списков, если больше 1000, предлагать удалить лишние, возможно предлагать удалить первые 100 созданных
 
-                if (sharedPreferences.getBoolean(PREF_DARK_THEME, true)) {
-                    iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadge(activeQty + "").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
-                } else {
-                    iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadge(activeQty + "").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_700).withCornersDp(16));
-                }
-            } else {
-                iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
-            }
-            // Log.d(TAG, "items for drawer added " + keysForLists.get(i - 1));
-        }
+        IDrawerItem[] iDrawerItems = setListsNamesForDrawer();
+
         drawerResult = new DrawerBuilder()
                 .withActivity(this)
                 .withToolbar(toolbar)
-
                 .withActionBarDrawerToggle(true)
                 .withHeader(R.layout.drawer_header)
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
                     public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                        Log.d(TAG, "setNavigationDrawerData() onItemClick started");
                         if (position == 1) {
-
-                            View parent = (View) view.getParent();
-                            int parentID = parent.getId();
+                            //todo! оптимизировать метод ниже
                             inputTextDialogWindow(view, 1, position - 1);
-                            // drawerResult.setSelection(selectedListIndex,false);
-
                         } else {
                             setActiveList(position);
                             selectedListIndex = position;
-                            // recyclerViewDepartments.smoothScrollToPosition(1);
-                            // drawerResult.setSelection(selectedListIndex,false);
                             myViewPager2.setCurrentItem(0);
                         }
-                        Log.d(TAG, "view drawer id: " + view.toString());
+
                         setNavigationDrawerData();
                         setTabsOnLongClickListener();
                         changeTotalActiveItemsCountInTab();
@@ -1500,164 +1457,81 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
                 .withOnDrawerListener(new Drawer.OnDrawerListener() {
                     @Override
                     public void onDrawerOpened(View drawerView) {
+                        Log.d(TAG, "setNavigationDrawerData() onDrawerOpened started");
 
-                        //  setNavigationDrawerData();
-                        if (activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) > 0) {
-                            drawerResult.updateBadge(drawerResult.getCurrentSelectedPosition() - 1, new StringHolder(activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) + ""));
-                            if (db.listDataDao().getAllPositions().size() > 1)
-                                drawerResult.setSelection(selectedListIndex - 1, false);
-                        } else {
-                            drawerResult.updateBadge(drawerResult.getCurrentSelectedPosition() - 1, null);
-                            if (db.listDataDao().getAllPositions().size() > 1)
-                                drawerResult.setSelection(selectedListIndex - 1, false);
-                        }
-                        Log.d(TAG, "drawerView.getVerticalScrollbarPosition() = " + drawerResult.getCurrentSelectedPosition());
+                        setOrUpdateBadge(drawerResult);
                     }
 
                     @Override
                     public void onDrawerClosed(View drawerView) {
-
                     }
 
                     @Override
                     public void onDrawerSlide(View drawerView, float slideOffset) {
-                     /*   if (activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) > 0) {
-                            drawerResult.updateBadge(drawerResult.getCurrentSelectedPosition() - 1, new StringHolder(activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) + ""));
-                            drawerResult.setSelection(selectedListIndex - 1, false);
-                        }*/
                     }
                 })
-                /* .withOnDrawerItemLongClickListener(new Drawer.OnDrawerItemLongClickListener() {
-                     @Override
-                     public boolean onItemLongClick(View view, int position, IDrawerItem drawerItem) {
-                         // Toast.makeText(getBaseContext(), " longclick on position: " + position , Toast.LENGTH_SHORT).show();
-                         String name = new Object() {
-                         }.getClass().getEnclosingMethod().getName();
-                         PopupMenu popup = new PopupMenu(view.getContext(), view);
-                         //popup.setOnMenuItemClickListener(this);
-                         popup.inflate(R.menu.popup_menu);
-                         popup.setForceShowIcon(true);
-                         popup.show();
-
-                         if (editButtonClicked) {
-                             popup.getMenu().findItem(R.id.menu_edit).setTitle("Редактировать список");
-                         } else {
-                             popup.getMenu().findItem(R.id.menu_edit).setTitle("Закончить редактирование");
-                         }
-
-                         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                             @Override
-                             public boolean onMenuItemClick(MenuItem item) {
-                                 switch (item.getItemId()) {
-                                     case R.id.menu_share:
-                                         String stringToSend = listToStringGenerator(position - 1);
-                                         newShare(item.getActionView(), stringToSend);
-                                         return true;
-                                     case R.id.menu_edit:
-                                         //addDepartmentButton = (ImageButton) findViewById(R.id.add_department_button);
-                                         if (editButtonClicked) {
-                                             editButtonClicked = false;
-                                             addDepartmentButton.setVisibility(View.VISIBLE);
-                                         } else {
-                                             editButtonClicked = true;
-                                             addDepartmentButton.setVisibility(View.GONE);
-                                         }
-                                         viewPagerAdapter.notifyDataSetChanged();
-                                         // adapter.notifyDataSetChanged();
-                                         // adapterForDepartments.notifyDataSetChanged();
-                                         return true;
-                                     case R.id.menu_delete:
-                                         final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
-                                                // .setMessage("Удалить список '" + chosenListData.getList_name() + "'?")
-                                                 .setMessage("Удалить список '" + db.listDataDao().getChosenList(position-1).getList_name() + "'?")
-                                                 .setCancelable(true)
-                                                 .setPositiveButton("Да",
-                                                         new DialogInterface.OnClickListener() {
-                                                             @Override
-                                                             public void onClick(DialogInterface dialog, int which) {
-                                                                 deleteSingleItemInList(position - 1);
-                                                                //drawerResult.removeItem(position);
-
-
-                                                                drawerResult.removeItemByPosition(position);
-                                                              //  drawerResult.getAdapter().notifyItemRemoved(position-1);
-                                                             //           Log.d(TAG, name + " drawerResult.getOriginalDrawerItems() " + drawerResult.getDrawerItems());
-                                                                // drawerResult.getAdapter().notifyAdapterItemRemoved(position);
-                                                               //  drawerResult.getAdapter().notifyAdapterDataSetChanged();
-
-
-                                                                 dialog.cancel();
- //drawerResult.getDrawerLayout().closeDrawer(GravityCompat.START);
-                                                               //  setNavigationDrawerData();
-                                                             }
-                                                         })
-                                                 .setNegativeButton(
-                                                         "Нет",
-                                                         new DialogInterface.OnClickListener() {
-                                                             public void onClick(DialogInterface dialog, int id) {
-                                                                 dialog.cancel();
-                                                             }
-                                                         })
-                                                 .show();
-
-                                         return false;
-                                     default:
-                                         return false;
-                                 }
-                             }
-                         });
-                         return false;
-                     }
-                 })*/
                 .addDrawerItems(iDrawerItems)
-
                 .build();
-        //       Log.d(TAG, "setNavigationDrawerData() drawerBuilderEnded");
-//drawerResult.setSelection(1);
-        //drawerResult.setSelection(iDrawerItems[1]);
 
         if (keysForLists.size() > 1) {
             setTitle(chosenListData.getList_name());
+
             if (db.listDataDao().getAllPositions().size() > 1)
                 drawerResult.setSelection(selectedListIndex - 1, false);
-            Log.d(TAG, " if (keysForLists.size() > 1) pos: " + drawerResult.getCurrentSelectedPosition());
 
         } else {
             setTitle(getString(R.string.press_here));
         }
+    }
 
-        Log.d(TAG, "setNavigationDrawerData() ended");
+    private void setOrUpdateBadge(Drawer drawerResult) {
+        if (activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) > 0) {
+            drawerResult.updateBadge(drawerResult.getCurrentSelectedPosition() - 1, new StringHolder(activeQtyForList(drawerResult.getCurrentSelectedPosition() - 1) + ""));
+            if (db.listDataDao().getAllPositions().size() > 1)
+                drawerResult.setSelection(selectedListIndex - 1, false);
+        } else {
+            drawerResult.updateBadge(drawerResult.getCurrentSelectedPosition() - 1, null);
+            if (db.listDataDao().getAllPositions().size() > 1)
+                drawerResult.setSelection(selectedListIndex - 1, false);
+        }
+    }
+
+    private IDrawerItem[] setListsNamesForDrawer() {
+        Log.d(TAG, "setListsNamesForDrawer() started");
+
+        IDrawerItem[] iDrawerItems = new IDrawerItem[keysForLists.size()];
+
+        for (int i = 0; i < keysForLists.size(); i++) {
+
+            int activeQty = activeQtyForList(i);
+
+            if (activeQty > 0 && i != 0) {
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+                if (sharedPreferences.getBoolean(PREF_DARK_THEME, true)) {
+                    iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadge(activeQty + "").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
+                } else {
+                    iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadge(activeQty + "").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_700).withCornersDp(16));
+                }
+            } else {
+                iDrawerItems[i] = new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
+            }
+
+        }
+        return iDrawerItems;
     }
 
     void setActiveList(int position) {
+        Log.d(TAG, "setActiveList started");
+
         if (keysForLists.size() > 1) {
             chosenListData = db.listDataDao().getChosenList(position - 1);
-            Log.d(TAG, "method: 'setNavigationDrawerData()'; " + chosenListData.getAllInString());
             setTitle(chosenListData.getList_name());
             if (selectedListIndex != 2) selectedListIndex--;
             setNavigationDrawerData();
-            /*if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() > 1) {
-                chosenDepartmentData = db.departmentDataDao().getChosenDepartment(1, chosenListData.list_id);
-            } else {
-                chosenDepartmentData = new DepartmentData(chosenListData.list_id, 0, "", 0);
-            }*/
-            //recyclerViewDepartments.scrollToPosition(1);
         }
-        //setDepartmentsData();
-        // setKeysForDepartments();
-     /*   if (keysForDepartments.size() < 2) {
-            crossOutNumber = 0;
-            data.clear();
-            adapter.notifyDataSetChanged();
-            // adapterForDepartments.notifyDataSetChanged();
-        } else {
-            chosenDepartmentData = db.departmentDataDao().getChosenDepartment(1, chosenListData.list_id);
-            getCrossOutNumber();
-            getData();
-        }*/
+
         setTabsVisibility();
         viewPagerAdapter.notifyDataSetChanged();
-        Log.d(TAG, "setActiveList(int position) ended");
     }
 
     @Override
@@ -1702,26 +1576,16 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
     public void setKeysForLists() {
         String name = new Object() {
         }.getClass().getEnclosingMethod().getName();
+        Log.d(TAG, name + " started");
+
         keysForLists.clear();
-        Log.d(TAG, "keysforlists cleaned");
         keysForLists.addAll(db.listDataDao().getAllNamesNotFlowable());
-        Log.d(TAG, "keysforlists added information from base " + keysForLists);
-        Log.d(TAG, name + " setKeysForLists() added information from base " + db.listDataDao().getAllPositions());
+
         if (keysForLists.size() > 1) {
             chosenListData = db.listDataDao().getChosenList(1);
         }
-      /*  mShareButton = (ImageButton) findViewById(R.id.share_button);
-        if (keysForLists.size() < 2) {
-            mShareButton.setVisibility(View.GONE);
-        } else {
-            mShareButton.setVisibility(View.GONE);
-        }*/
+
         setNavigationDrawerData();
-        Log.d(TAG, name + " setNavigationDrawerData() ended");
-        setDepartmentsData();
-        Log.d(TAG, name + " setDepartmentsData(); ended");
-        //   setKeysForDepartments();
-        Log.d(TAG, name + " setKeysForDepartments(); ended");
     }
 
 
@@ -1746,15 +1610,6 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         //adapter.notifyDataSetChanged();
         // adapterForDepartments.notifyDataSetChanged();
         canUpdate = true;
-    }
-
-    void setDepartmentsData() {
-       /* if (keysForLists.size() > 1) {
-            DepartmentData departmentData = new DepartmentData(chosenListData.list_id, 0, "Добавить", 0);
-            db.departmentDataDao().insert(departmentData);
-            Log.d(TAG, "items departments data added");
-        }*/
-        Log.d(TAG, "setDepartmentsData() ended");
     }
 
     void getCrossOutNumber() {
@@ -2600,7 +2455,7 @@ db.dataDao().updateQty(dataPosition, chosenDepartmentData.department_id, Float.p
         LinkedHashMap<String, List<String>> defaultData = new LinkedHashMap<>();
         List<String> departmentData = new ArrayList<>();
 
-        departmentData.add(getString(R.string.Toothbrush));
+        departmentData.add(getString(R.string.Toothpaste));
         departmentData.add(getString(R.string.dishwashing_liquid));
         departmentData.add(getString(R.string.garbage_bags));
         departmentData.add(getString(R.string.cling_film));

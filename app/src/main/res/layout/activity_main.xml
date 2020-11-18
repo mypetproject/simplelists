@@ -128,7 +128,6 @@
             android:layout_height="wrap_content"
             android:fontFamily="@string/define_font_fontawesome"
             android:gravity="center"
-            android:text="@string/holy_spirit_space"
             android:textAllCaps="true"
             android:textColor="@color/image_btn"
             android:textSize="14sp"

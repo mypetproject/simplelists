@@ -17,7 +17,7 @@
     <string name="add_list">New list</string>
     <string name="Change_theme">Change theme</string>
 
-    <string name="Toothbrush">Toothbrush</string>
+    <string name="Toothpaste">Toothpaste</string>
     <string name="dishwashing_liquid">Dishwashing liquid</string>
     <string name="garbage_bags">Garbage bags</string>
     <string name="cling_film">Cling film</string>
@@ -118,6 +118,7 @@
     <string name="about_category">About</string>
     <string name="hide_empty_department">Hide a section if all items crossed off</string>
     <string name="general_settings">General settings</string>
+    <string name="too_few_lists">Too few lists</string>
 
 
 </resources>
