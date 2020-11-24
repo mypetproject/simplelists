@@ -57,7 +57,7 @@ import java.util.Locale;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
-public class MainActivity extends AppCompatActivity implements MyRecyclerViewAdapter.ItemClickListener, DepartmentsAdapter.ItemClickListener {
+public class MainActivity extends AppCompatActivity implements MyRecyclerViewAdapter.ItemClickListener {
 
     List<Data> data;
 
@@ -79,8 +79,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
     static ListDataDatabase db;
     static ListData chosenListData = new ListData();
-    static DepartmentData chosenDepartmentData;
-    static Data chosenData = new Data();
+    //static DepartmentData chosenDepartmentData;
+    //static Data chosenData = new Data();
     int parentID;
 
     EditText et;
@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
         //todo убрать блок ниже?
         if (keysForDepartments.size() > 1) {
-            chosenDepartmentData = db.departmentDataDao().getChosenDepartment(1, chosenListData.list_id);
+            //chosenDepartmentData = db.departmentDataDao().getChosenDepartment(1, chosenListData.list_id);
             getListOfDepartmentsData();
 
             getCrossOutNumber();
@@ -236,27 +236,41 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void setEditButton() {
+        logThisMethod(new Object() {}.getClass().getEnclosingMethod().getName());
+
         editButton = (ImageButton) findViewById(R.id.edit_button);
         setEditButtonVisibility();
 
         editButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+
                 if (editButtonClicked) {
                     editButtonClicked = false;
-                    addDepartmentButton.setVisibility(View.VISIBLE);
-                    addDepartmentEndButton.setVisibility(View.VISIBLE);
-                    holySpiritTV.setVisibility(View.VISIBLE);
                 } else {
                     editButtonClicked = true;
-                    addDepartmentButton.setVisibility(View.GONE);
-                    addDepartmentEndButton.setVisibility(View.GONE);
-                    holySpiritTV.setVisibility(View.GONE);
                 }
+                setEditModeButtonsVisibility();
                 setTabsVisibility();
+
                 viewPagerAdapter.notifyDataSetChanged();
             }
         });
+    }
+
+    private void setEditModeButtonsVisibility() {
+        logThisMethod(new Object() {}.getClass().getEnclosingMethod().getName());
+
+        if (!editButtonClicked) {
+            addDepartmentButton.setVisibility(View.VISIBLE);
+            addDepartmentEndButton.setVisibility(View.VISIBLE);
+            holySpiritTV.setVisibility(View.VISIBLE);
+        } else {
+            addDepartmentButton.setVisibility(View.GONE);
+            addDepartmentEndButton.setVisibility(View.GONE);
+            holySpiritTV.setVisibility(View.GONE);
+        }
     }
 
     private void setTabs() {
@@ -1379,7 +1393,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
 
-    public void getData() {
+    /*public void getData() {
         String name = new Object() {
         }.getClass().getEnclosingMethod().getName();
         canUpdate = false;
@@ -1400,21 +1414,22 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         //adapter.notifyDataSetChanged();
         // adapterForDepartments.notifyDataSetChanged();
         canUpdate = true;
-    }
+    }*/
 
     void getCrossOutNumber() {
         if (keysForLists.size() > 1) {
-            crossOutNumber = chosenDepartmentData.CrossOutNumber;
+            //crossOutNumber = chosenDepartmentData.CrossOutNumber;
         }
     }
 
     void setCrossOutNumber() {
         if (keysForLists.size() > 1) {
-            chosenDepartmentData.CrossOutNumber = crossOutNumber;
-            db.departmentDataDao().update(chosenDepartmentData);
+            //chosenDepartmentData.CrossOutNumber = crossOutNumber;
+            //db.departmentDataDao().update(chosenDepartmentData);
         }
     }
 
+    //todo вроде не используется
     @Override
     public void onItemClick(View view, final int position, int id) {
         String name = new Object() {
@@ -1430,12 +1445,12 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             //todo по longclick прибавлять или вычитать числа, пока не отпустят
             case R.id.image_to_low:
                 //!    db.dataDao().minusQty(position, chosenDepartmentData.department_id);
-                getData();
+                //getData();
                 clicker = true;
                 break;
             case R.id.image_to_high:
                 //!   db.dataDao().plusQty(position, chosenDepartmentData.department_id);
-                getData();
+                //getData();
                 clicker = true;
                 break;
             case R.id.tvAnimalCount:
@@ -1504,7 +1519,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                     }
                 } else {
                     deleteFlagForEdit = true;
-                    chosenData = db.dataDao().getChosenData(position, chosenDepartmentData.department_id);
+                   // chosenData = db.dataDao().getChosenData(position, chosenDepartmentData.department_id);
                     inputTextDialogWindow(view, position, position);
                 }
                 // adapterForDepartments.notifyDataSetChanged();
@@ -1998,9 +2013,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void setNewDepartmentFromParse(String s, int position) {
-        String name = new Object() {
-        }.getClass().getEnclosingMethod().getName();
-        Log.d(TAG,name + " started");
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         DepartmentData departmentData = new DepartmentData(chosenListData.list_id, position, s, 0);
         db.departmentDataDao().insert(departmentData);
@@ -2096,11 +2110,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 parser(s);
                 updateNavigationDrawer();
 
-                if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() > 0) {
-                    chosenDepartmentData = db.departmentDataDao().getChosenDepartment(0, chosenListData.list_id);
-                } else {
-                    data.clear();
-                    Log.d(TAG, "data clear");
+                if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() == 0) {
                     final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
                             .setMessage(R.string.fill_list_with_default_values)
                             .setCancelable(true)
@@ -2110,15 +2120,12 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                                         public void onClick(DialogInterface dialog, int which) {
                                             setDefaultList();
 
-                                            chosenDepartmentData = db.departmentDataDao().getChosenDepartment(1, chosenListData.list_id);
-                                            //getData();
                                             dialog.cancel();
                                             viewPagerAdapter.notifyDataSetChanged();
 
-                                            addDepartmentButton.setVisibility(View.GONE);
-                                            addDepartmentEndButton.setVisibility(View.GONE);
-                                            holySpiritTV.setVisibility(View.GONE);
                                             editButtonClicked = true;
+                                            setEditModeButtonsVisibility();
+
                                             setNavigationDrawerData();
                                             setTabsVisibility();
                                         }
@@ -2127,11 +2134,11 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                                     R.string.no,
                                     new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int id) {
+
                                             editButtonClicked = false;
+                                            setEditModeButtonsVisibility();
                                             setTabsVisibility();
-                                            addDepartmentButton.setVisibility(View.VISIBLE);
-                                            addDepartmentEndButton.setVisibility(View.VISIBLE);
-                                            holySpiritTV.setVisibility(View.VISIBLE);
+
                                             inputTextDialogWindow(findViewById(R.id.add_department_button), 1, 0);
                                             dialog.cancel();
                                         }
@@ -2139,12 +2146,15 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                             .create();
                     setAlertDialogButtonsColor(view, dialog);
                     dialog.show();
-                    Log.d(TAG, "dialog built");
                 }
+
                 viewPagerAdapter.notifyDataSetChanged();
+
+                //TODO!!! fix menu button visibility
                 if (moreMenuButton.getVisibility() == View.GONE) {
                     moreMenuButton.setVisibility(View.VISIBLE);
                 }
+
                 setEditButtonVisibility();
                 break;
         }
@@ -2160,8 +2170,12 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void setDefaultList() {
+        logThisMethod(new Object() {}.getClass().getEnclosingMethod().getName());
+
         LinkedHashMap<String, List<String>> defaultData = new LinkedHashMap<>();
         List<String> departmentData = new ArrayList<>();
+
+        int departmentPosition = 0;
 
         departmentData.add(getString(R.string.Toothpaste));
         departmentData.add(getString(R.string.dishwashing_liquid));
@@ -2249,21 +2263,18 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         departmentData.add(getString(R.string.juice));
         defaultData.put(getString(R.string.water_drinks), departmentData);
 
-        int departmentPosition = 0;
-
         for (String key : defaultData.keySet()) {
-            DepartmentData dpData = new DepartmentData(chosenListData.list_id, departmentPosition, key, 0);
-            dpData.visibility = 1;
-            db.departmentDataDao().insert(dpData);
-            chosenDepartmentData = db.departmentDataDao().getChosenDepartment(departmentPosition, chosenListData.list_id);
 
-            //getData();
-            Data dataForInsert = new Data(chosenDepartmentData.department_id, 0, getString(R.string.add), 0);
-            db.dataDao().insert(dataForInsert);
             int dataPosition = 1;
-            Log.d(TAG, "all default data: " + defaultData.get(key));
+
+            setNewDepartmentFromParse(key, departmentPosition);
+
+            DepartmentData dd = db.departmentDataDao().getChosenDepartment(departmentPosition, chosenListData.list_id);
+            dd.visibility=1;
+            db.departmentDataDao().update(dd);
+
             for (String s : defaultData.get(key)) {
-                Data tempData = new Data(chosenDepartmentData.department_id, dataPosition, s, 0);
+                Data tempData = new Data(dd.department_id, dataPosition, s, 0);
                 db.dataDao().insert(tempData);
                 dataPosition++;
             }
@@ -2316,6 +2327,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         adapter.notifyItemChanged(updateIndex);
     }
 
+    //todo вроде не используется
     private void moveSingleItem(int fromPosition) {
         int toPosition = data.size() - 1;
 
@@ -2331,14 +2343,15 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         data_qty.remove(fromPosition);
         data_qty.add(toPosition, item_qty);*/
 
-        Data temp = db.dataDao().getChosenData(fromPosition, chosenDepartmentData.department_id);
+      /*  Data temp = db.dataDao().getChosenData(fromPosition, chosenDepartmentData.department_id);
         int pos = db.dataDao().getAllPositions(chosenDepartmentData.department_id).size();
         db.dataDao().updateSingleItemPosition(temp.data_id, pos);
         db.dataDao().decrementValues(chosenDepartmentData.department_id, fromPosition);
         adapter.notifyItemMoved(fromPosition, pos - 1);
-        adapter.notifyItemChanged(pos - 1);
+        adapter.notifyItemChanged(pos - 1);*/
     }
 
+    //todo вроде не используется
     private void moveSingleItemToTop(int fromPosition) {
         int toPosition = 1;
 
@@ -2351,11 +2364,11 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         // data_qty.remove(fromPosition);
         // data_qty.add(toPosition, item_qty);
 
-        Data temp = db.dataDao().getChosenData(fromPosition, chosenDepartmentData.department_id);
+        /*Data temp = db.dataDao().getChosenData(fromPosition, chosenDepartmentData.department_id);
         db.dataDao().incrementValuesFromOneToPosition(chosenDepartmentData.department_id, fromPosition);
         db.dataDao().updateSingleItemPosition(temp.data_id, 1);
         adapter.notifyItemMoved(fromPosition, toPosition);
-        adapter.notifyItemChanged(toPosition);
+        adapter.notifyItemChanged(toPosition);*/
     }
 
     private static void deleteSingleItem(int position, int id) {

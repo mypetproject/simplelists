@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.HashMap;
 import java.util.List;
 
+//TODO вроде бы не используется
 public class DepartmentsAdapter extends RecyclerView.Adapter<DepartmentsAdapter.ViewHolder> {
 
     private List<String> mData;
@@ -48,12 +49,12 @@ this.mDataSize = dataSize;
     public void onBindViewHolder(ViewHolder holder, final int position) {
      String animal = mData.get(position);
         Log.d("myLogs", "holder name in department adapter: " + animal);
-        if (mData.size() > 1) if (animal.equals(MainActivity.chosenDepartmentData.department_name)) {
+        //if (mData.size() > 1) if (animal.equals(MainActivity.chosenDepartmentData.department_name)) {
            holder.itemView.setPressed(true);
-            Log.d("myLogs", "Set color for " + MainActivity.chosenDepartmentData.department_name);
-        } else {
+           // Log.d("myLogs", "Set color for " + MainActivity.chosenDepartmentData.department_name);
+        //} else {
             holder.itemView.setPressed(false);
-        }
+       // }
         Log.d("myLogs", "onBindViewHolder color chosen");
 
         if (position == 0) {
