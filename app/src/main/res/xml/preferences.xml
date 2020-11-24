@@ -16,6 +16,7 @@
     <SwitchPreference
         app:key="hide_empty_department"
         app:title="@string/hide_empty_department"
+        android:defaultValue="true"
         />
     </PreferenceCategory>
 

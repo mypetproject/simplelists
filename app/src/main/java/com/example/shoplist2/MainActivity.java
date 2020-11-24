@@ -215,7 +215,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void setStartAndEndAddDepartmentButtons() {
-        Log.d(TAG, "setStartAndEndAddDepartmentButtons() started");
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+
         addDepartmentButton = (ImageButton) findViewById(R.id.add_department_button);
         addDepartmentButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -236,7 +238,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void setEditButton() {
-        logThisMethod(new Object() {}.getClass().getEnclosingMethod().getName());
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         editButton = (ImageButton) findViewById(R.id.edit_button);
         setEditButtonVisibility();
@@ -260,7 +263,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void setEditModeButtonsVisibility() {
-        logThisMethod(new Object() {}.getClass().getEnclosingMethod().getName());
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         if (!editButtonClicked) {
             addDepartmentButton.setVisibility(View.VISIBLE);
@@ -435,6 +439,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void setTabsVisibility() {
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         LinearLayout tabsll = (LinearLayout) findViewById(R.id.tabs_linear_layout);
 
@@ -460,7 +466,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void setTabsOnLongClickListener() {
-        Log.d(TAG, "setTabsOnLongClickListener() started");
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         LinearLayout tabStrip = (LinearLayout) tabLayout.getChildAt(0);
 
@@ -683,6 +690,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         this.adapter = adapter;
     }*/
 
+    //TODO!!! оптимизировать метод ниже
     public static void ViewPagerItemClicked(View view, int dataID, MyRecyclerViewAdapter adapter, int position, List<Data> adapterData) {
 
         setAdapter(adapter);
@@ -772,6 +780,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private boolean haveVisibleDepartmentInList() {
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+
         if (db.departmentDataDao().getAllVisibleDepartmentNames(chosenListData.list_id).size() > 0) {
             return true;
         } else {
@@ -1037,7 +1048,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 // if (uniqueTest(str, view)) {
                 // InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 //  imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
-                str = deleteSpacesInTheEndInItem(str);
+                str = deleteLeftRightSpacesInItem(str);
                 if (!str.isEmpty()) {
                     if (editFlag) {
                         editOldData(str, id);
@@ -1089,7 +1100,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                     Toast.makeText(view.getContext(), "Введите уникальное название отдела", Toast.LENGTH_SHORT).show();
                 }
 */
-                str = deleteSpacesInTheEndInItem(str);
+                str = deleteLeftRightSpacesInItem(str);
                 if (!str.isEmpty()) {
                     boolean tempEditFlag = editFlag;
                     if (editFlag) {
@@ -1211,7 +1222,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             Log.d(TAG, "for (DepartmentData dd : listOfDepartmentsData)");
             sumOfActive += MainActivity.db.dataDao().getAll(dd.department_id).size() - dd.CrossOutNumber - 1;
         }
-         Log.d(TAG, " activeQtyForList sum: " + sumOfActive);
+        Log.d(TAG, " activeQtyForList sum: " + sumOfActive);
 
         return sumOfActive;
     }
@@ -1292,7 +1303,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         Log.d(TAG, "setListsNamesForDrawer() started");
 
         //IDrawerItem[] iDrawerItems = new IDrawerItem[keysForLists.size()];
-       // IDrawerItem[] iDrawerItems = new IDrawerItem[keysForLists.size()];
+        // IDrawerItem[] iDrawerItems = new IDrawerItem[keysForLists.size()];
 
         IDrawerItem[] iDrawerItems = new IDrawerItem[keysForLists.size()];
         Log.d(TAG, "IDrawerItem[]");
@@ -1312,7 +1323,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             }
         }
 
-            Log.d(TAG, "IDrawerItem[]");
+        Log.d(TAG, "IDrawerItem[]");
         for (int i = 0; i < keysForLists.size(); i++) {
             Log.d(TAG, "for (int i = " + i);
             int activeQty = activeQtyForList(i);
@@ -1379,8 +1390,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         adapterPosition = pos;
     }
 
-  public void setKeysForLists() {
-        logThisMethod(new Object() {}.getClass().getEnclosingMethod().getName());
+    public void setKeysForLists() {
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         keysForLists.clear();
         keysForLists.addAll(db.listDataDao().getAllNamesNotFlowable());
@@ -1519,7 +1531,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                     }
                 } else {
                     deleteFlagForEdit = true;
-                   // chosenData = db.dataDao().getChosenData(position, chosenDepartmentData.department_id);
+                    // chosenData = db.dataDao().getChosenData(position, chosenDepartmentData.department_id);
                     inputTextDialogWindow(view, position, position);
                 }
                 // adapterForDepartments.notifyDataSetChanged();
@@ -1619,85 +1631,42 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }*/
 
     //todo!!! оптимизоровать метод ниже
+
+    //for adding section, list and when create new list without loading default data
     public void inputTextDialogWindow(final View view, final int insertIndex, final int position) {
-        String name = new Object() {
-        }.getClass().getEnclosingMethod().getName();
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
-        View parent = (View) view.getParent();
-        parentID = parent.getId();
-        View parentParent = (View) view.getParent().getParent();
-        int parentParentID = parentParent.getId();
-
-
+        String title;
         final EditText et = new EditText(view.getContext());
-        Log.d(TAG, name + " et start building");
+
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT);
         et.setLayoutParams(lp);
         et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-        Log.d(TAG, name + " et end building");
 
-        String title;
-        if (position != 0 && parentID == R.id.rvAnimals) {
-            TextView text = new TextView(view.getContext());
-            Log.d(TAG, name + " TextView(view.getContext())");
-            //  switch (parentID) {
-            //      case R.id.rvAnimals:
-            text = view.findViewById(R.id.tvAnimalName);
-            Log.d(TAG, name + " text = view.findViewById(R.id.tvAnimalName)");
-            //break;
-               /* case R.id.rvDepartments:
-                    text = view.findViewById(R.id.tvDepartmentsName);
-                    break;*/
-            //    }
-            et.setText(text.getText().toString() + " ");
-            Log.d(TAG, name + " et.setText(text.getText().toString()");
-            et.setSelection(et.length());
-
-            title = getString(R.string.to_edit);
-        } else if (parentParentID == R.id.tabs) {
-            TextView text = new TextView(view.getContext());
-            Log.d(TAG, name + " TextView(view.getContext())");
-            //  switch (parentID) {
-            //      case R.id.rvAnimals:
-            text = view.findViewById(R.id.tvDepartmentsName);
-            Log.d(TAG, name + " text = view.findViewById(R.id.tvAnimalName)");
-
-               /* case R.id.rvDepartments:
-                    text = view.findViewById(R.id.tvDepartmentsName);
-                    break;*/
-            //    }
-            et.setText(text.getText().toString() + " ");
-            Log.d(TAG, name + " et.setText(text.getText().toString()");
-            et.setSelection(et.length());
-
-            title = getString(R.string.to_edit);
-        } else if (view.getId() == R.id.add_department_button
+        if (view.getId() == R.id.add_department_button
                 || view.getId() == R.id.add_department_button_in_the_end) {
             deleteFlagForEdit = false;
             title = getString(R.string.add_department);
             et.setHint(getString(R.string.enter_text));
-        } else if (parentID == R.id.material_drawer_recycler_view) {
+        } else {
             deleteFlagForEdit = false;
             title = getString(R.string.add_new_list);
             et.setHint(getString(R.string.enter_text));
-        } else {
-            deleteFlagForEdit = false;
-            title = getString(R.string.add);
-            et.setHint(getString(R.string.enter_text));
         }
 
-        Log.d(TAG, name + "AlertDialog start building");
-        // final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
         final AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
         builder.setTitle(title)
-                //.setMessage("Write your message here")
                 .setCancelable(true)
                 .setView(et)
                 .setPositiveButton(getString(R.string.ok), null);
-        if (parentID != R.id.material_drawer_recycler_view)
+
+        if (view.getId() == R.id.add_department_button
+                || view.getId() == R.id.add_department_button_in_the_end)
             builder.setNeutralButton(getString(R.string.next), null);
+
         builder.setNegativeButton(
                 getString(R.string.cancel),
                 new DialogInterface.OnClickListener() {
@@ -1708,31 +1677,26 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 });
 
         AlertDialog dialog = builder.create();
-
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface arg0) {
-                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
-                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(ContextCompat.getColor(view.getContext(), R.color.image_btn));
-            }
-        });
+        setAlertDialogButtonsColor(view, dialog);
         dialog.show();
-        Log.d(TAG, name + "AlertDialog end building");
+
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        Log.d(TAG, name + "positiveButton start setOnClickListener");
-        //todo If last characters is space, than delete them all by do while cycle
         positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String str = et.getText().toString();
-                str = deleteSpacesInTheEnd(str);
-                boolean isItShare = isItShare(str);
+                str = deleteLeftAndRightSpaces(str);
+
+                boolean isItShare = str.contains("-=***=-");
+
                 if (str.length() > 0) {
-                    if (str.length() <= 12 || isItShare) {
+                    if (str.length() <= 12 || (isItShare && view.getId() != R.id.add_department_button
+                            && view.getId() != R.id.add_department_button_in_the_end)) {
+
                         if (uniqueTest(str, view)) {
                             InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                             imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+
                             inputButtonClicked(str, insertIndex, view);
                             setTabsOnLongClickListener();
 
@@ -1747,34 +1711,24 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             }
 
         });
-        Log.d(TAG, name + "positiveButton end setOnClickListener");
+
         Button neutralButton = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
         neutralButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String str = et.getText().toString();
-                str = deleteSpacesInTheEnd(str);
+                str = deleteLeftAndRightSpaces(str);
+
                 if (str.length() <= 12) {
                     if (!str.isEmpty()) {
                         if (uniqueTest(str, view)) {
-                            // InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                            //imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+
                             inputButtonClicked(str, insertIndex, view);
+
                             et.getText().clear();
                             et.setHint(getString(R.string.enter_text));
-                            //dialog.setTitle("Добавить");
-                            String title;
-                            if (view.getId() == R.id.add_department_button
-                                    || view.getId() == R.id.add_department_button_in_the_end) {
-                                title = getString(R.string.add_department);
-                            } else if (parentID == R.id.material_drawer_recycler_view) {
-                                title = getString(R.string.add_new_list);
-                            } else {
-                                title = getString(R.string.add);
-                            }
-                            dialog.setTitle(title);
-                            setTabsOnLongClickListener();
 
+                            setTabsOnLongClickListener();
                         } else {
                             Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
                         }
@@ -1782,9 +1736,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 } else {
                     Toast.makeText(MainActivity.this, R.string.too_large_name, Toast.LENGTH_SHORT).show();
                 }
-
             }
-
         });
 
         et.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -1801,20 +1753,15 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 }
             }
         });
-        Log.d(TAG, name + "et start et.requestFocus()");
         et.requestFocus();
-        Log.d(TAG, name + "et end et.requestFocus()");
 
         et.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Log.d(TAG, name + " s: '" + s.toString()+"' s size: " + s.toString().length() + " count: " + count);
-
                 if (s.toString().length() > 9) {
                     dialog.setTitle(title + "                     " + (12 - s.toString().length()));
                 } else {
@@ -1824,65 +1771,41 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
             @Override
             public void afterTextChanged(Editable s) {
-               /* Log.d(TAG, name + " s: '" + s.toString()+"' s size: " + s.toString().length());
-                if (s.toString().length() > 9) {
-
-                    Toast toast = Toast.makeText(MainActivity.this, "" + (12 - s.toString().length()), Toast.LENGTH_SHORT);
-                    //Toast toast = Toast.makeText(view.getContext(), "" + db.dataDao().getChosenDataById(id).data_qty, Toast.LENGTH_SHORT);
-                    CountDownTimer toastCountDown;
-                    toastCountDown = new CountDownTimer(100, 10) {
-                        @Override
-                        public void onTick(long millisUntilFinished) {
-                            toast.show();
-                        }
-
-                        @Override
-                        public void onFinish() {
-                            toast.cancel();
-                        }
-                    };
-                    toast.show();
-                    toastCountDown.start();
-                }*/
             }
         });
     }
 
-    private boolean isItShare(String str) {
-        return str.contains("-=***=-");
-    }
+    private String deleteLeftAndRightSpaces(String str) {
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
-    private String deleteSpacesInTheEnd(String str) {
-        // String name = new Object() {
-        //  }.getClass().getEnclosingMethod().getName();
         if (str.length() > 0) {
             while (str.charAt(str.length() - 1) == ' ') {
-                //   Log.d(TAG, name + " department name in while start: '" + str + "'");
                 str = str.substring(0, str.length() - 1);
-                //   Log.d(TAG, name + " department name in while end: '" + str + "'");
                 if (str.length() == 0) break;
             }
-            ;
+
+            while (str.charAt(0) == ' ') {
+                str = str.substring(1, str.length());
+                if (str.length() == 0) break;
+            }
         }
-        ;
-        //  Log.d(TAG, name + " department name: " + str);
-        return str;
+       return str;
     }
 
-    static private String deleteSpacesInTheEndInItem(String str) {
-        // String name = new Object() {
-        //  }.getClass().getEnclosingMethod().getName();
+    static private String deleteLeftRightSpacesInItem(String str) {
+        logThisMethodStatic(new Object() {}.getClass().getEnclosingMethod().getName());
+
         if (str.length() > 0) {
             while (str.charAt(str.length() - 1) == ' ') {
-                //   Log.d(TAG, name + " department name in while start: '" + str + "'");
                 str = str.substring(0, str.length() - 1);
-                //   Log.d(TAG, name + " department name in while end: '" + str + "'");
                 if (str.length() == 0) break;
             }
-            ;
+            while (str.charAt(0) == ' ') {
+                str = str.substring(1, str.length());
+                if (str.length() == 0) break;
+            }
         }
-        ;
-        //  Log.d(TAG, name + " department name: " + str);
         return str;
     }
 //TODO!!! Если раздел скрыт, то не считать его невычеркнутые пункты активными
@@ -1980,17 +1903,24 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     boolean uniqueTest(String str, View view) {
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+
         View parent = (View) view.getParent();
         parentID = parent.getId();
         View parentParent = (View) view.getParent().getParent();
         int parentParentID = parentParent.getId();
-        //return ((!db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str) && parentID == R.id.rvDepartments) ||
+
         return (parentID == R.id.rvAnimals
-                || (!db.listDataDao().getAllNamesNotFlowable().contains(str) && parentID == R.id.material_drawer_recycler_view)
-                || ((view.getId() == R.id.add_department_button || view.getId() == R.id.add_department_button_in_the_end) && !db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str))
-                || (parentParentID == R.id.tabs && !db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str))
-                || (view.getId() == R.id.more_menu_button && !db.listDataDao().getAllNames().contains(str))
-                || ((view.getId() == R.id.add_department_button || view.getId() == R.id.add_department_button) && !db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str))
+                || (!db.listDataDao().getAllNamesNotFlowable().contains(str)
+                    && parentID == R.id.material_drawer_recycler_view)
+                || ((view.getId() == R.id.add_department_button
+                    || view.getId() == R.id.add_department_button_in_the_end)
+                    && !db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str))
+                || (parentParentID == R.id.tabs
+                    && !db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str))
+                || (view.getId() == R.id.more_menu_button
+                    && !db.listDataDao().getAllNames().contains(str))
         );
     }
 
@@ -2086,7 +2016,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
     //todo! проработать метод
     private void insertFromPopup(String s, int insertIndex, View view) {
-        logThisMethod(new Object() {        }.getClass().getEnclosingMethod().getName());
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         View parent = (View) view.getParent();
         View parentParent = (View) view.getParent().getParent();
@@ -2094,19 +2025,12 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         int parentParentID = parentParent.getId();
 
         if (view.getId() == R.id.add_department_button
-         || view.getId() == R.id.add_department_button_in_the_end) {
+                || view.getId() == R.id.add_department_button_in_the_end) {
             setNewDepartment(s);
         } else if (parentParentID == R.id.tabs) {
             DepartmentData departmentData = db.departmentDataDao().getChosenDepartment(insertIndex, chosenListData.list_id);
             editDepartmentName(s, departmentData);
-        }
-
-        switch (parentID) {
-            case R.id.rvAnimals:
-                setNavigationDrawerData();
-                adapter.notifyItemInserted(insertIndex);
-                break;
-            case R.id.material_drawer_recycler_view:
+        } else {
                 parser(s);
                 updateNavigationDrawer();
 
@@ -2125,7 +2049,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
                                             editButtonClicked = true;
                                             setEditModeButtonsVisibility();
-
                                             setNavigationDrawerData();
                                             setTabsVisibility();
                                         }
@@ -2156,7 +2079,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 }
 
                 setEditButtonVisibility();
-                break;
         }
     }
 
@@ -2170,7 +2092,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void setDefaultList() {
-        logThisMethod(new Object() {}.getClass().getEnclosingMethod().getName());
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         LinkedHashMap<String, List<String>> defaultData = new LinkedHashMap<>();
         List<String> departmentData = new ArrayList<>();
@@ -2270,7 +2193,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             setNewDepartmentFromParse(key, departmentPosition);
 
             DepartmentData dd = db.departmentDataDao().getChosenDepartment(departmentPosition, chosenListData.list_id);
-            dd.visibility=1;
+            dd.visibility = 1;
             db.departmentDataDao().update(dd);
 
             for (String s : defaultData.get(key)) {
@@ -2525,7 +2448,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void parser(String inputText) {
-        logThisMethod(new Object() {        }.getClass().getEnclosingMethod().getName());
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         inputText = parserFilter(inputText);
 
@@ -2563,7 +2487,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 if (!db.departmentDataDao().getAllNames(chosenListData.list_id).contains(departmentName)) {
                     setNewDepartmentFromParse(departmentName, departmentPosition);
                 } else {
-                    setUniqueDepartmentForParser(departmentName,departmentPosition);
+                    setUniqueDepartmentForParser(departmentName, departmentPosition);
                 }
 
                 departmentName = "";
@@ -2605,15 +2529,20 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
         if (!listName.isEmpty()) setNewList(listName);
         if (!departmentName.isEmpty()) setNewDepartmentFromParse(departmentName, position);
-        if (!dataName.isEmpty()) setNewData(dataPosition, dataName, departmentPosition, Float.valueOf(dataQty));
+        if (!dataName.isEmpty())
+            setNewData(dataPosition, dataName, departmentPosition, Float.valueOf(dataQty));
     }
 
     private void logThisMethod(String name) {
-        Log.d(TAG,name + " started");
+        Log.d(TAG, name + " started");
     }
 
+    private static void logThisMethodStatic(String name) {
+        Log.d(TAG, name + " started");
+    }
     private void setUniqueDepartmentForParser(String departmentName, int departmentPosition) {
-        logThisMethod(new Object() {        }.getClass().getEnclosingMethod().getName());
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         boolean nameSetStatus = true;
         int copiesCounter = 0;
@@ -2634,7 +2563,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     private void setUniqueListNameForParser(String listName) {
         String name = new Object() {
         }.getClass().getEnclosingMethod().getName();
-        Log.d(TAG,name + " started");
+        Log.d(TAG, name + " started");
 
         boolean nameSetStatus = true;
         int copiesCounter = 0;
@@ -2655,7 +2584,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     private String parserFilter(String s) {
         String name = new Object() {
         }.getClass().getEnclosingMethod().getName();
-        Log.d(TAG,name + " started");
+        Log.d(TAG, name + " started");
 
         s = s.replace("-=***=-", "[");
         s = s.replace("-*-", "[");
@@ -2904,7 +2833,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void updateNavigationDrawer() {
-        logThisMethod(new Object() {        }.getClass().getEnclosingMethod().getName());
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         setKeysForLists();
         selectedListIndex = 2;
