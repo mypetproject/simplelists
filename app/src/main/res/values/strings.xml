@@ -119,6 +119,8 @@
     <string name="hide_empty_department">Hide a section if all items crossed off</string>
     <string name="general_settings">General settings</string>
     <string name="too_few_lists">Too few lists</string>
+    <string name="Edit_list_name">Edit list name</string>
+    <string name="Edit_name">Edit name</string>
 
 
 </resources>

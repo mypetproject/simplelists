@@ -117,5 +117,7 @@
     <string name="hide_empty_department">Скрывать раздел, если все пункты вычеркнуты</string>
     <string name="general_settings">Основные настройки</string>
     <string name="too_few_lists">Слишком мало списков</string>
+    <string name="Edit_list_name">Измените название</string>
+    <string name="Edit_name">Измените название</string>
 
 </resources>
