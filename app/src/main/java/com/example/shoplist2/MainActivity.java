@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     static MyRecyclerViewAdapter adapter;
     int crossOutNumber;
     static boolean editButtonClicked = true;
+    //todo deleteFlagForEdit где используется, нужен ли?
     boolean deleteFlagForEdit;
     static int adapterPosition;
     int dataPosition;
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     //static Data chosenData = new Data();
     int parentID;
 
-    EditText et;
+    //EditText et;
     static boolean canUpdate;
 
     RecyclerView recyclerViewDepartments;
@@ -1637,79 +1638,28 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         logThisMethod(new Object() {
         }.getClass().getEnclosingMethod().getName());
 
-        String title;
-        final EditText et = new EditText(view.getContext());
+        String title = setTitleForDialogWindow(view);
+        final EditText et = setEditTextForInputTextDialogWindow(view);
 
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT);
-        et.setLayoutParams(lp);
-        et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-
-        if (view.getId() == R.id.add_department_button
-                || view.getId() == R.id.add_department_button_in_the_end) {
-            deleteFlagForEdit = false;
-            title = getString(R.string.add_department);
-            et.setHint(getString(R.string.enter_text));
-        } else {
-            deleteFlagForEdit = false;
-            title = getString(R.string.add_new_list);
-            et.setHint(getString(R.string.enter_text));
-        }
-
-        final AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
-        builder.setTitle(title)
-                .setCancelable(true)
-                .setView(et)
-                .setPositiveButton(getString(R.string.ok), null);
-
-        if (view.getId() == R.id.add_department_button
-                || view.getId() == R.id.add_department_button_in_the_end)
-            builder.setNeutralButton(getString(R.string.next), null);
-
-        builder.setNegativeButton(
-                getString(R.string.cancel),
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        deleteFlagForEdit = false;
-                        dialog.cancel();
-                    }
-                });
-
-        AlertDialog dialog = builder.create();
-        setAlertDialogButtonsColor(view, dialog);
+        AlertDialog dialog = createAlertDialog(view, title, et);
         dialog.show();
 
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String str = et.getText().toString();
-                str = deleteLeftAndRightSpaces(str);
-
+                String  str = deleteLeftAndRightSpaces(et.getText().toString());
                 boolean isItShare = str.contains("-=***=-");
 
-                if (str.length() > 0) {
-                    if (str.length() <= 12 || (isItShare && view.getId() != R.id.add_department_button
+                    if (str.length() > 0 && str.length() <= 12 || (isItShare && view.getId() != R.id.add_department_button
                             && view.getId() != R.id.add_department_button_in_the_end)) {
 
-                        if (uniqueTest(str, view)) {
-                            InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+                        tryingToWriteTextToBase(view,dialog,insertIndex, str);
 
-                            inputButtonClicked(str, insertIndex, view);
-                            setTabsOnLongClickListener();
-
-                            dialog.dismiss();
-                        } else {
-                            Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
-                        }
                     } else {
                         Toast.makeText(MainActivity.this, R.string.too_large_name, Toast.LENGTH_SHORT).show();
                     }
-                }
             }
-
         });
 
         Button neutralButton = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
@@ -1719,23 +1669,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 String str = et.getText().toString();
                 str = deleteLeftAndRightSpaces(str);
 
-                if (str.length() <= 12) {
-                    if (!str.isEmpty()) {
-                        if (uniqueTest(str, view)) {
-
-                            inputButtonClicked(str, insertIndex, view);
-
-                            et.getText().clear();
-                            et.setHint(getString(R.string.enter_text));
-
-                            setTabsOnLongClickListener();
-                        } else {
-                            Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                } else {
-                    Toast.makeText(MainActivity.this, R.string.too_large_name, Toast.LENGTH_SHORT).show();
-                }
+                tryingToWriteTextToBaseByPushNeutralButton(str, view, insertIndex, et);
             }
         });
 
@@ -1775,6 +1709,90 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         });
     }
 
+    private void tryingToWriteTextToBaseByPushNeutralButton(String str, View view, int insertIndex, EditText et) {
+        if (str.length() <= 12 && !str.isEmpty()) {
+
+            if (uniqueTest(str, view)) {
+
+                insertFromPopup(str, insertIndex, view);
+
+                et.getText().clear();
+                et.setHint(getString(R.string.enter_text));
+
+                setTabsOnLongClickListener();
+            } else {
+                Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
+            }
+
+        } else {
+            Toast.makeText(MainActivity.this, R.string.too_large_name, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void tryingToWriteTextToBase(View view, AlertDialog dialog, int insertIndex, String str) {
+        if (uniqueTest(str, view)) {
+            InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+
+            insertFromPopup(str, insertIndex, view);
+            setTabsOnLongClickListener();
+
+            dialog.dismiss();
+        } else {
+            Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private AlertDialog createAlertDialog(View view, String title, EditText et) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+        builder.setTitle(title)
+                .setCancelable(true)
+                .setView(et)
+                .setPositiveButton(getString(R.string.ok), null);
+
+        if (view.getId() == R.id.add_department_button
+                || view.getId() == R.id.add_department_button_in_the_end)
+            builder.setNeutralButton(getString(R.string.next), null);
+
+        builder.setNegativeButton(
+                getString(R.string.cancel),
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+
+        setAlertDialogButtonsColor(view, dialog);
+
+        return dialog;
+    }
+
+    private String setTitleForDialogWindow(View view) {
+        String title;
+        if (view.getId() == R.id.add_department_button
+                || view.getId() == R.id.add_department_button_in_the_end) {
+            title = getString(R.string.add_department);
+        } else {
+            title = getString(R.string.add_new_list);
+        }
+        return title;
+    }
+
+    private EditText setEditTextForInputTextDialogWindow(View view) {
+        final EditText et = new EditText(view.getContext());
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        et.setLayoutParams(lp);
+        et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+        et.setHint(getString(R.string.enter_text));
+
+        return et;
+    }
+
     private String deleteLeftAndRightSpaces(String str) {
         logThisMethod(new Object() {
         }.getClass().getEnclosingMethod().getName());
@@ -1790,11 +1808,12 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 if (str.length() == 0) break;
             }
         }
-       return str;
+        return str;
     }
 
     static private String deleteLeftRightSpacesInItem(String str) {
-        logThisMethodStatic(new Object() {}.getClass().getEnclosingMethod().getName());
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         if (str.length() > 0) {
             while (str.charAt(str.length() - 1) == ' ') {
@@ -1809,6 +1828,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         return str;
     }
 //TODO!!! Если раздел скрыт, то не считать его невычеркнутые пункты активными
+
 
     public void editDepartmentDialogWindow(final View view, DepartmentData departmentData) {
         String name = new Object() {
@@ -1829,7 +1849,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                         getString(R.string.cancel),
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                deleteFlagForEdit = false;
                                 dialog.cancel();
                             }
                         })
@@ -1846,7 +1865,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 if (uniqueTest(str, view)) {
                     InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
-                    inputButtonClicked(str, insertIndex, view);
+                    insertFromPopup(str, insertIndex, view);
                     dialog.dismiss();
                 } else {
                     Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
@@ -1887,21 +1906,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         return et;
     }
 
-
-    private void inputButtonClicked(String str, int insertIndex, View view) {
-        String name = new Object() {
-        }.getClass().getEnclosingMethod().getName();
-        Log.d(TAG, name + " started");
-
-        if (!str.isEmpty()) {
-            if (deleteFlagForEdit) {
-                deleteFlagForEdit = false;
-            } else {
-                insertFromPopup(str, insertIndex, view);
-            }
-        }
-    }
-
     boolean uniqueTest(String str, View view) {
         logThisMethod(new Object() {
         }.getClass().getEnclosingMethod().getName());
@@ -1913,14 +1917,14 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
         return (parentID == R.id.rvAnimals
                 || (!db.listDataDao().getAllNamesNotFlowable().contains(str)
-                    && parentID == R.id.material_drawer_recycler_view)
+                && parentID == R.id.material_drawer_recycler_view)
                 || ((view.getId() == R.id.add_department_button
-                    || view.getId() == R.id.add_department_button_in_the_end)
-                    && !db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str))
+                || view.getId() == R.id.add_department_button_in_the_end)
+                && !db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str))
                 || (parentParentID == R.id.tabs
-                    && !db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str))
+                && !db.departmentDataDao().getAllNames(chosenListData.list_id).contains(str))
                 || (view.getId() == R.id.more_menu_button
-                    && !db.listDataDao().getAllNames().contains(str))
+                && !db.listDataDao().getAllNames().contains(str))
         );
     }
 
@@ -2031,54 +2035,54 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             DepartmentData departmentData = db.departmentDataDao().getChosenDepartment(insertIndex, chosenListData.list_id);
             editDepartmentName(s, departmentData);
         } else {
-                parser(s);
-                updateNavigationDrawer();
+            parser(s);
+            updateNavigationDrawer();
 
-                if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() == 0) {
-                    final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
-                            .setMessage(R.string.fill_list_with_default_values)
-                            .setCancelable(true)
-                            .setPositiveButton(R.string.yes,
-                                    new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            setDefaultList();
+            if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() == 0) {
+                final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
+                        .setMessage(R.string.fill_list_with_default_values)
+                        .setCancelable(true)
+                        .setPositiveButton(R.string.yes,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        setDefaultList();
 
-                                            dialog.cancel();
-                                            viewPagerAdapter.notifyDataSetChanged();
+                                        dialog.cancel();
+                                        viewPagerAdapter.notifyDataSetChanged();
 
-                                            editButtonClicked = true;
-                                            setEditModeButtonsVisibility();
-                                            setNavigationDrawerData();
-                                            setTabsVisibility();
-                                        }
-                                    })
-                            .setNegativeButton(
-                                    R.string.no,
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int id) {
+                                        editButtonClicked = true;
+                                        setEditModeButtonsVisibility();
+                                        setNavigationDrawerData();
+                                        setTabsVisibility();
+                                    }
+                                })
+                        .setNegativeButton(
+                                R.string.no,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
 
-                                            editButtonClicked = false;
-                                            setEditModeButtonsVisibility();
-                                            setTabsVisibility();
+                                        editButtonClicked = false;
+                                        setEditModeButtonsVisibility();
+                                        setTabsVisibility();
 
-                                            inputTextDialogWindow(findViewById(R.id.add_department_button), 1, 0);
-                                            dialog.cancel();
-                                        }
-                                    })
-                            .create();
-                    setAlertDialogButtonsColor(view, dialog);
-                    dialog.show();
-                }
+                                        inputTextDialogWindow(findViewById(R.id.add_department_button), 1, 0);
+                                        dialog.cancel();
+                                    }
+                                })
+                        .create();
+                setAlertDialogButtonsColor(view, dialog);
+                dialog.show();
+            }
 
-                viewPagerAdapter.notifyDataSetChanged();
+            viewPagerAdapter.notifyDataSetChanged();
 
-                //TODO!!! fix menu button visibility
-                if (moreMenuButton.getVisibility() == View.GONE) {
-                    moreMenuButton.setVisibility(View.VISIBLE);
-                }
+            //TODO!!! fix menu button visibility
+            if (moreMenuButton.getVisibility() == View.GONE) {
+                moreMenuButton.setVisibility(View.VISIBLE);
+            }
 
-                setEditButtonVisibility();
+            setEditButtonVisibility();
         }
     }
 
@@ -2540,6 +2544,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     private static void logThisMethodStatic(String name) {
         Log.d(TAG, name + " started");
     }
+
     private void setUniqueDepartmentForParser(String departmentName, int departmentPosition) {
         logThisMethod(new Object() {
         }.getClass().getEnclosingMethod().getName());
