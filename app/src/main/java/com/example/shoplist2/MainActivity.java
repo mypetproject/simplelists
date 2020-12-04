@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     //static DepartmentData chosenDepartmentData;
     //static Data chosenData = new Data();
     int parentID;
+    int parentParentID;
 
     //EditText et;
     static boolean canUpdate;
@@ -225,7 +226,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "setStartAndEndAddDepartmentButtons() onClick addDepartmentButton started");
-                inputTextDialogWindow(v, 1, 0);
+                inputTextDialogWindow(v, 1);
             }
         });
 
@@ -234,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "setStartAndEndAddDepartmentButtons() onClick addDepartmentEndButton started");
-                inputTextDialogWindow(v, 1, 0);
+                inputTextDialogWindow(v, 1);
             }
         });
     }
@@ -1249,8 +1250,13 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                     public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
                         Log.d(TAG, "setNavigationDrawerData() onItemClick started");
 
+                        View parent = (View) view.getParent();
+                        parentID = parent.getId();
+                        View parentParent = (View) view.getParent();
+                        parentParentID = parentParent.getId();
+
                         if (position == 1) {
-                            inputTextDialogWindow(view, 1, position - 1);
+                            inputTextDialogWindow(view, 1);
                         } else {
                             setActiveList(position);
                             selectedListIndex = position;
@@ -1509,7 +1515,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 break;*/
             case R.id.rvAnimals:
                 if (position == 0) {
-                    inputTextDialogWindow(view, 1, position);
+                    inputTextDialogWindow(view, 1);
                 } else if (editButtonClicked) {
                     if (position < (data.size() - crossOutNumber)) {
                         crossOutNumber++;
@@ -1523,7 +1529,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 } else {
                     deleteFlagForEdit = true;
                     // chosenData = db.dataDao().getChosenData(position, chosenDepartmentData.department_id);
-                    inputTextDialogWindow(view, position, position);
+                    inputTextDialogWindow(view, position);
                 }
                 // adapterForDepartments.notifyDataSetChanged();
                 break;
@@ -1622,7 +1628,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }*/
 
     //for adding section, list and when create new list without loading default data
-    public void inputTextDialogWindow(final View view, final int insertIndex, final int position) {
+    public void inputTextDialogWindow(final View view, final int insertIndex) {
         logThisMethod(new Object() {
         }.getClass().getEnclosingMethod().getName());
 
@@ -1636,6 +1642,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                logThisMethod(new Object() {
+                }.getClass().getEnclosingMethod().getName() + " inputTextDialogWindow positiveButton");
+
                 String str = deleteLeftAndRightSpaces(et.getText().toString());
                 boolean isItShare = str.contains("-=***=-");
 
@@ -1654,6 +1663,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         neutralButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                logThisMethod(new Object() {
+                }.getClass().getEnclosingMethod().getName() + "  inputTextDialogWindow neutralButton");
+
                 String str = et.getText().toString();
                 str = deleteLeftAndRightSpaces(str);
 
@@ -1718,6 +1730,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void tryingToWriteTextToBase(View view, AlertDialog dialog, int insertIndex, String str) {
+        logThisMethod(new Object() {}.getClass().getEnclosingMethod().getName());
+
         if (uniqueTest(str, view)) {
             InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
@@ -1901,7 +1915,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         View parent = (View) view.getParent();
         parentID = parent.getId();
         View parentParent = (View) view.getParent().getParent();
-        int parentParentID = parentParent.getId();
+        parentParentID = parentParent.getId();
 
         return (parentID == R.id.rvAnimals
                 || (!db.listDataDao().getAllNamesNotFlowable().contains(str)
@@ -1915,7 +1929,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 && !db.listDataDao().getAllNames().contains(str))
         );
     }
-
 
     private void setNewDepartment(String s) {
         String name = new Object() {
@@ -2011,11 +2024,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         logThisMethod(new Object() {
         }.getClass().getEnclosingMethod().getName());
 
-        View parent = (View) view.getParent();
-        View parentParent = (View) view.getParent().getParent();
-        parentID = parent.getId();
-        int parentParentID = parentParent.getId();
-
         if (view.getId() == R.id.add_department_button
                 || view.getId() == R.id.add_department_button_in_the_end) {
             setNewDepartment(s);
@@ -2027,19 +2035,15 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             updateNavigationDrawer();
 
             if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() == 0) {
-                setAlertDialogWhenNewListCrated(view);
+                setAlertDialogWhenNewListCreated(view);
             }
 
             viewPagerAdapter.notifyDataSetChanged();
-
-            //TODO!!! fix menu button visibility
-            //setMoreMenuButton();
-
             setEditButtonVisibility();
         }
     }
 
-    private void setAlertDialogWhenNewListCrated(View view) {
+    private void setAlertDialogWhenNewListCreated(View view) {
         final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
                 .setMessage(R.string.fill_list_with_default_values)
                 .setCancelable(true)
@@ -2068,7 +2072,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                                 setEditModeButtonsVisibility();
                                 setTabsVisibility();
 
-                                inputTextDialogWindow(findViewById(R.id.add_department_button), 1, 0);
+                                inputTextDialogWindow(findViewById(R.id.add_department_button), 1);
                                 dialog.cancel();
                             }
                         })
