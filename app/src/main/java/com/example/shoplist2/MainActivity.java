@@ -65,14 +65,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     static MyRecyclerViewAdapter adapter;
     int crossOutNumber;
     static boolean editButtonClicked = true;
-    //todo deleteFlagForEdit где используется, нужен ли?
-    boolean deleteFlagForEdit;
     static int adapterPosition;
     int dataPosition;
 
-    List<String> keysForDepartments;
-    List<DepartmentData> listOfDepartmentsData;
-    List<String> keysForLists;
 
     private Drawer drawerResult = null;
     private int selectedListIndex = 2;
@@ -81,15 +76,13 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
     static ListDataDatabase db;
     static ListData chosenListData = new ListData();
-    //static DepartmentData chosenDepartmentData;
-    //static Data chosenData = new Data();
+
     int parentID;
     int parentParentID;
 
     //EditText et;
     static boolean canUpdate;
 
-    RecyclerView recyclerViewDepartments;
     static RecyclerView recyclerView;
     static ViewPagerAdapter viewPagerAdapter;
     static ViewPager2 myViewPager2;
@@ -102,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
     private static final String TAG = "myLogs";
 
-    private ArrayList<String> arrayList = new ArrayList<>();
     private static List<Data> adapterListData;
     ImageButton addDepartmentButton;
     ImageButton addDepartmentEndButton;
@@ -130,8 +122,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
         mn = MainActivity.this;
         db = App.getInstance().getDatabase();
-        keysForLists = new ArrayList<>();
-        keysForDepartments = new ArrayList<>();
 
         super.onCreate(savedInstanceState);
         MainActivity.context = getApplicationContext();
@@ -142,19 +132,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         setFirstElementOfList();
         setFirstElementInAllSections();
 
-        setKeysForLists();
-
-        //todo убрать блок ниже?
-        data = new ArrayList<>();
-        listOfDepartmentsData = new ArrayList<>();
-
-        //todo убрать блок ниже?
-        if (keysForDepartments.size() > 1) {
-            //chosenDepartmentData = db.departmentDataDao().getChosenDepartment(1, chosenListData.list_id);
-            getListOfDepartmentsData();
-
-            getCrossOutNumber();
-        }
+        chosenListData = db.listDataDao().getChosenList(1);
+        setNavigationDrawerData();
 
         setViewPager(this);
         setTabs();
@@ -419,7 +398,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void setEditButtonVisibility() {
-        if (keysForLists.size() < 2) {
+        if (db.listDataDao().getAllNamesNotFlowable().size() < 2) {
             editButton.setVisibility(View.INVISIBLE);
         } else {
             editButton.setVisibility(View.VISIBLE);
@@ -684,14 +663,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         viewPagerAdapter.notifyDataSetChanged();
         setNavigationDrawerData();
     }
-
-    private void getListOfDepartmentsData() {
-        listOfDepartmentsData = db.departmentDataDao().getAll(chosenListData.list_id);
-    }
-
-    /*public void setAdapter(MyRecyclerViewAdapter adapter) {
-        this.adapter = adapter;
-    }*/
 
     //TODO!!! оптимизировать метод ниже
     public static void ViewPagerItemClicked(View view, int dataID, MyRecyclerViewAdapter adapter, int position, List<Data> adapterData) {
@@ -1236,7 +1207,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     void setNavigationDrawerData() {
         logThisMethod(new Object() {
         }.getClass().getEnclosingMethod().getName());
-//todo при добавлении нового списка проверять на максимальное количество списков, если больше 1000, предлагать удалить лишние, возможно предлагать удалить первые 100 созданных
 
         IDrawerItem[] iDrawerItems = setListsNamesForDrawer();
 
@@ -1288,7 +1258,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 .addDrawerItems(iDrawerItems)
                 .build();
 
-        if (keysForLists.size() > 1) {
+        if (db.listDataDao().getAllNamesNotFlowable().size() > 1) {
             setTitle(chosenListData.getList_name());
 
             if (db.listDataDao().getAllPositions().size() > 1)
@@ -1315,29 +1285,30 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         logThisMethod(new Object() {
         }.getClass().getEnclosingMethod().getName());
 
-        IDrawerItem[] iDrawerItems = new IDrawerItem[keysForLists.size()];
+        List<String> listsNames = db.listDataDao().getAllNamesNotFlowable();
+        IDrawerItem[] iDrawerItems = new IDrawerItem[listsNames.size()];
 
-        for (int i = 0; i < keysForLists.size(); i++) {
+        for (int i = 0; i < listsNames.size(); i++) {
             int activeQty = activeQtyForList(i);
-            iDrawerItems[i] = setBadgeStyle(this, activeQty, i);
+            iDrawerItems[i] = setBadgeStyle(listsNames.get(i), activeQty, i);
         }
 
         return iDrawerItems;
     }
 
-    private IDrawerItem setBadgeStyle(MainActivity mainActivity, int activeQty, int i) {
+    private IDrawerItem setBadgeStyle(String name, int activeQty, int i) {
         logThisMethod(new Object() {
         }.getClass().getEnclosingMethod().getName());
 
         if (activeQty > 0 && i != 0) {
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
             if (sharedPreferences.getBoolean(PREF_DARK_THEME, true)) {
-                return new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadge(activeQty + "").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
+                return new PrimaryDrawerItem().withIdentifier(i).withName(name).withBadge(activeQty + "").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
             } else {
-                return new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadge(activeQty + "").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_700).withCornersDp(16));
+                return new PrimaryDrawerItem().withIdentifier(i).withName(name).withBadge(activeQty + "").withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_700).withCornersDp(16));
             }
         } else {
-            return new PrimaryDrawerItem().withIdentifier(i).withName(keysForLists.get(i)).withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
+            return new PrimaryDrawerItem().withIdentifier(i).withName(name).withBadgeStyle(new BadgeStyle().withTextColor(Color.WHITE).withColorRes(R.color.md_grey_400).withCornersDp(16));
         }
     }
 
@@ -1387,20 +1358,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         adapterPosition = pos;
     }
 
-    public void setKeysForLists() {
-        logThisMethod(new Object() {
-        }.getClass().getEnclosingMethod().getName());
-
-        keysForLists.clear();
-        keysForLists.addAll(db.listDataDao().getAllNamesNotFlowable());
-
-        if (keysForLists.size() > 1) {
-            chosenListData = db.listDataDao().getChosenList(1);
-        }
-
-        setNavigationDrawerData();
-    }
-
 
     /*public void getData() {
         String name = new Object() {
@@ -1425,20 +1382,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         canUpdate = true;
     }*/
 
-    void getCrossOutNumber() {
-        if (keysForLists.size() > 1) {
-            //crossOutNumber = chosenDepartmentData.CrossOutNumber;
-        }
-    }
 
-    void setCrossOutNumber() {
-        if (keysForLists.size() > 1) {
-            //chosenDepartmentData.CrossOutNumber = crossOutNumber;
-            //db.departmentDataDao().update(chosenDepartmentData);
-        }
-    }
-
-    //todo вроде не используется
+    //todo не используется
     @Override
     public void onItemClick(View view, final int position, int id) {
         String name = new Object() {
@@ -1519,15 +1464,15 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 } else if (editButtonClicked) {
                     if (position < (data.size() - crossOutNumber)) {
                         crossOutNumber++;
-                        setCrossOutNumber();
-                        moveSingleItem(position);
+                        //setCrossOutNumber();
+                       // moveSingleItem(position);
                     } else {
                         crossOutNumber--;
-                        setCrossOutNumber();
-                        moveSingleItemToTop(position);
+                        //setCrossOutNumber();
+                        //moveSingleItemToTop(position);
                     }
                 } else {
-                    deleteFlagForEdit = true;
+                    //deleteFlagForEdit = true;
                     // chosenData = db.dataDao().getChosenData(position, chosenDepartmentData.department_id);
                     inputTextDialogWindow(view, position);
                 }
@@ -1912,11 +1857,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         logThisMethod(new Object() {
         }.getClass().getEnclosingMethod().getName());
 
-        View parent = (View) view.getParent();
-        parentID = parent.getId();
-        View parentParent = (View) view.getParent().getParent();
-        parentParentID = parentParent.getId();
-
         return (parentID == R.id.rvAnimals
                 || (!db.listDataDao().getAllNamesNotFlowable().contains(str)
                 && parentID == R.id.material_drawer_recycler_view)
@@ -2204,95 +2144,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         }
     }
 
-    private void insertMultipleItems() {
-        ArrayList<String> items = new ArrayList<>();
-        items.add("Pig");
-        items.add("Chicken");
-        items.add("Dog");
-        int insertIndex = 2;
-        //data.addAll(insertIndex, items);
-        adapter.notifyItemRangeInserted(insertIndex, items.size());
-    }
-
-
-    private void removeMultipleItems() {
-        int startIndex = 2; // inclusive
-        int endIndex = 4;   // exclusive
-        int count = endIndex - startIndex; // 2 items will be removed
-        data.subList(startIndex, endIndex).clear();
-        adapter.notifyItemRangeRemoved(startIndex, count);
-    }
-
-    private void removeAllItems() {
-        data.clear();
-        adapter.notifyDataSetChanged();
-    }
-
-    private void replaceOldListWithNewList() {
-        // clear old list
-        data.clear();
-        // add new list
-        ArrayList<String> newList = new ArrayList<>();
-        newList.add("Lion");
-        newList.add("Wolf");
-        newList.add("Bear");
-        //  data.addAll(newList);
-
-        // notify adapter
-        adapter.notifyDataSetChanged();
-    }
-
-    private void updateSingleItem() {
-        String newValue = "I like sheep.";
-        int updateIndex = 3;
-        // data.set(updateIndex, newValue);
-        adapter.notifyItemChanged(updateIndex);
-    }
-
-    //todo вроде не используется
-    private void moveSingleItem(int fromPosition) {
-        int toPosition = data.size() - 1;
-
-        // update data array
-       /* String item = data.get(fromPosition);
-        data.remove(fromPosition);
-        data.add(toPosition, item);*/
-        Data item = data.get(fromPosition);
-        data.remove(fromPosition);
-        data.add(toPosition, item);
-
-       /* Float item_qty = data_qty.get(fromPosition);
-        data_qty.remove(fromPosition);
-        data_qty.add(toPosition, item_qty);*/
-
-      /*  Data temp = db.dataDao().getChosenData(fromPosition, chosenDepartmentData.department_id);
-        int pos = db.dataDao().getAllPositions(chosenDepartmentData.department_id).size();
-        db.dataDao().updateSingleItemPosition(temp.data_id, pos);
-        db.dataDao().decrementValues(chosenDepartmentData.department_id, fromPosition);
-        adapter.notifyItemMoved(fromPosition, pos - 1);
-        adapter.notifyItemChanged(pos - 1);*/
-    }
-
-    //todo вроде не используется
-    private void moveSingleItemToTop(int fromPosition) {
-        int toPosition = 1;
-
-        // update data array
-        // String item = data.get(fromPosition);
-        Data item = data.get(fromPosition);
-        //Float item_qty = data_qty.get(fromPosition);
-        data.remove(fromPosition);
-        data.add(toPosition, item);
-        // data_qty.remove(fromPosition);
-        // data_qty.add(toPosition, item_qty);
-
-        /*Data temp = db.dataDao().getChosenData(fromPosition, chosenDepartmentData.department_id);
-        db.dataDao().incrementValuesFromOneToPosition(chosenDepartmentData.department_id, fromPosition);
-        db.dataDao().updateSingleItemPosition(temp.data_id, 1);
-        adapter.notifyItemMoved(fromPosition, toPosition);
-        adapter.notifyItemChanged(toPosition);*/
-    }
-
     private static void deleteSingleItem(int position, int id) {
         int departmentID;
         if (position >= (db.dataDao().getAllNames(db.dataDao().getDepartmentIdByDataId(id)).size() - db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id)).CrossOutNumber)) {
@@ -2398,7 +2249,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         if (position > 0 && db.listDataDao().getAllNamesNotFlowable().size() > 2) {
             db.listDataDao().deleteSingleItem(chosenListData.list_id);
             db.listDataDao().decrementValues(chosenListData.list_position);
-            setKeysForLists();
+
 
             if (position != 1) {
                 setActiveList(position);
@@ -2408,7 +2259,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
         } else if (position > 0) {
             db.listDataDao().deleteSingleItem(chosenListData.list_id);
-            setKeysForLists();
         }
 
         setTabsVisibility();
@@ -2784,7 +2634,6 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         logThisMethod(new Object() {
         }.getClass().getEnclosingMethod().getName());
 
-        setKeysForLists();
         selectedListIndex = 2;
         setNavigationDrawerData();
     }
