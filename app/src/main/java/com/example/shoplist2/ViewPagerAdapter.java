@@ -25,20 +25,11 @@ import java.util.Random;
 public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.ViewPagerHolder> {
 
     private Context context;
-    private static int firstVisibleInListview;
-   // private List<Data> arrayList;
-//private  List<DepartmentData> listOfDepartmentsData;
-  //  private ItemClickListener mClickListener;
-
     private static final String TAG = "myLogs";
 
-  //  public ViewPagerAdapter(Context context, List<Data> arrayList, List<DepartmentData> listOfDepartmentsData) {
     public ViewPagerAdapter(Context context) {
         Log.d(TAG, " MyAdapter constructor started");
         this.context = context;
-     //   this.arrayList = arrayList;
-      //  this.listOfDepartmentsData = listOfDepartmentsData;
-        Log.d(TAG, " MyAdapter constructor ended");
     }
 
     @NonNull
@@ -46,31 +37,21 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
     public ViewPagerHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Log.d(TAG, " onCreateViewHolder started");
         View view = LayoutInflater.from(context).inflate(R.layout.viewpager2_item, parent, false);
-        Log.d(TAG, " onCreateViewHolder ended");
         return new ViewPagerHolder(view);
-
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewPagerHolder holder, int position) {
         Log.d(TAG, "vp onBindViewHolder started, position: " + position);
 
-       // DepartmentData chosenDepartmentData;
-
-        MainActivity.canUpdate = false;
-
-       // chosenDepartmentData = MainActivity.getChosenDepartmentData(position);
-
-        //если recyclable, то onMove не работает после перезаполнения
-        holder.setIsRecyclable(false);
-       int adapterPosition = holder.getAdapterPosition();
+        int adapterPosition = holder.getAdapterPosition();
         final MyRecyclerViewAdapter adapter;
         ItemTouchHelper helper;
-      //  Random rnd = new Random();
-      //  int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-      //  holder.itemView.setBackgroundColor(color);
         List<Data> temp = new ArrayList<>();
-        Log.d(TAG, " temp " + MainActivity.chosenListData.getList_name());
+
+        MainActivity.canUpdate = false;
+        //если recyclable, то onMove не работает после перезаполнения
+        holder.setIsRecyclable(false);
 
         if (!MainActivity.editButtonClicked) {
             temp.addAll(MainActivity.db.dataDao().getAll(
@@ -84,195 +65,107 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
                     allVisibleDepartmentsID.get(adapterPosition)));
         }
 
-        /*temp.addAll(MainActivity.db.dataDao().getAll(
-                MainActivity.db.departmentDataDao().getChosenDepartment(
-                        adapterPosition,
-                        MainActivity.chosenListData.list_id
-                ).department_id));*/
-       /* List<Integer> allVisibleDepartmentsID = MainActivity.db.departmentDataDao().getAllVisibleDepartmentsID(MainActivity.chosenListData.list_id);
-        temp.addAll(MainActivity.db.dataDao().getAll(
-                allVisibleDepartmentsID.get(adapterPosition)));*/
-      /*  if (temp.size() == 1 && MainActivity.editButtonClicked) {
-holder.itemView.setVisibility(View.GONE);
-//holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
-MainActivity.hideTab(position);
-//parent.setVisibility(View.GONE);
-        } else {
+        RecyclerView recyclerView = holder.itemView.findViewById(R.id.rvAnimals);
+        recyclerView.getRecycledViewPool().clear();
+        adapter = new MyRecyclerViewAdapter(holder.itemView.getContext(), temp);
 
-            holder.itemView.setVisibility(View.VISIBLE);
-            //holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            MainActivity.showTab(position);*/
-          //  holder.itemView.setVisibility(View.VISIBLE);
-           // MainActivity.showTab(position);
-           // parent.setVisibility(View.VISIBLE);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(holder.itemView.getContext());
 
+        recyclerView.setLayoutManager(layoutManager);
 
-            Log.d(TAG, " temp.addAll");
-            // View parentView = (View) holder.itemView.getParent();
-            RecyclerView recyclerView = holder.itemView.findViewById(R.id.rvAnimals);
-            recyclerView.getRecycledViewPool().clear();
-            adapter = new MyRecyclerViewAdapter(holder.itemView.getContext(), temp);
-            //   holder.adapter = new MyRecyclerViewAdapter(parentView.getContext(), temp);
-            LinearLayoutManager layoutManager = new LinearLayoutManager(holder.itemView.getContext());
-            //  LinearLayoutManager layoutManager = new LinearLayoutManager(parentView.getContext());
-            recyclerView.setLayoutManager(layoutManager);
-            // holder.adapter = new MyRecyclerViewAdapter(holder.itemView.getContext(), arrayList);
-            //adapter = new MyRecyclerViewAdapter(itemView.getContext(), temp);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
+                layoutManager.getOrientation());
+        recyclerView.addItemDecoration(dividerItemDecoration);
 
-              DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
-                      layoutManager.getOrientation());
-             recyclerView.addItemDecoration(dividerItemDecoration);
+        adapter.setClickListener(new MyRecyclerViewAdapter.ItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position, int id) {
+                MainActivity.ViewPagerItemClicked(view, id, adapter, position, temp);
+            }
 
+            @Override
+            public void onItemTouch(View view, MotionEvent event, int id) {
+                MainActivity.viewPagerOnTouchListener(view, event, id, adapter, temp);
+            }
+        });
+        recyclerView.setAdapter(adapter);
 
+        helper = new ItemTouchHelper(new ItemTouchHelper.
+                SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
 
-        firstVisibleInListview = layoutManager.findFirstVisibleItemPosition();
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder dragged, @NonNull RecyclerView.ViewHolder target) {
+                Log.d(TAG, "ViewPagerAdapter.onMove started" + " adapter position: " + adapterPosition);
 
-            adapter.setClickListener(new MyRecyclerViewAdapter.ItemClickListener() {
-                @Override
-                public void onItemClick(View view, int position, int id) {
-                    Log.d(TAG, position + " <- rv adapter position");
-                    MainActivity.ViewPagerItemClicked(view, id, adapter, position, temp);
-                }
+                DepartmentData chosenDepartmentData = MainActivity.getChosenDepartmentData(position);
 
-                @Override
-                public void onItemTouch(View view, MotionEvent event, int id) {
-                    // Toast.makeText(view.getContext(), "item touched", Toast.LENGTH_SHORT).show();
-                    MainActivity.viewPagerOnTouchListener(view, event, id, adapter, temp);
-                    //  return 0;
-                }
-            });
-            recyclerView.setAdapter(adapter);
-            Log.d(TAG, "adapter.setClickListener");
+                int position_dragged = dragged.getAdapterPosition();
+                int position_target = target.getAdapterPosition();
 
+                int crossOutNumber = chosenDepartmentData.CrossOutNumber;
 
-
-            helper = new ItemTouchHelper(new ItemTouchHelper.
-                    SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
-
-                @Override
-                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder dragged, @NonNull RecyclerView.ViewHolder target) {
-                    Log.d(TAG, "adapter.onMove started" + " adapter position: " + adapterPosition);
-
-                    DepartmentData chosenDepartmentData = MainActivity.getChosenDepartmentData(position);
-
-                    int position_dragged = dragged.getAdapterPosition();
-                    int position_target = target.getAdapterPosition();
-
-                    int crossOutNumber = chosenDepartmentData.CrossOutNumber;
-
-                    if (position_dragged >= (temp.size() - crossOutNumber)
-                            || position_dragged == 0) {
-                        return false;
-                    } else if (position_target == 0) {
-                        return false;
-                    } else if (position_target >= (temp.size() - crossOutNumber)) {
-                        return false;
-                    } else {
-                        //todo возможно поменять
-                        List<Data> oldTemp = new ArrayList<>();
-                        oldTemp.addAll(temp);
-                        Collections.swap(temp, position_dragged, position_target);
-                        ProductDiffUtilCallback productDiffUtilCallback =
-                                new ProductDiffUtilCallback(oldTemp, temp);
-                        DiffUtil.DiffResult productDiffResult = DiffUtil.calculateDiff(productDiffUtilCallback);
-                        productDiffResult.dispatchUpdatesTo(adapter);
-                    }
-
-                    Data tempData = MainActivity.db.dataDao().getChosenData(position_dragged, chosenDepartmentData.department_id);
-
-                    if (position_dragged > position_target) {
-                        MainActivity.db.dataDao().incrementValuesFromPositionToPosition(chosenDepartmentData.department_id, position_dragged, position_target);
-                    } else {
-                        MainActivity.db.dataDao().decrementValuesFromPositionToPosition(chosenDepartmentData.department_id, position_dragged, position_target);
-                    }
-                    tempData.data_position = position_target;
-
-                    MainActivity.db.dataDao().update(tempData);
-
-
-                    Log.d(TAG, "adapter.onMove ended, pos_dragged: " + position_dragged + " pos_target: " + position_target
-                            + "\nDataset: " + MainActivity.db.dataDao().getAllNames(chosenDepartmentData.department_id));
-
+                if (position_dragged >= (temp.size() - crossOutNumber)
+                        || position_dragged == 0) {
                     return false;
+                } else if (position_target == 0) {
+                    return false;
+                } else if (position_target >= (temp.size() - crossOutNumber)) {
+                    return false;
+                } else {
+                    //todo возможно поменять
+                    List<Data> oldTemp = new ArrayList<>();
+                    oldTemp.addAll(temp);
+                    Collections.swap(temp, position_dragged, position_target);
+                    ProductDiffUtilCallback productDiffUtilCallback =
+                            new ProductDiffUtilCallback(oldTemp, temp);
+                    DiffUtil.DiffResult productDiffResult = DiffUtil.calculateDiff(productDiffUtilCallback);
+                    productDiffResult.dispatchUpdatesTo(adapter);
                 }
 
-                @Override
-                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                Data tempData = MainActivity.db.dataDao().getChosenData(position_dragged, chosenDepartmentData.department_id);
 
+                if (position_dragged > position_target) {
+                    MainActivity.db.dataDao().incrementValuesFromPositionToPosition(chosenDepartmentData.department_id, position_dragged, position_target);
+                } else {
+                    MainActivity.db.dataDao().decrementValuesFromPositionToPosition(chosenDepartmentData.department_id, position_dragged, position_target);
                 }
-            });
-            helper.attachToRecyclerView(recyclerView);
+                tempData.data_position = position_target;
 
-            adapter.notifyDataSetChanged();
+                MainActivity.db.dataDao().update(tempData);
 
-            MainActivity.canUpdate = true;
-       // }
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+            }
+        });
+        helper.attachToRecyclerView(recyclerView);
+
+        adapter.notifyDataSetChanged();
+
+        MainActivity.canUpdate = true;
     }
 
     @Override
     public int getItemCount() {
 
         int itemCount = 0;
-       /* if (MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id) != null
-        && MainActivity.editButtonClicked) {
-            for (DepartmentData dd : MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id)) {
-                if (MainActivity.db.dataDao().getAllNames(dd.department_id).size() > 1) {
-                    itemCount++;
-                }
-            }
-        } else */if (MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id) != null) {
+
+        if (MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id) != null) {
             if (!MainActivity.editButtonClicked) {
                 itemCount = MainActivity.db.departmentDataDao().getAll(MainActivity.chosenListData.list_id).size();
-              //  Log.d(TAG, "getItemCount() !MainActivity.editButtonClicked) item count: " + itemCount);
             } else {
                 itemCount = MainActivity.db.departmentDataDao().getAllVisibleDepartmentsID(MainActivity.chosenListData.list_id).size();
-               // Log.d(TAG, "getItemCount() MainActivity.editButtonClicked) item count: " + itemCount);
-
             }
-
-
-
         }
-       // Log.d(TAG, "getItemCount() ended");
-    return itemCount;
-     //   return 20;
-    }
+        return itemCount;
+     }
 
-    /*@Override
-    public void onClick(View v) {
-        Log.d(TAG, "vp clicked");
-    }*/
-
-    public class ViewPagerHolder extends RecyclerView.ViewHolder{
-
-
-       // RecyclerView recyclerView;
-      //  MyRecyclerViewAdapter adapter;
-      //  ItemTouchHelper helper;
-
+    public class ViewPagerHolder extends RecyclerView.ViewHolder {
         public ViewPagerHolder(@NonNull View itemView) {
-
             super(itemView);
-            Log.d(TAG, "public ViewPagerHolder(@NonNull View itemView)");
-         //   itemView.setOnClickListener(this);
-            Log.d(TAG, "itemView.setOnClickListener(this);");
-         //   recyclerView  = itemView.findViewById(R.id.rvAnimals);
-
         }
-
-
-      /*  @Override
-        public void onClick(View v) {
-            Log.d(TAG, "myAdapter clicked");
-        }*/
     }
-    // allows clicks events to be caught
-    /*void setClickListener(ItemClickListener itemClickListener) {
-        this.mClickListener = itemClickListener;
-    }
-    public interface ItemClickListener {
-        void onItemClickView(View view, int id, int position);
-        //  void onItemLongClick(int position,View view);
-        //  int onItemTouch(View view, MotionEvent event, int position);
-    }*/
 }

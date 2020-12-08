@@ -58,7 +58,8 @@ import java.util.Locale;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
-public class MainActivity extends AppCompatActivity implements MyRecyclerViewAdapter.ItemClickListener {
+public class MainActivity extends AppCompatActivity{
+    //public class MainActivity extends AppCompatActivity implements MyRecyclerViewAdapter.ItemClickListener {
 
     List<Data> data;
 
@@ -132,68 +133,22 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         setFirstElementOfList();
         setFirstElementInAllSections();
 
-        chosenListData = db.listDataDao().getChosenList(1);
+        if (db.listDataDao().getAllNamesNotFlowable().size() > 1)
+            chosenListData = db.listDataDao().getChosenList(1);
         setNavigationDrawerData();
 
         setViewPager(this);
         setTabs();
         setEditButton();
 
-
-//todo! блок ниже в комментарии возможно не нужен
-        //Get swipes from background
-       /* findViewById(R.id.backgroundLL).setOnTouchListener(new OnSwipeTouchListener(MainActivity.this) {
-            int position;
-
-            public void onSwipeTop() {
-            }
-
-            public void onSwipeRight() {
-                position = keysForDepartments.indexOf(chosenDepartmentData.department_name);
-                if (position > 1) {
-                    chosenDepartmentData = db.departmentDataDao()
-                            .getChosenDepartment(chosenDepartmentData.department_position - 1, chosenListData.list_id);
-                    // recyclerViewDepartments.smoothScrollToPosition(position - 1);
-                }
-                getCrossOutNumber();
-                getData();
-
-            }
-
-            public void onSwipeLeft() {
-                position = keysForDepartments.indexOf(chosenDepartmentData.department_name);
-                if (position < (keysForDepartments.size() - 1)) {
-                    chosenDepartmentData = db.departmentDataDao()
-                            .getChosenDepartment(chosenDepartmentData.department_position + 1, chosenListData.list_id);
-                    // recyclerViewDepartments.smoothScrollToPosition(position + 1);
-                }
-                getCrossOutNumber();
-                getData();
-
-            }
-
-            public void onSwipeBottom() {
-            }
-        });*/
-
         holySpiritTV = (TextView) findViewById(R.id.holy_spirit_tv);
 
         setStartAndEndAddDepartmentButtons();
-        //setMoreMenuButton();
-
         setTabsVisibility();
-
         changeTotalActiveItemsCountInTab();
 
         //for bug with tab text color when app started
         viewPagerAdapter.notifyDataSetChanged();
-    }
-
-    private void setMoreMenuButton() {
-        moreMenuButton = (ImageButton) findViewById(R.id.more_menu_button);
-        if (db.listDataDao().getAllNames().size() < 2) {
-            moreMenuButton.setVisibility(View.GONE);
-        }
     }
 
     private void setStartAndEndAddDepartmentButtons() {
@@ -260,7 +215,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void setTabs() {
-        Log.d(TAG, "setTabs() started");
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         tabLayout = findViewById(R.id.tabs);
         new TabLayoutMediator(tabLayout, myViewPager2, new TabLayoutMediator.TabConfigurationStrategy() {
@@ -306,6 +262,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void setViewPager(Context context) {
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+
         myViewPager2 = findViewById(R.id.viewpager);
         viewPagerAdapter = new ViewPagerAdapter(context);
         myViewPager2.setAdapter(viewPagerAdapter);
@@ -350,9 +309,11 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     public static void getHideEmptyDepartmentPreference() {
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        hideEmptyDepartmentPreference = sharedPreferences.getBoolean(PREF_HIDE_EMPTY_DEPARTMENT, false);
-        Log.d(TAG, "getHideEmptyDepartmentPreference() " + hideEmptyDepartmentPreference);
+        hideEmptyDepartmentPreference = sharedPreferences.getBoolean(PREF_HIDE_EMPTY_DEPARTMENT, true);
     }
 
     private DepartmentData getCurrentDepartment(int position) {
@@ -666,31 +627,29 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
     //TODO!!! оптимизировать метод ниже
     public static void ViewPagerItemClicked(View view, int dataID, MyRecyclerViewAdapter adapter, int position, List<Data> adapterData) {
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         setAdapter(adapter);
         setAdapterData(adapterData);
 
         if (editButtonClicked) {
             DepartmentData temp = db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(dataID));
-            if (position < (db.dataDao().getAllNames(db.dataDao().getDepartmentIdByDataId(dataID)).size()
-                    - db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(dataID)).CrossOutNumber)) {
+
+            if (position < (db.dataDao().getAllNames(temp.department_id).size() - temp.CrossOutNumber)) {
                 temp.CrossOutNumber++;
                 moveItemToBottom(dataID, position);
-                Log.d(TAG, "moveItemToBottom");
             } else {
-                db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(dataID)).CrossOutNumber--;
                 temp.CrossOutNumber--;
                 moveItemToTop(dataID, position);
-                Log.d(TAG, " moveItemToTop");
             }
             db.departmentDataDao().update(temp);
+
             TabLayout.Tab tab = tabLayout.getTabAt(myViewPager2.getCurrentItem());
             View tabView = tab.getCustomView();
             TextView textViewQty = (TextView) tabView.findViewById(R.id.tvDepartmentsQty);
-            Log.d(TAG, "TextView textView ");
-            int activeItem = db.dataDao().getAllNames(db.dataDao().getDepartmentIdByDataId(dataID)).size()
-                    - db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(dataID)).CrossOutNumber - 1;
-            Log.d(TAG, "int activeItem");
+
+            int activeItem = db.dataDao().getAllNames(temp.department_id).size() - temp.CrossOutNumber - 1;
 
             if (activeItem != 0) {
                 textViewQty.setVisibility(View.VISIBLE);
@@ -700,14 +659,11 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 setDepartmentInvisible(getChosenDepartmentID(myViewPager2.getCurrentItem()));
                 viewPagerAdapter.notifyDataSetChanged();
             } else {
-                textViewQty.setVisibility(View.VISIBLE);
                 textViewQty.setVisibility(View.GONE);
                 tab.setCustomView(tabView);
             }
-            Log.d(TAG, " if (activeItem != 0) ");
 
             changeTotalActiveItemsCountInTab();
-
         } else {
             switch (view.getId()) {
                 case R.id.image_more:
@@ -737,6 +693,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private static void setStaticTabsVisibility() {
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         View view = tabLayout.getRootView();
         LinearLayout tabsll = (LinearLayout) view.findViewById(R.id.tabs_linear_layout);
@@ -807,95 +765,67 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     public static void viewPagerOnTouchListener(View view, MotionEvent event, int id, MyRecyclerViewAdapter adapter, List<Data> adapterData) {
-        // Log.d(TAG, "item " + db.dataDao().getChosenDataById(id).data_name + " touched");
-        String name = new Object() {
-        }.getClass().getEnclosingMethod().getName();
-        Log.d(TAG, name + " started " + event.toString());
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+
         setAdapter(adapter);
         setAdapterData(adapterData);
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN: {
-                //  view.getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().requestDisallowInterceptTouchEvent(true);
-                //Log.d(TAG, "parent: " + view.getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().toString());
-                //view.getParent().requestDisallowInterceptTouchEvent(true);
                 clickDuration = 0;
                 startClickTime = Calendar.getInstance().getTimeInMillis();
-                Log.d(TAG, name + " ACTION_DOWN start " + event.getAction() + " clickDuration: " + clickDuration);
 
                 switch (view.getId()) {
                     case R.id.image_to_low:
 
                         if (!stopClick)
                             Single.fromCallable(() -> itemCount(false, id, view)).subscribeOn(Schedulers.io()).subscribe();
-                      /*  if (clickDuration == 0) {
-                            mTimer.schedule(mMyTimerTask, 500, 500);
-                        }*/
                         break;
                     case R.id.image_to_high:
                         if (!stopClick)
                             Single.fromCallable(() -> itemCount(true, id, view)).subscribeOn(Schedulers.io()).subscribe();
                         break;
                 }
-                // Single.fromCallable(() -> db.listDataDao().insert(listData)).subscribeOn(Schedulers.io()).subscribe();
-                // Single.fromCallable(() -> itemCount(true, position)).subscribeOn(Schedulers.io()).subscribe();
-
-                break;
+              break;
             }
             case MotionEvent.ACTION_UP:
-                // view.getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().requestDisallowInterceptTouchEvent(false);
-                //view.getParent().requestDisallowInterceptTouchEvent(false);
                 clickDuration = Calendar.getInstance().getTimeInMillis() - startClickTime;
-                Log.d(TAG, name + " ACTION_UP start " + event.getAction() + " clickDuration: " + clickDuration);
-                //   if (clickDuration < MAX_CLICK_DURATION) {
-                //click event has occurred
-                //dontTouchMLowButton = false;
-                //  Toast.makeText(view.getContext(), "Clicked", Toast.LENGTH_SHORT).show();
 
-                //  }
                 adapterListData.clear();
                 adapterListData.addAll(db.dataDao().getAll(
                         db.dataDao().getDepartmentIdByDataId(id)
                 ));
-//adapter.notifyItemChanged(db.dataDao().getChosenDataById(id).data_position);
+
                 adapter.notifyDataSetChanged();
-                // getData();
                 break;
             case MotionEvent.ACTION_CANCEL:
                 clickDuration = Calendar.getInstance().getTimeInMillis() - startClickTime;
-                //dontTouchMLowButton = false;
-                //onItemTouch(view, null,position);
-                //getData();
+
                 adapterListData.clear();
                 adapterListData.addAll(db.dataDao().getAll(
                         db.dataDao().getDepartmentIdByDataId(id)
                 ));
-//adapter.notifyItemChanged(db.dataDao().getChosenDataById(id).data_position);
                 adapter.notifyDataSetChanged();
                 break;
         }
-        //  return 0;
-
-    }
+  }
 
     private static int itemCount(boolean sign, int id, View view) {
-        String name = new Object() {
-        }.getClass().getEnclosingMethod().getName();
+        logThisMethodStatic(new Object() {        }.getClass().getEnclosingMethod().getName());
+
         stopClick = true;
         while (clickDuration == 0) {
-            Log.d(TAG, name + " sign: " + sign);
             if (sign) {
                 db.dataDao().plusQty(id);
-
             } else {
                 db.dataDao().minusQty(id);
             }
-            Log.d(TAG, name + " data saved: ");
+
             mn.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(TAG, name + "  runOnUiThread ");
-                    //todo popup menu над элементом вмесо toaster?
+
                     Toast toast = Toast.makeText(view.getContext(), "" + db.dataDao().getChosenDataById(id).data_qty, Toast.LENGTH_SHORT);
                     CountDownTimer toastCountDown;
                     toastCountDown = new CountDownTimer(100, 10) {
@@ -911,10 +841,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                     };
                     toast.show();
                     toastCountDown.start();
-                    Log.d(TAG, name + "  data get ");
                 }
             });
-            // Log.d(TAG, name + " get data");
             SystemClock.sleep(200);
         }
         stopClick = false;
@@ -922,71 +850,59 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private static void moveItemToTop(int id, int fromPosition) {
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+
         List<Data> oldTemp = new ArrayList<>();
         oldTemp.addAll(adapterListData);
+
         db.dataDao().incrementValuesFromOneToPosition(db.dataDao().getDepartmentIdByDataId(id), fromPosition);
         db.dataDao().updateSingleItemPosition(id, 1);
+
         adapterListData.clear();
-        adapterListData.addAll(db.dataDao().getAll(
-                db.dataDao().getDepartmentIdByDataId(id)
-        ));
-        //adapter.notifyItemMoved(fromPosition, 1);
+        adapterListData.addAll(db.dataDao().getAll(db.dataDao().getDepartmentIdByDataId(id)));
+
         ProductDiffUtilCallback productDiffUtilCallback =
                 new ProductDiffUtilCallback(oldTemp, adapterListData);
         DiffUtil.DiffResult productDiffResult = DiffUtil.calculateDiff(productDiffUtilCallback);
 
-        //adapter.setData(productList);
         productDiffResult.dispatchUpdatesTo(adapter);
         adapter.notifyItemChanged(1);
     }
 
-    private static void moveItemToBottom(int id, int position) {
-        List<Data> oldTemp = new ArrayList<>();
-        oldTemp.addAll(adapterListData);
-        int pos = db.dataDao().getAllPositions(db.dataDao().getDepartmentIdByDataId(id)).size();
-        db.dataDao().updateSingleItemPosition(db.dataDao().getChosenDataById(id).data_id, pos);
+    private static void moveItemToBottom(int dataID, int position) {
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
-        db.dataDao().decrementValues(db.dataDao().getDepartmentIdByDataId(id), position);
+        List<Data> oldTemp = new ArrayList<>();
+        int newDataPosition = db.dataDao().getAllPositions(db.dataDao().getDepartmentIdByDataId(dataID)).size();
+
+        oldTemp.addAll(adapterListData);
+
+        db.dataDao().updateSingleItemPosition(db.dataDao().getChosenDataById(dataID).data_id, newDataPosition);
+        db.dataDao().decrementValues(db.dataDao().getDepartmentIdByDataId(dataID), position);
 
         adapterListData.clear();
-        adapterListData.addAll(db.dataDao().getAll(
-                db.dataDao().getDepartmentIdByDataId(id)
-        ));
-        //  adapter.notifyItemMoved(position, pos - 1);
-        // adapter.notifyItemChanged(pos - 1);
-
-
-        //  Collections.swap(temp, position_dragged, position_target);
-
-        // Log.d(TAG, " Collections.swap");
-        //adapter.notifyItemMoved(position_target, position_dragged);
+        adapterListData.addAll(db.dataDao().getAll(db.dataDao().getDepartmentIdByDataId(dataID)));
 
         ProductDiffUtilCallback productDiffUtilCallback =
                 new ProductDiffUtilCallback(oldTemp, adapterListData);
         DiffUtil.DiffResult productDiffResult = DiffUtil.calculateDiff(productDiffUtilCallback);
 
-        //adapter.setData(productList);
         productDiffResult.dispatchUpdatesTo(adapter);
-        adapter.notifyItemChanged(pos - 1);
+        adapter.notifyItemChanged(newDataPosition - 1);
     }
 
-    private static void inputTextDialogWindowForViewHolderItem(View view, int position, int id) {
-        String name = new Object() {
-        }.getClass().getEnclosingMethod().getName();
-        Log.d(TAG, name + " started");
-
-        final EditText et = new EditText(view.getContext());
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT);
-        et.setLayoutParams(lp);
-        et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+    private static void inputTextDialogWindowForViewHolderItem(View view, int position, int dataID) {
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         String title;
-        editFlag = true;
+        final EditText et = setEditText(view);
+
         if (position != 0) {
-            et.setText(db.dataDao().getChosenDataById(id).data_name + " ");
-            Log.d(TAG, name + " et.setText(text.getText().toString()");
+            editFlag = true;
+            et.setText(db.dataDao().getChosenDataById(dataID).data_name + " ");
             et.setSelection(et.length());
             title = view.getContext().getString(R.string.to_edit);
         } else {
@@ -1005,124 +921,71 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                         view.getContext().getString(R.string.cancel),
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                // deleteFlagForEdit = false;
                                 dialog.cancel();
                             }
                         })
                 .create();
 
         setAlertDialogButtonsColor(view, dialog);
-
         dialog.show();
-        Log.d(TAG, name + "AlertDialog end building");
+
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        Log.d(TAG, name + "positiveButton start setOnClickListener");
         positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, name + " positiveButton started onClick title: " + editFlag);
+
                 String str = et.getText().toString();
-                // if (uniqueTest(str, view)) {
-                // InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                //  imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
                 str = deleteLeftRightSpacesInItem(str);
+
                 if (!str.isEmpty()) {
                     if (editFlag) {
-                        editOldData(str, id);
+                        editOldData(str, dataID);
                     } else {
                         if (position == 0) {
-                            setNewData(str, 1, id);
+                            setNewData(str, 1, dataID);
                         } else {
-                            setNewData(str, position, id);
+                            setNewData(str, position, dataID);
                         }
                     }
-                    Log.d(TAG, name + "positiveButton ended setNewData");
 
                     adapterListData.clear();
                     adapterListData.addAll(db.dataDao().getAll(
-                            db.dataDao().getDepartmentIdByDataId(id)
+                            db.dataDao().getDepartmentIdByDataId(dataID)
                     ));
-                    Log.d(TAG, name + " adapterListData.addAll");
-                /*if (!editFlag) {
 
-                    adapter.notifyItemInserted(1);
-                    viewPagerAdapter.notifyItemChanged(1);
-                } else {
-                    adapter.notifyItemChanged(position);
-                }*/
                     viewPagerAdapter.notifyDataSetChanged();
                     dialog.dismiss();
-              /*  } else {
-                    Toast.makeText(view.getContext(), "Введите уникальное название", Toast.LENGTH_SHORT).show();
-                }*/
                 }
-                Log.d(TAG, name + "positiveButton ended onClick");
             }
-
         });
-        Log.d(TAG, name + "positiveButton end setOnClickListener");
+
         Button neutralButton = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
         neutralButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String str = et.getText().toString();
-               /* if (uniqueTest(str, v)) {
-                    InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
-                    inputButtonClicked(str, insertIndex, view);
-                    et.getText().clear();
-                    et.setHint("Введите сообщение");
-                    dialog.setTitle("Добавить");
-               /* } else {
-                    Toast.makeText(view.getContext(), "Введите уникальное название отдела", Toast.LENGTH_SHORT).show();
-                }
-*/
                 str = deleteLeftRightSpacesInItem(str);
+
                 if (!str.isEmpty()) {
-                    boolean tempEditFlag = editFlag;
                     if (editFlag) {
-                        editOldData(str, id);
-                        Log.d(TAG, " editFlag = false; start");
+                        editOldData(str, dataID);
                         editFlag = false;
-                        Log.d(TAG, " editFlag = false; end");
                         dialog.setTitle(view.getContext().getString(R.string.add));
                     } else {
-                        // setNewData(str, 1, id);
                         if (position == 0) {
-                            setNewData(str, 1, id);
+                            setNewData(str, 1, dataID);
                         } else {
-                            setNewData(str, position, id);
+                            setNewData(str, position, dataID);
                         }
-
                     }
                     et.setText("");
-                    Log.d(TAG, name + " neutralButton ended setNewData");
 
                     adapterListData.clear();
-                    adapterListData.addAll(db.dataDao().getAll(
-                            db.dataDao().getDepartmentIdByDataId(id)
-                    ));
-                    Log.d(TAG, name + " adapterListData.addAll");
-              /*  if (!tempEditFlag) {
-                    if (position == 0) {
-                        adapter.notifyItemInserted(1);
-                        viewPagerAdapter.notifyItemChanged(1);
-                      //  viewPagerAdapter.notifyDataSetChanged();
-                    } else {
-                        adapter.notifyItemInserted(position);
-                        viewPagerAdapter.notifyItemChanged(myViewPager2.getCurrentItem());
-                    }
+                    adapterListData.addAll(db.dataDao().getAll(db.dataDao().getDepartmentIdByDataId(dataID)));
 
-                } else {
-
-
-                    adapter.notifyItemChanged(position);
-                }*/
                     viewPagerAdapter.notifyDataSetChanged();
                 }
-                Log.d(TAG, name + " neutralButton ended");
             }
-
         });
 
         et.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -1139,11 +1002,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 }
             }
         });
-        Log.d(TAG, name + "et start et.requestFocus()");
         et.requestFocus();
-        Log.d(TAG, name + "et end et.requestFocus()");
-        Log.d(TAG, name + " ended");
-
     }
 
     private static void setAlertDialogButtonsColor(View view, AlertDialog dialog) {
@@ -1158,19 +1017,27 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private static void editOldData(String str, int id) {
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+
         Data tempData = db.dataDao().getChosenDataById(id);
         tempData.data_name = str;
         db.dataDao().update(tempData);
-        Log.d(TAG, "editOldData ended");
     }
 
 
     public static void setAdapterData(List<Data> adapterData) {
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+
         adapterListData = adapterData;
     }
 
 
     public static void setAdapter(MyRecyclerViewAdapter getAdapter) {
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+
         adapter = getAdapter;
     }
 
@@ -1384,7 +1251,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
 
     //todo не используется
-    @Override
+    /*@Override
     public void onItemClick(View view, final int position, int id) {
         String name = new Object() {
         }.getClass().getEnclosingMethod().getName();
@@ -1458,14 +1325,14 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                     getCrossOutNumber();
                 }
                 break;*/
-            case R.id.rvAnimals:
+           /* case R.id.rvAnimals:
                 if (position == 0) {
                     inputTextDialogWindow(view, 1);
                 } else if (editButtonClicked) {
                     if (position < (data.size() - crossOutNumber)) {
                         crossOutNumber++;
                         //setCrossOutNumber();
-                       // moveSingleItem(position);
+                        // moveSingleItem(position);
                     } else {
                         crossOutNumber--;
                         //setCrossOutNumber();
@@ -1490,7 +1357,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     public int onItemTouch(View view, MotionEvent event, int position) {
       //  Toast.makeText(this, "item touched", Toast.LENGTH_SHORT).show();
         return 0;
-    }
+    }*/
 //todo временно скрыто
  /*   @Override
     public void onItemLongClick(int position, View view) {
@@ -1675,7 +1542,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void tryingToWriteTextToBase(View view, AlertDialog dialog, int insertIndex, String str) {
-        logThisMethod(new Object() {}.getClass().getEnclosingMethod().getName());
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         if (uniqueTest(str, view)) {
             InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -1737,6 +1605,17 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         et.setHint(getString(R.string.enter_text));
 
+        return et;
+    }
+
+    private static EditText setEditText(View view) {
+        final EditText et = new EditText(view.getContext());
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        et.setLayoutParams(lp);
+        et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         return et;
     }
 
@@ -1900,18 +1779,18 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         db.dataDao().insert(data);
     }
 
-    private static void setNewData(String s, int position, int id) {
+    private static void setNewData(String s, int position, int dataID) {
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
-        int departmentID = db.dataDao().getChosenDataById(id).department_id;
+        int departmentID = db.dataDao().getChosenDataById(dataID).department_id;
 
         Data newData = new Data(departmentID, position, s, 0.0f);
-        db.dataDao().incrementValues(db.dataDao().getChosenDataById(id).department_id, position - 1);
+        db.dataDao().incrementValues(departmentID, position - 1);
         db.dataDao().insert(newData);
-        //data.add(position, newData);
-        //Log.d(TAG, "Test increment data position: " + db.dataDao().getAllPositions(chosenDepartmentData.department_id));
+
         setDepartmentVisible(departmentID);
         changeTotalActiveItemsCountInTab();
-        Log.d(TAG, "new data set ended");
     }
 
     private static void setNewData(int position, String s, int departmentPosition, Float dataQty) {
@@ -2144,47 +2023,41 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         }
     }
 
-    private static void deleteSingleItem(int position, int id) {
-        int departmentID;
-        if (position >= (db.dataDao().getAllNames(db.dataDao().getDepartmentIdByDataId(id)).size() - db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id)).CrossOutNumber)) {
-            DepartmentData temp = db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id));
-            temp.CrossOutNumber--;
-            db.departmentDataDao().update(temp);
+    private static void deleteSingleItem(int position, int dataID) {
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+
+        DepartmentData department = db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(dataID));
+
+        if (position >= (db.dataDao().getAllNames(department.department_id).size() - department.CrossOutNumber)) {
+            department.CrossOutNumber--;
+            db.departmentDataDao().update(department);
         }
-        //  Log.d(TAG,"deleteSingleItem started");
+
         if (position > 0) {
-            departmentID = db.dataDao().getDepartmentIdByDataId(id);
-            db.dataDao().deleteSingleDataById(id);
-            db.dataDao().decrementValues(departmentID, position);
+            db.dataDao().deleteSingleDataById(dataID);
+            db.dataDao().decrementValues(department.department_id, position);
 
             adapterListData.clear();
-            adapterListData.addAll(db.dataDao().getAll(
-                    departmentID
-            ));
+            adapterListData.addAll(db.dataDao().getAll(department.department_id));
 
-            adapter.notifyItemRemoved(position); // notify the adapter about the removed item
+            adapter.notifyItemRemoved(position);
 
             TabLayout.Tab tab = tabLayout.getTabAt(myViewPager2.getCurrentItem());
             View tabView = tab.getCustomView();
             TextView textViewQty = (TextView) tabView.findViewById(R.id.tvDepartmentsQty);
-            Log.d(TAG, "TextView textView ");
-            int activeItem = db.dataDao().getAllNames(departmentID).size()
-                    - db.departmentDataDao().getDepartmentDataById(departmentID).CrossOutNumber - 1;
-            Log.d(TAG, "int activeItem");
 
-            // textView.setText(db.departmentDataDao().getAll(chosenListData.list_id).get(myViewPager2.getCurrentItem()).department_name);
-            //  textView.setText(db.departmentDataDao().getDepartmentDataById(db.dataDao().getDepartmentIdByDataId(id)).department_name);
-            Log.d(TAG, " textView.setText");
+            int activeItem = db.dataDao().getAllNames(department.department_id).size()
+                    - department.CrossOutNumber - 1;
+
             if (activeItem != 0) {
                 textViewQty.setVisibility(View.VISIBLE);
                 textViewQty.setText(String.valueOf(activeItem));
             } else {
                 textViewQty.setVisibility(View.GONE);
-                if (db.dataDao().getAllNames(departmentID).size() < 2 && hideEmptyDepartmentPreference) {
-                    setDepartmentInvisible(departmentID);
-                } /*else {
-                    setHideDepartmentAlertDialog(myViewPager2.getRootView());
-                }*/
+                if (db.dataDao().getAllNames(department.department_id).size() < 2 && hideEmptyDepartmentPreference) {
+                    setDepartmentInvisible(department.department_id);
+                }
             }
             tab.setCustomView(tabView);
         }
@@ -2596,7 +2469,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void setAlertDialogForImport(View view) {
-        logThisMethod(new Object() {        }.getClass().getEnclosingMethod().getName());
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         final EditText et = setEditTextForInputTextDialogWindow(view);
 
@@ -2723,7 +2597,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private void saveEditedListName(String str) {
-        logThisMethod(new Object() {        }.getClass().getEnclosingMethod().getName());
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         ListData newListData = chosenListData;
         newListData.setList_name(str);
@@ -2770,73 +2645,44 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }*/
 
 
-    private static void dataHolderMenuItemButtonClick(View view, int position, int id) {
-        String name = new Object() {
-        }.getClass().getEnclosingMethod().getName();
+    private static void dataHolderMenuItemButtonClick(View view, int position, int dataID) {
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+
         PopupMenu popup = new PopupMenu(view.getContext(), view);
-        //popup.setOnMenuItemClickListener(this);
         popup.inflate(R.menu.data_popup_menu);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             popup.setForceShowIcon(true);
         }
         popup.show();
-        //   Log.d(TAG, name + " popup.menu created" + parentID);
-        View parentView = (View) view.getParent();
+
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.data_menu_delete:
-                        deleteSingleItem(position, id);
+                        deleteSingleItem(position, dataID);
                         return true;
-                    //Toast.makeText(getBaseContext(), "delete", Toast.LENGTH_SHORT).show();
-
                     case R.id.data_menu_edit:
-                        //Toast.makeText(getBaseContext(), "edit", Toast.LENGTH_SHORT).show();
-                      /*!  deleteFlagForEdit = true;
-                        chosenData = db.dataDao().getChosenData(dataPosition, chosenDepartmentData.department_id);
-                        Log.d(TAG, name + " data was chosen" + parentID);
-                        inputTextDialogWindow(parentView, dataPosition, dataPosition);
-                        Log.d(TAG, name + "inputTextDialogWindow(view, dataPosition, dataPosition, parentID) done");*/
-
-                        inputTextDialogWindowForViewHolderItem(view, position, id);
-                        Log.d(TAG, name + " view name: " + view.toString());
+                        inputTextDialogWindowForViewHolderItem(view, position, dataID);
                         return true;
                     case R.id.data_menu_move:
-                        //Toast.makeText(getBaseContext(), "move", Toast.LENGTH_SHORT).show();
-                        //createDataMoveSubMenu(parentView);
-                        createDataMoveSubMenu(view, id, position);
+                        createDataMoveSubMenu(view, dataID, position);
                         return false;
                     default:
                         return false;
                 }
             }
         });
-        /*if (editButtonClicked) {
-            popup.getMenu().findItem(R.id.menu_edit).setTitle("Редактировать список");
-        } else {
-            popup.getMenu().findItem(R.id.menu_edit).setTitle("Закончить редактирование");
-        }*/
-
     }
 
     private static void createDataMoveSubMenu(View view, int dataID, int dataPosition) {
-        String name = new Object() {
-        }.getClass().getEnclosingMethod().getName();
-        Log.d(TAG, name + " started");
-
-        PopupMenu popup = new PopupMenu(view.getContext(), view);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            popup.setForceShowIcon(true);
-        }
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         int depID = db.dataDao().getDepartmentIdByDataId(dataID);
 
-
-        for (DepartmentData s : db.departmentDataDao().getAll(chosenListData.list_id)) {
-            if (s.department_id != depID) popup.getMenu().add(s.department_name);
-        }
-
+        PopupMenu popup = setPopupMenuForDataMove(view, depID);
         popup.show();
 
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -2844,7 +2690,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
             public boolean onMenuItemClick(MenuItem item) {
                 DepartmentData destinationDepartmentData = db.departmentDataDao().getChosenDepartmentByName(item.getTitle().toString(), chosenListData.list_id);
 
-                Data newData = createNewDataForDestinationDepartment(item, view, destinationDepartmentData);
+                Data newData = createNewDataForDestinationDepartment(view, destinationDepartmentData);
                 insertDataToDestinationDepartment(newData, item);
 
                 deleteMovedItemFromOldDepartment(dataPosition, dataID);
@@ -2858,18 +2704,37 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         });
     }
 
+    private static PopupMenu setPopupMenuForDataMove(View view, int depID) {
+        PopupMenu popup = new PopupMenu(view.getContext(), view);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            popup.setForceShowIcon(true);
+        }
+
+        for (DepartmentData s : db.departmentDataDao().getAll(chosenListData.list_id)) {
+            if (s.department_id != depID) popup.getMenu().add(s.department_name);
+        }
+        return popup;
+    }
+
     private static void deleteMovedItemFromOldDepartment(int dataPosition, int dataID) {
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+
         deleteSingleItem(dataPosition, dataID);
     }
 
     private static void insertDataToDestinationDepartment(Data newData, MenuItem item) {
-        db.dataDao().incrementValues(
-                db.departmentDataDao().getChosenDepartmentByName(item.getTitle().toString(),
-                        chosenListData.list_id).department_id, 0);
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+
+        db.dataDao().incrementValues(newData.department_id, 0);
         db.dataDao().insert(newData);
     }
 
-    private static Data createNewDataForDestinationDepartment(MenuItem item, View view, DepartmentData destinationDepartmentData) {
+    private static Data createNewDataForDestinationDepartment(View view, DepartmentData destinationDepartmentData) {
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+
         View parent = (View) view.getParent();
         TextView text = parent.findViewById(R.id.tvAnimalName);
         EditText dataQty = parent.findViewById(R.id.etAnimalCount);
@@ -2883,6 +2748,8 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
     private static void hideDepartmentIfLastActiveItemOut(int depID) {
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         int activeItem = db.dataDao().getAllNames(depID).size()
                 - db.departmentDataDao().getDepartmentDataById(depID).CrossOutNumber - 1;
@@ -2890,9 +2757,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         if (activeItem == 0) {
             if (db.dataDao().getAllNames(depID).size() < 2 && hideEmptyDepartmentPreference) {
                 setDepartmentInvisible(depID);
-            } /*else {
-                setHideDepartmentAlertDialog(myViewPager2.getRootView());
-            }*/
+            }
         }
     }
 
