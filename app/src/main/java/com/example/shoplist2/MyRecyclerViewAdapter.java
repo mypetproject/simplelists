@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,28 +11,15 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.List;
-
-import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
 
 public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.ViewHolder> {
 
@@ -41,13 +27,12 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
     private static final String TAG = "myLogs";
-    // private Context context;
 
     MyRecyclerViewAdapter(Context context, List<Data> data) {
         Log.d(TAG, "MyRecyclerViewAdapter constructor started");
+        
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
-        // context = context;
     }
 
     @Override
@@ -63,7 +48,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         MainActivity.canUpdate = false;
 
         setHolderButtonsVisibility(holder, position);
-        setStrikethroughText(holder, position);
+        setStrikeoutText(holder, position);
         setHolderItemsNames(holder, position);
 
         holder.myCustomEditTextListener.updateID(mData.get(holder.getAdapterPosition()).data_id);
@@ -89,7 +74,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         }
     }
 
-    private void setStrikethroughText(ViewHolder holder, int position) {
+    private void setStrikeoutText(ViewHolder holder, int position) {
         Log.d(TAG, "setStrikethroughText started");
 
         if (position >= (mData.size() - MainActivity.db.departmentDataDao().getDepartmentDataById(mData.get(position).department_id).CrossOutNumber)) {

@@ -58,17 +58,11 @@ import java.util.Locale;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
-public class MainActivity extends AppCompatActivity{
-    //public class MainActivity extends AppCompatActivity implements MyRecyclerViewAdapter.ItemClickListener {
-
-    List<Data> data;
+public class MainActivity extends AppCompatActivity {
 
     static MyRecyclerViewAdapter adapter;
-    int crossOutNumber;
     static boolean editButtonClicked = true;
     static int adapterPosition;
-    int dataPosition;
-
 
     private Drawer drawerResult = null;
     private int selectedListIndex = 2;
@@ -81,10 +75,8 @@ public class MainActivity extends AppCompatActivity{
     int parentID;
     int parentParentID;
 
-    //EditText et;
     static boolean canUpdate;
 
-    static RecyclerView recyclerView;
     static ViewPagerAdapter viewPagerAdapter;
     static ViewPager2 myViewPager2;
     static TabLayout tabLayout;
@@ -100,10 +92,10 @@ public class MainActivity extends AppCompatActivity{
     ImageButton addDepartmentButton;
     ImageButton addDepartmentEndButton;
     TextView holySpiritTV;
-    ImageButton moreMenuButton;
     ImageButton editButton;
 
     static MainActivity mn;
+
     static boolean editFlag;
     static boolean stopClick = false;
 
@@ -160,7 +152,7 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "setStartAndEndAddDepartmentButtons() onClick addDepartmentButton started");
-                inputTextDialogWindow(v, 1);
+                inputTextDialogWindow(v, 1, 12);
             }
         });
 
@@ -169,7 +161,7 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "setStartAndEndAddDepartmentButtons() onClick addDepartmentEndButton started");
-                inputTextDialogWindow(v, 1);
+                inputTextDialogWindow(v, 1, 12);
             }
         });
     }
@@ -452,6 +444,7 @@ public class MainActivity extends AppCompatActivity{
                         return true;
                     case R.id.department_menu_hide_or_show:
                         hideOrShowDepartmentFromPopupMenu(departmentData);
+                        changeTotalActiveItemsCountInTab();
                         return true;
                     case R.id.department_clean:
                         cleanDepartmentAlertDialog(view, departmentData);
@@ -506,7 +499,6 @@ public class MainActivity extends AppCompatActivity{
         dialog.show();
     }
 
-    //todo!!! BUG если очистить раздел, где были вычернуты пунты - то общее количество активных станет отрицательным
     private void cleanDepartmentAlertDialog(View view, DepartmentData departmentData) {
 
         TextView text = view.findViewById(R.id.tvDepartmentsName);
@@ -726,7 +718,8 @@ public class MainActivity extends AppCompatActivity{
     }
 
     private static int getTotalActiveItemsCountForChosenList() {
-        List<DepartmentData> listOfDepartmentsData = new ArrayList<DepartmentData>(db.departmentDataDao().getAll(chosenListData.list_id));
+        //List<DepartmentData> listOfDepartmentsData = new ArrayList<DepartmentData>(db.departmentDataDao().getAll(chosenListData.list_id));
+        List<DepartmentData> listOfDepartmentsData = new ArrayList<DepartmentData>(db.departmentDataDao().getAllVisibleDepartmentData(chosenListData.list_id));
         int sumOfActive = 0;
 
         for (DepartmentData dd : listOfDepartmentsData) {
@@ -734,34 +727,6 @@ public class MainActivity extends AppCompatActivity{
         }
 
         return sumOfActive;
-    }
-
-    private static void setHideDepartmentAlertDialog(View view) {
-        AlertDialog dialog = new AlertDialog.Builder(view.getContext())
-                .setTitle(R.string.hide_section)
-                .setCancelable(true)
-                .setPositiveButton(
-                        view.getContext().getString(R.string.ok),
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                setDepartmentInvisible(getChosenDepartmentID(myViewPager2.getCurrentItem()));
-                                viewPagerAdapter.notifyDataSetChanged();
-                                dialog.cancel();
-                            }
-                        })
-                .setNegativeButton(
-                        view.getContext().getString(R.string.cancel),
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // deleteFlagForEdit = false;
-                                dialog.cancel();
-                            }
-                        })
-                .create();
-
-        setAlertDialogButtonsColor(view, dialog);
-
-        dialog.show();
     }
 
     public static void viewPagerOnTouchListener(View view, MotionEvent event, int id, MyRecyclerViewAdapter adapter, List<Data> adapterData) {
@@ -787,7 +752,7 @@ public class MainActivity extends AppCompatActivity{
                             Single.fromCallable(() -> itemCount(true, id, view)).subscribeOn(Schedulers.io()).subscribe();
                         break;
                 }
-              break;
+                break;
             }
             case MotionEvent.ACTION_UP:
                 clickDuration = Calendar.getInstance().getTimeInMillis() - startClickTime;
@@ -809,10 +774,11 @@ public class MainActivity extends AppCompatActivity{
                 adapter.notifyDataSetChanged();
                 break;
         }
-  }
+    }
 
     private static int itemCount(boolean sign, int id, View view) {
-        logThisMethodStatic(new Object() {        }.getClass().getEnclosingMethod().getName());
+        logThisMethodStatic(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
         stopClick = true;
         while (clickDuration == 0) {
@@ -1041,10 +1007,6 @@ public class MainActivity extends AppCompatActivity{
         adapter = getAdapter;
     }
 
-    public static void setRecyclerView(RecyclerView getRecyclerView) {
-        recyclerView = getRecyclerView;
-    }
-
     private void newShare(String stringToShare) {
         logThisMethod(new Object() {
         }.getClass().getEnclosingMethod().getName());
@@ -1093,7 +1055,7 @@ public class MainActivity extends AppCompatActivity{
                         parentParentID = parentParent.getId();
 
                         if (position == 1) {
-                            inputTextDialogWindow(view, 1);
+                            inputTextDialogWindow(view, 1, 18);
                         } else {
                             setActiveList(position);
                             selectedListIndex = position;
@@ -1221,226 +1183,8 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
-    public static void setAdapterPosition(int pos) {
-        adapterPosition = pos;
-    }
-
-
-    /*public void getData() {
-        String name = new Object() {
-        }.getClass().getEnclosingMethod().getName();
-        canUpdate = false;
-        data.clear();
-        Log.d(TAG, name + " data.clear(); ended");
-        if (keysForDepartments.size() > 0) {
-            //  data.addAll(db.dataDao().getAllNames(chosenDepartmentData.department_id));
-            data.addAll(db.dataDao().getAll(chosenDepartmentData.department_id));
-        }
-        if (data.size() == 0) {
-            Data dataForInsert = new Data(chosenDepartmentData.department_id, 0, "Добавить", 0);
-            db.dataDao().insert(dataForInsert);
-            Log.d(TAG, "Added first element to data: " + dataForInsert.getAllInString());
-            // data.addAll(db.dataDao().getAllNames(chosenDepartmentData.department_id));
-            data.addAll(db.dataDao().getAll(chosenDepartmentData.department_id));
-        }
-
-        //adapter.notifyDataSetChanged();
-        // adapterForDepartments.notifyDataSetChanged();
-        canUpdate = true;
-    }*/
-
-
-    //todo не используется
-    /*@Override
-    public void onItemClick(View view, final int position, int id) {
-        String name = new Object() {
-        }.getClass().getEnclosingMethod().getName();
-        View parent = (View) view.getParent();
-        parentID = parent.getId();
-        int viewID = view.getId();
-
-        boolean clicker = false;
-        Log.d(TAG, name + " viewID: " + viewID + " R.id.tvAnimalCount:" + R.id.tvAnimalCount);
-        // Log.d(TAG,name + " view name: " + getResources().getResourceName(view.getId()));
-        switch (viewID) {
-            //todo по longclick прибавлять или вычитать числа, пока не отпустят
-            case R.id.image_to_low:
-                //!    db.dataDao().minusQty(position, chosenDepartmentData.department_id);
-                //getData();
-                clicker = true;
-                break;
-            case R.id.image_to_high:
-                //!   db.dataDao().plusQty(position, chosenDepartmentData.department_id);
-                //getData();
-                clicker = true;
-                break;
-            case R.id.tvAnimalCount:
-                clicker = true;
-                break;
-            case R.id.etAnimalCount:
-                Log.d(TAG, name + " R.id.etAnimalCount start");
-                clicker = true;
-                break;
-        }
-
-        if (!clicker) switch (parentID) {
-            case R.id.ll:
-                dataPosition = position;
-                parentID = R.id.rvAnimals;
-                //dataHolderMenuItemButtonClick(view);
-                break;
-            case R.id.depLl:
-                TextView text = parent.findViewById(R.id.tvDepartmentsName);
-                final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
-                        .setMessage(R.string.delete_department + text.getText().toString() + "'?")
-                        .setCancelable(true)
-                        .setPositiveButton(R.string.yes,
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        //! возможно не используется deleteSingleItemInDepartments(position);
-                                        dialog.cancel();
-                                    }
-                                })
-                        .setNegativeButton(
-                                R.string.no,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        dialog.cancel();
-                                    }
-                                })
-                        .show();
-
-                break;
-           /* case R.id.rvDepartments:
-
-                if (position == 0) {
-                    crossOutNumber = 0;
-                    inputTextDialogWindow(view, 1, position, parentID);
-                } else {
-                    recyclerViewDepartments.smoothScrollToPosition(position);
-                    chosenDepartmentData = db.departmentDataDao().getChosenDepartment(position, chosenListData.list_id);
-                    Log.d(TAG, "Chosen department: " + chosenDepartmentData.getAllInString());
-                    getData();
-                    getCrossOutNumber();
-                }
-                break;*/
-           /* case R.id.rvAnimals:
-                if (position == 0) {
-                    inputTextDialogWindow(view, 1);
-                } else if (editButtonClicked) {
-                    if (position < (data.size() - crossOutNumber)) {
-                        crossOutNumber++;
-                        //setCrossOutNumber();
-                        // moveSingleItem(position);
-                    } else {
-                        crossOutNumber--;
-                        //setCrossOutNumber();
-                        //moveSingleItemToTop(position);
-                    }
-                } else {
-                    //deleteFlagForEdit = true;
-                    // chosenData = db.dataDao().getChosenData(position, chosenDepartmentData.department_id);
-                    inputTextDialogWindow(view, position);
-                }
-                // adapterForDepartments.notifyDataSetChanged();
-                break;
-        }
-    }
-
-    @Override
-    public void onItemTouch(View view, MotionEvent event, int id) {
-
-    }
-
-   /* @Override
-    public int onItemTouch(View view, MotionEvent event, int position) {
-      //  Toast.makeText(this, "item touched", Toast.LENGTH_SHORT).show();
-        return 0;
-    }*/
-//todo временно скрыто
- /*   @Override
-    public void onItemLongClick(int position, View view) {
-        String name = new Object() {
-        }.getClass().getEnclosingMethod().getName();
-        Log.d(TAG, name + " Long click started");
-       /* final int viewID = view.getId();
-        switch (viewID) {
-            case R.id.image_to_low:
-                db.dataDao().minusQty(position,chosenDepartmentData.department_id);
-
-                getData();
-                Log.d(TAG, name + " Long click minus");
-                break;
-            case R.id.image_to_high:
-                db.dataDao().plusQty(position,chosenDepartmentData.department_id);
-
-                getData();
-                Log.d(TAG, name + " Long click plus");
-                break;
-        }*/
-    //Toast.makeText(view.getContext(), "Long click", Toast.LENGTH_SHORT).show();
-    /*}*/
-//todo временно скрыто
-    //todo обновлять данные при удержании, action_down прерывается при вызове adapter.notify
-    /*
-    @Override
-    public int onItemTouch(View view, MotionEvent event, int position) {
-        String name = new Object() {
-        }.getClass().getEnclosingMethod().getName();
-        Log.d(TAG, name + " started " + event.toString());
-        //Toast.makeText(view.getContext(), "Touch event: " + event, Toast.LENGTH_SHORT).show();
-
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN: {
-                //  view.getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().requestDisallowInterceptTouchEvent(true);
-                //Log.d(TAG, "parent: " + view.getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().toString());
-                //view.getParent().requestDisallowInterceptTouchEvent(true);
-                clickDuration = 0;
-                startClickTime = Calendar.getInstance().getTimeInMillis();
-                Log.d(TAG, name + " ACTION_DOWN start " + event.getAction() + " clickDuration: " + clickDuration);
-
-                switch (view.getId()) {
-                    case R.id.image_to_low:
-                        Single.fromCallable(() -> itemCount(false, position, view)).subscribeOn(Schedulers.io()).subscribe();
-                      /*  if (clickDuration == 0) {
-                            mTimer.schedule(mMyTimerTask, 500, 500);
-                        }*/
-                 /*       break;
-                    case R.id.image_to_high:
-                        Single.fromCallable(() -> itemCount(true, position, view)).subscribeOn(Schedulers.io()).subscribe();
-                        break;
-                }
-                // Single.fromCallable(() -> db.listDataDao().insert(listData)).subscribeOn(Schedulers.io()).subscribe();
-                // Single.fromCallable(() -> itemCount(true, position)).subscribeOn(Schedulers.io()).subscribe();
-
-           /*     break;
-            }
-           case MotionEvent.ACTION_UP:
-                // view.getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().requestDisallowInterceptTouchEvent(false);
-                //view.getParent().requestDisallowInterceptTouchEvent(false);
-                clickDuration = Calendar.getInstance().getTimeInMillis() - startClickTime;
-                Log.d(TAG, name + " ACTION_UP start " + event.getAction() + " clickDuration: " + clickDuration);
-                if (clickDuration < MAX_CLICK_DURATION) {
-                    //click event has occurred
-                    //dontTouchMLowButton = false;
-                    //  Toast.makeText(view.getContext(), "Clicked", Toast.LENGTH_SHORT).show();
-
-                }
-                getData();
-                break;
-            case MotionEvent.ACTION_CANCEL:
-                clickDuration = Calendar.getInstance().getTimeInMillis() - startClickTime;
-                //dontTouchMLowButton = false;
-                //onItemTouch(view, null,position);
-                getData();
-                break;
-        }
-        return 0;
-    }*/
-
     //for adding section, list and when create new list without loading default data
-    public void inputTextDialogWindow(final View view, final int insertIndex) {
+    public void inputTextDialogWindow(final View view, final int insertIndex, int maxTextLength) {
         logThisMethod(new Object() {
         }.getClass().getEnclosingMethod().getName());
 
@@ -1460,13 +1204,18 @@ public class MainActivity extends AppCompatActivity{
                 String str = deleteLeftAndRightSpaces(et.getText().toString());
                 boolean isItShare = str.contains("-=***=-");
 
-                if (str.length() > 0 && str.length() <= 12 || (isItShare && view.getId() != R.id.add_department_button
-                        && view.getId() != R.id.add_department_button_in_the_end)) {
+                if (str.length() > 0) {
 
-                    tryingToWriteTextToBase(view, dialog, insertIndex, str);
+                    if (str.length() <= maxTextLength || (isItShare && view.getId() != R.id.add_department_button
+                            && view.getId() != R.id.add_department_button_in_the_end)) {
 
+                        tryingToWriteTextToBase(view, dialog, insertIndex, str);
+
+                    } else {
+                        Toast.makeText(MainActivity.this, R.string.too_large_name, Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    Toast.makeText(MainActivity.this, R.string.too_large_name, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, R.string.too_small_name, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -1480,8 +1229,15 @@ public class MainActivity extends AppCompatActivity{
 
                 String str = et.getText().toString();
                 str = deleteLeftAndRightSpaces(str);
-
-                tryingToWriteTextToBaseByPushNeutralButton(str, view, insertIndex, et);
+                if (!str.isEmpty()) {
+                    if (str.length() <= maxTextLength) {
+                        tryingToWriteTextToBaseByPushNeutralButton(str, view, insertIndex, et);
+                    } else {
+                        Toast.makeText(MainActivity.this, R.string.too_large_name, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(MainActivity.this, R.string.too_small_name, Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -1508,8 +1264,8 @@ public class MainActivity extends AppCompatActivity{
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().length() > 9) {
-                    dialog.setTitle(title + "                     " + (12 - s.toString().length()));
+                if (s.toString().length() > maxTextLength-4) {
+                    dialog.setTitle(title + "                     " + (maxTextLength - s.toString().length()));
                 } else {
                     dialog.setTitle(title);
                 }
@@ -1522,23 +1278,21 @@ public class MainActivity extends AppCompatActivity{
     }
 
     private void tryingToWriteTextToBaseByPushNeutralButton(String str, View view, int insertIndex, EditText et) {
-        if (str.length() <= 12 && !str.isEmpty()) {
 
-            if (uniqueTest(str, view)) {
 
-                insertFromPopup(str, insertIndex, view);
+        if (uniqueTest(str, view)) {
 
-                et.getText().clear();
-                et.setHint(getString(R.string.enter_text));
+            insertFromPopup(str, insertIndex, view);
 
-                setTabsOnLongClickListener();
-            } else {
-                Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
-            }
+            et.getText().clear();
+            et.setHint(getString(R.string.enter_text));
 
+            setTabsOnLongClickListener();
         } else {
-            Toast.makeText(MainActivity.this, R.string.too_large_name, Toast.LENGTH_SHORT).show();
+            Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
         }
+
+
     }
 
     private void tryingToWriteTextToBase(View view, AlertDialog dialog, int insertIndex, String str) {
@@ -1653,8 +1407,6 @@ public class MainActivity extends AppCompatActivity{
         }
         return str;
     }
-//TODO!!! Если раздел скрыт, то не считать его невычеркнутые пункты активными
-
 
     public void editDepartmentDialogWindow(final View view, DepartmentData departmentData) {
         String name = new Object() {
@@ -1662,6 +1414,9 @@ public class MainActivity extends AppCompatActivity{
         Log.d(TAG, name + " started");
 
         int insertIndex = departmentData.department_position;
+
+        View parentParent = (View) view.getParent().getParent();
+        parentParentID = parentParent.getId();
 
         final EditText et = setEditTextForEditDepartmentAlertDialog(view);
         String title = getString(R.string.to_edit);
@@ -1688,14 +1443,25 @@ public class MainActivity extends AppCompatActivity{
             public void onClick(View v) {
                 Log.d(TAG, name + " positiveButton onClick started");
                 String str = et.getText().toString();
-                if (uniqueTest(str, view)) {
-                    InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
-                    insertFromPopup(str, insertIndex, view);
-                    dialog.dismiss();
+
+                if (str.length() > 0) {
+                    if (str.length() < 12) {
+                        if (uniqueTest(str, view)) {
+                            InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+                            insertFromPopup(str, insertIndex, view);
+                            dialog.dismiss();
+                        } else {
+                            Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(view.getContext(), R.string.too_large_name, Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(view.getContext(), R.string.too_small_name, Toast.LENGTH_SHORT).show();
                 }
+
+
             }
         });
 
@@ -1716,6 +1482,25 @@ public class MainActivity extends AppCompatActivity{
             }
         });
         et.requestFocus();
+
+        et.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().length() > 9) {
+                    dialog.setTitle(title + "                     " + (12 - s.toString().length()));
+                } else {
+                    dialog.setTitle(title);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
     }
 
     private EditText setEditTextForEditDepartmentAlertDialog(View view) {
@@ -1838,7 +1623,6 @@ public class MainActivity extends AppCompatActivity{
         setStaticTabsVisibility();
     }
 
-
     private void insertFromPopup(String s, int insertIndex, View view) {
         logThisMethod(new Object() {
         }.getClass().getEnclosingMethod().getName());
@@ -1891,7 +1675,7 @@ public class MainActivity extends AppCompatActivity{
                                 setEditModeButtonsVisibility();
                                 setTabsVisibility();
 
-                                inputTextDialogWindow(findViewById(R.id.add_department_button), 1);
+                                inputTextDialogWindow(findViewById(R.id.add_department_button), 1,18);
                                 dialog.cancel();
                             }
                         })
@@ -2137,6 +1921,7 @@ public class MainActivity extends AppCompatActivity{
         setTabsVisibility();
         setEditButtonVisibility();
         changeTotalActiveItemsCountInTab();
+        setNavigationDrawerData();
         viewPagerAdapter.notifyDataSetChanged();
     }
 
@@ -2341,41 +2126,6 @@ public class MainActivity extends AppCompatActivity{
         return s;
     }
 
-    private String listToStringGenerator(int listPosition) {
-        String stringToSend = "";
-        Log.d(TAG, "In listToStringGenerator()");
-        //stringToSend += chosenListData.getList_name() + "[";
-        ListData listDataForSend = db.listDataDao().getChosenListByPosition(listPosition);
-        stringToSend += listDataForSend.getList_name() + "\n-=***=-\n";
-        Log.d(TAG, "In stringToSend += listDataForSend.getList_name()" + db.departmentDataDao().getAllPositions(listDataForSend.list_id));
-
-        int departmentPosition = 0;
-        if (db.departmentDataDao().getAllNames(listDataForSend.list_id).size() > 0)
-            for (String s : db.departmentDataDao().getAllNames(listDataForSend.list_id)) {
-                //chosenDepartmentData = db.departmentDataDao().getChosenDepartment(departmentPosition, chosenListData.list_id);
-                int chosenDepartmentID = db.departmentDataDao().getChosenDepartment(departmentPosition, listDataForSend.list_id).department_id;
-                // stringToSend += s + "[";
-                stringToSend += s + "\n-*-\n";
-                int dataCounter = 0;
-                for (Data dataS : db.dataDao().getAllForGenerator(chosenDepartmentID)) {
-                    Float data_qty_float = dataS.data_qty;
-                    stringToSend += dataS.data_name + "-->" + data_qty_float.toString().replaceAll("\\.?0*$", "") + ";\n";
-                    dataCounter++;
-                    if (dataCounter == (db.dataDao().getAllForGenerator(chosenDepartmentID).size() - db.departmentDataDao().getChosenDepartment(departmentPosition, listDataForSend.list_id).CrossOutNumber))
-                        break;
-                }
-                if (dataCounter > 0)
-                    stringToSend = stringToSend.substring(0, stringToSend.length() - 2);
-                //stringToSend += "]";
-                stringToSend += "\n---\n";
-                departmentPosition++;
-            }
-        // stringToSend += "]";
-        stringToSend += "--=*=--";
-        Log.d(TAG, "StringToSend ready " + stringToSend);
-        return generatorFilter(stringToSend);
-    }
-
     //menu in toolbar on right side
     public void onMoreMenuItemButtonClick(View view) {
         logThisMethod(new Object() {
@@ -2389,8 +2139,10 @@ public class MainActivity extends AppCompatActivity{
                 switch (item.getItemId()) {
 
                     case R.id.menu_settings:
+                        editButtonClicked = true;
                         Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                         startActivity(intent);
+
                         return true;
 
                     case R.id.menu_share:
@@ -2540,14 +2292,16 @@ public class MainActivity extends AppCompatActivity{
     }
 
     private void editListName(View view) {
-        String name = new Object() {
-        }.getClass().getEnclosingMethod().getName();
+        logThisMethod(new Object() {
+        }.getClass().getEnclosingMethod().getName());
 
+        String title = getString(R.string.to_edit);
         final EditText et = setEditTextForInputTextDialogWindow(view);
         et.setText(chosenListData.getList_name());
 
+
         final AlertDialog dialog = new AlertDialog.Builder(view.getContext())
-                .setTitle(getString(R.string.to_edit))
+                .setTitle(title)
                 .setCancelable(true)
                 .setView(et)
                 .setPositiveButton(getString(R.string.ok), null)
@@ -2568,13 +2322,21 @@ public class MainActivity extends AppCompatActivity{
             public void onClick(View v) {
                 String str = et.getText().toString();
 
-                if (uniqueTest(str, view)) {
-                    InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
-                    saveEditedListName(str);
-                    dialog.dismiss();
+                if (str.length() > 0) {
+                    if (str.length() < 19) {
+                        if (uniqueTest(str, view)) {
+                            InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(dialog.getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+                            saveEditedListName(str);
+                            dialog.dismiss();
+                        } else {
+                            Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(view.getContext(), R.string.too_large_name, Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    Toast.makeText(view.getContext(), R.string.unique_alert, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(view.getContext(), R.string.too_small_name, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -2594,6 +2356,25 @@ public class MainActivity extends AppCompatActivity{
             }
         });
         et.requestFocus();
+
+        et.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().length() > 14) {
+                    dialog.setTitle(title + "                     " + (18 - s.toString().length()));
+                } else {
+                    dialog.setTitle(title);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
     }
 
     private void saveEditedListName(String str) {
@@ -2605,45 +2386,6 @@ public class MainActivity extends AppCompatActivity{
         db.listDataDao().update(newListData);
         setNavigationDrawerData();
     }
-
-
-    /*@Override
-    public boolean onMenuItemClick(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_share:
-                String stringToSend = listToStringGenerator();
-                newShare(item.getActionView(), stringToSend);
-                return true;
-            case R.id.menu_edit:
-                if (editButtonClicked) {
-                    editButtonClicked = false;
-                } else {
-                    editButtonClicked = true;
-                }
-                adapter.notifyDataSetChanged();
-                adapterForDepartments.notifyDataSetChanged();
-                return true;
-            case R.id.menu_delete:
-                deleteSingleItemInList();
-                return true;
-           /* case R.id.data_menu_delete:
-                deleteSingleItem(dataPosition);
-                return true;
-                //Toast.makeText(getBaseContext(), "delete", Toast.LENGTH_SHORT).show();
-            case  R.id.data_menu_edit:
-                //Toast.makeText(getBaseContext(), "edit", Toast.LENGTH_SHORT).show();
-                deleteFlagForEdit = true;
-                chosenData = db.dataDao().getChosenData(dataPosition, chosenDepartmentData.department_id);
-                inputTextDialogWindow(this., dataPosition, dataPosition, parentID);
-                return true;
-            case R.id.data_menu_move:
-                Toast.makeText(getBaseContext(), "move", Toast.LENGTH_SHORT).show();
-                return true;*/
-            /*default:
-                return false;
-        }
-    }*/
-
 
     private static void dataHolderMenuItemButtonClick(View view, int position, int dataID) {
         logThisMethodStatic(new Object() {
@@ -2773,18 +2515,6 @@ public class MainActivity extends AppCompatActivity{
         return 0;
     }
 
-    static int notifyWithDelay(int delay, int position) {
-        SystemClock.sleep(delay);
-        mn.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                viewPagerAdapter.notifyItemChanged(0);
-                //  viewPagerAdapter.notifyDataSetChanged();
-            }
-        });
-        return 0;
-    }
-
     public static void setHideEmptyDepartmentPreference(boolean status) {
         hideEmptyDepartmentPreference = status;
         Log.d(TAG, "setHideEmptyDepartmentPreference() " + hideEmptyDepartmentPreference);
@@ -2797,7 +2527,6 @@ public class MainActivity extends AppCompatActivity{
 //todo Обучение интерфейсу при первом старте
 
 
-//todo обойти ограничение массива iDrawerItem[100] или перезаписывать элементы
 //todo блокировка списка отпечатком и пинкодом
 //todo поиск по списку?
 
@@ -2805,7 +2534,7 @@ public class MainActivity extends AppCompatActivity{
 
 
 //todo проверка на hardware клавиатуру при вызове alertdialog для корректировки или добавления элемента (те, где есть edittext)
-//TODO в режиме редактирования делать из title в toolbar edittext вместо textview (title = "", edittext - visible, после выхода из режима редактирования забираем с edittext введеный текст, title = et, edittext.gone)
+
 
 //todo по лонгтапу по элементу отдела появляется чекбокс, где можно выделить элементы и удалить несколько сразу
 

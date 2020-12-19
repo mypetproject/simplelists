@@ -87,21 +87,5 @@ public interface DataDao {
 
     @Query("UPDATE data_table SET data_qty = :qty WHERE data_id = :id")
     void updateQty(int id, Float qty);
-/*
-        @Query("DELETE FROM lists_table")
-        int deleteAll();
-
-        @Query("SELECT * FROM lists_table ORDER BY list_position ASC")
-        Flowable<List<ListData>> getAll();
-
-        @Query("SELECT * from lists_table ORDER BY list_name ASC")
-        LiveData<List<ListData>> getAlphabetizedLists();
-
-        @Query("Update lists_table Set list_position = list_position + 1")
-        int incrementValues();
-
-        @Query("Update lists_table Set list_position = 0 WHERE list_name = 'Добавить'")
-        int setDobavitInZero();*/
-
 
 }

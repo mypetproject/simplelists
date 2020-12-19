@@ -47,23 +47,12 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
         int adapterPosition = holder.getAdapterPosition();
         final MyRecyclerViewAdapter adapter;
         ItemTouchHelper helper;
-        List<Data> temp = new ArrayList<>();
+        List<Data> temp = setTempData(adapterPosition);
 
         MainActivity.canUpdate = false;
-        //если recyclable, то onMove не работает после перезаполнения
-        holder.setIsRecyclable(false);
 
-        if (!MainActivity.editButtonClicked) {
-            temp.addAll(MainActivity.db.dataDao().getAll(
-                    MainActivity.db.departmentDataDao().getChosenDepartment(
-                            adapterPosition,
-                            MainActivity.chosenListData.list_id
-                    ).department_id));
-        } else {
-            List<Integer> allVisibleDepartmentsID = MainActivity.db.departmentDataDao().getAllVisibleDepartmentsID(MainActivity.chosenListData.list_id);
-            temp.addAll(MainActivity.db.dataDao().getAll(
-                    allVisibleDepartmentsID.get(adapterPosition)));
-        }
+        //if recyclable, than onMove doesn't work after refilling
+        holder.setIsRecyclable(false);
 
         RecyclerView recyclerView = holder.itemView.findViewById(R.id.rvAnimals);
         recyclerView.getRecycledViewPool().clear();
@@ -112,10 +101,10 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
                 } else if (position_target >= (temp.size() - crossOutNumber)) {
                     return false;
                 } else {
-                    //todo возможно поменять
                     List<Data> oldTemp = new ArrayList<>();
                     oldTemp.addAll(temp);
                     Collections.swap(temp, position_dragged, position_target);
+
                     ProductDiffUtilCallback productDiffUtilCallback =
                             new ProductDiffUtilCallback(oldTemp, temp);
                     DiffUtil.DiffResult productDiffResult = DiffUtil.calculateDiff(productDiffUtilCallback);
@@ -146,6 +135,25 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
         adapter.notifyDataSetChanged();
 
         MainActivity.canUpdate = true;
+    }
+
+    private List<Data> setTempData(int adapterPosition) {
+
+        List<Data> temp = new ArrayList<>();
+
+        if (!MainActivity.editButtonClicked) {
+            temp.addAll(MainActivity.db.dataDao().getAll(
+                    MainActivity.db.departmentDataDao().getChosenDepartment(
+                            adapterPosition,
+                            MainActivity.chosenListData.list_id
+                    ).department_id));
+        } else {
+            List<Integer> allVisibleDepartmentsID = MainActivity.db.departmentDataDao().getAllVisibleDepartmentsID(MainActivity.chosenListData.list_id);
+            temp.addAll(MainActivity.db.dataDao().getAll(
+                    allVisibleDepartmentsID.get(adapterPosition)));
+        }
+
+        return temp;
     }
 
     @Override

@@ -50,6 +50,9 @@ public interface DepartmentDataDao {
         @Query("SELECT department_name FROM departments_table WHERE visibility == 1 AND list_id = :list_id ORDER BY department_position ASC")
         List<String> getAllVisibleDepartmentNames(int list_id);
 
+        @Query("SELECT * FROM departments_table WHERE visibility == 1 AND list_id = :list_id ORDER BY department_position ASC")
+        List<DepartmentData> getAllVisibleDepartmentData(int list_id);
+
         @Query("SELECT * FROM departments_table WHERE department_name = :name AND list_id = :list_id")
         DepartmentData getChosenDepartmentByName(String name, int list_id);
 
@@ -69,21 +72,5 @@ public interface DepartmentDataDao {
         @Query("Update departments_table Set department_position = department_position - 1 WHERE list_id = :list_id " +
                 "AND department_position > :fromPosition AND department_position <= :toPosition AND department_position > 0")
         void decrementValuesFromPositionToPosition(int list_id, int fromPosition, int toPosition);
-/*
-        @Query("DELETE FROM lists_table")
-        int deleteAll();
-
-        @Query("SELECT * FROM lists_table ORDER BY list_position ASC")
-        Flowable<List<ListData>> getAll();
-
-        @Query("SELECT * from lists_table ORDER BY list_name ASC")
-        LiveData<List<ListData>> getAlphabetizedLists();
-
-        @Query("Update lists_table Set list_position = list_position + 1")
-        int incrementValues();
-
-        @Query("Update lists_table Set list_position = 0 WHERE list_name = 'Добавить'")
-        int setDobavitInZero();*/
-
 
 }

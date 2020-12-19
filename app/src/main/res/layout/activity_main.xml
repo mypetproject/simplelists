@@ -60,23 +60,7 @@
         android:layout_below="@+id/toolbar"
 
         android:orientation="vertical">
-        <!--
-                       <androidx.recyclerview.widget.RecyclerView
-                           android:id="@+id/rvDepartments"
-                           android:layout_width="wrap_content"
-                           android:layout_height="wrap_content"
-               android:background="#03DAC5"
-                           android:orientation="horizontal"
-                           />
-                           -->
-        <!--
-                       <androidx.recyclerview.widget.RecyclerView
-                           android:id="@+id/rvAnimals"
-                           android:layout_width="match_parent"
-                           android:layout_height="wrap_content"
 
-                           />
-                           -->
         <LinearLayout
             android:id="@+id/tabs_linear_layout"
             android:layout_width="match_parent"
@@ -144,17 +128,5 @@
 
 
     </LinearLayout>
-
-<!--
-    <Button
-        android:id="@+id/edit_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="40dp"
-        android:background="@drawable/round_edit_button"
-        android:text="@string/edit" />
--->
 
 </RelativeLayout>

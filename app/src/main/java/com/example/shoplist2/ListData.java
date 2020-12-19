@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey;
 import io.reactivex.Single;
 
 @Entity(tableName = "lists_table", indices = {@Index(value = {"list_name"}, unique = true)})
-//@Entity(tableName = "lists_table")
+
 public class ListData {
 
         @PrimaryKey(autoGenerate = true)
@@ -35,13 +35,5 @@ public class ListData {
                 String s = "list id: " + list_id + " list position: " + list_position + " list name: " + list_name;
                 return s;
         }
-      /*  public int getList_id() {
-                return list_id;
-        }
 
-        public void setList_id(int list_id) {
-                this.list_id = list_id;
-        }*/
-
-        // public ListData(String list_name) {this.list_name = list_name;}
 }

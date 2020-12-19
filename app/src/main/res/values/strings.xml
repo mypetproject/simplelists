@@ -121,6 +121,7 @@
     <string name="too_few_lists">Too few lists</string>
     <string name="Edit_list_name">Edit list name</string>
     <string name="Edit_name">Edit name</string>
+    <string name="too_small_name">Please, input some text</string>
 
 
 </resources>

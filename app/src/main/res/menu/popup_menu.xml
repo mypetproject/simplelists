@@ -26,7 +26,4 @@
         android:icon="@drawable/ic_delete"
         android:title="@string/toolbar_delete_list" />
 
-
-
-
 </menu>
