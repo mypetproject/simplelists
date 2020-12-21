@@ -54,6 +54,7 @@ import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
@@ -133,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
         setTabs();
         setEditButton();
 
-        holySpiritTV = (TextView) findViewById(R.id.holy_spirit_tv);
+        holySpiritTV = findViewById(R.id.holy_spirit_tv);
 
         setStartAndEndAddDepartmentButtons();
         setTabsVisibility();
@@ -144,56 +145,43 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setStartAndEndAddDepartmentButtons() {
-        logThisMethod(new Object() {
-        }.getClass().getEnclosingMethod().getName());
+        logThisMethod(Objects.requireNonNull(new Object() {
+        }.getClass().getEnclosingMethod()).getName());
 
-        addDepartmentButton = (ImageButton) findViewById(R.id.add_department_button);
-        addDepartmentButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "setStartAndEndAddDepartmentButtons() onClick addDepartmentButton started");
-                inputTextDialogWindow(v, 1, 12);
-            }
+        addDepartmentButton = findViewById(R.id.add_department_button);
+        addDepartmentButton.setOnClickListener(v -> {
+            Log.d(TAG, "setStartAndEndAddDepartmentButtons() onClick addDepartmentButton started");
+            inputTextDialogWindow(v, 1, 15);
         });
 
-        addDepartmentEndButton = (ImageButton) findViewById(R.id.add_department_button_in_the_end);
-        addDepartmentEndButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "setStartAndEndAddDepartmentButtons() onClick addDepartmentEndButton started");
-                inputTextDialogWindow(v, 1, 12);
-            }
+        addDepartmentEndButton = findViewById(R.id.add_department_button_in_the_end);
+        addDepartmentEndButton.setOnClickListener(v -> {
+            Log.d(TAG, "setStartAndEndAddDepartmentButtons() onClick addDepartmentEndButton started");
+            inputTextDialogWindow(v, 1, 15);
         });
     }
 
     private void setEditButton() {
-        logThisMethod(new Object() {
-        }.getClass().getEnclosingMethod().getName());
+        logThisMethod(Objects.requireNonNull(new Object() {
+        }.getClass().getEnclosingMethod()).getName());
 
-        editButton = (ImageButton) findViewById(R.id.edit_button);
+        editButton = findViewById(R.id.edit_button);
         setEditButtonVisibility();
 
-        editButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        editButton.setOnClickListener(v -> {
 
 
-                if (editButtonClicked) {
-                    editButtonClicked = false;
-                } else {
-                    editButtonClicked = true;
-                }
-                setEditModeButtonsVisibility();
-                setTabsVisibility();
+            editButtonClicked = !editButtonClicked;
+            setEditModeButtonsVisibility();
+            setTabsVisibility();
 
-                viewPagerAdapter.notifyDataSetChanged();
-            }
+            viewPagerAdapter.notifyDataSetChanged();
         });
     }
 
     private void setEditModeButtonsVisibility() {
-        logThisMethod(new Object() {
-        }.getClass().getEnclosingMethod().getName());
+        logThisMethod(Objects.requireNonNull(new Object() {
+        }.getClass().getEnclosingMethod()).getName());
 
         if (!editButtonClicked) {
             addDepartmentButton.setVisibility(View.VISIBLE);
@@ -207,26 +195,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setTabs() {
-        logThisMethod(new Object() {
-        }.getClass().getEnclosingMethod().getName());
+        logThisMethod(Objects.requireNonNull(new Object() {
+        }.getClass().getEnclosingMethod()).getName());
 
         tabLayout = findViewById(R.id.tabs);
-        new TabLayoutMediator(tabLayout, myViewPager2, new TabLayoutMediator.TabConfigurationStrategy() {
-            @Override
-            public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
-                Log.d(TAG, "setTabs() onConfigureTab started");
-                DepartmentData currentDepartment = getCurrentDepartment(position);
+        new TabLayoutMediator(tabLayout, myViewPager2, (tab, position) -> {
+            Log.d(TAG, "setTabs() onConfigureTab started");
+            DepartmentData currentDepartment = getCurrentDepartment(position);
 
-                View view = LayoutInflater.from(getBaseContext()).inflate(R.layout.custom_tab, null);
-                TextView textView = (TextView) view.findViewById(R.id.tvDepartmentsName);
-                TextView textViewQty = (TextView) view.findViewById(R.id.tvDepartmentsQty);
+            View view = LayoutInflater.from(getBaseContext()).inflate(R.layout.custom_tab, null);
+            TextView textView = (TextView) view.findViewById(R.id.tvDepartmentsName);
+            TextView textViewQty = (TextView) view.findViewById(R.id.tvDepartmentsQty);
 
-                textView.setText(currentDepartment.department_name);
+            textView.setText(currentDepartment.department_name);
 
-                setDepartmentsItemQtyInTabs(textViewQty, currentDepartment);
+            setDepartmentsItemQtyInTabs(textViewQty, currentDepartment);
 
-                tab.setCustomView(view);
-            }
+            tab.setCustomView(view);
         }).attach();
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -1548,6 +1533,7 @@ public class MainActivity extends AppCompatActivity {
                 0, getString(R.string.add), 0.0f);
         db.dataDao().insert(data);
 
+        myViewPager2.setCurrentItem(0);
         viewPagerAdapter.notifyDataSetChanged();
     }
 
@@ -1894,6 +1880,8 @@ public class MainActivity extends AppCompatActivity {
 
         changeTotalActiveItemsCountInTab();
         setTabsVisibility();
+
+        if (db.departmentDataDao().getAllNames(chosenListData.list_id).size() > 0) myViewPager2.setCurrentItem(myViewPager2.getCurrentItem());
         viewPagerAdapter.notifyDataSetChanged();
     }
 

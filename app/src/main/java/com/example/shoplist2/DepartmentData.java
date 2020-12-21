@@ -12,7 +12,7 @@ import androidx.room.PrimaryKey;
 public class DepartmentData {
 
         @PrimaryKey(autoGenerate = true)
-        @NonNull
+        //@NonNull
         public int department_id;
 
         //@ForeignKey()
@@ -22,24 +22,14 @@ public class DepartmentData {
 
         public String department_name;
 
-        public int CrossOutNumber;
+        int CrossOutNumber;
 
         public int visibility = 0;
 
-        public DepartmentData(int list_id, int department_position, String department_name, int CrossOutNumber) {
+        DepartmentData(int list_id, int department_position, String department_name, int CrossOutNumber) {
                 this.list_id = list_id;
                 this.department_position = department_position;
                 this.department_name = department_name;
                 this.CrossOutNumber = CrossOutNumber;
-        }
-
-        public DepartmentData() {
-
-        }
-
-        public String getAllInString() {
-                String s = "list id: " + list_id + " department id: " + department_id + " department position: " + department_position +
-                        " department name: '" + department_name + "' cross out number: " + CrossOutNumber;
-                return s;
         }
 }

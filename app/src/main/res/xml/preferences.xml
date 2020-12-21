@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
         app:key="general_category"
@@ -20,26 +19,27 @@
         />
     </PreferenceCategory>
 
-    <!-- todo make backup to file -->
+    <!-- todo implement backup to file -->
+    <!--
+        <PreferenceCategory
+            app:key="about_category"
+            app:title="@string/about_category"
+            android:layout="@layout/preferences_category">
 
-    <PreferenceCategory
-        app:key="about_category"
-        app:title="@string/about_category"
-        android:layout="@layout/preferences_category">
+            <Preference
+                app:key="history_of_changes"
+                app:title="@string/history_of_changes" />
 
-        <Preference
-            app:key="history_of_changes"
-            app:title="@string/history_of_changes" />
-<!--
-        <Preference
-            app:key="privacy_policy"
-            app:title="@string/privacy_policy" />
--->
+            <Preference
+                app:key="privacy_policy"
+                app:title="@string/privacy_policy" />
+                    </PreferenceCategory>
+    -->
     <Preference
         app:key="version"
         app:summary="@string/apps_version"
         android:selectable="false"/>
 
-    </PreferenceCategory>
+
 
 </PreferenceScreen>
