@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -26,11 +27,13 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -174,6 +177,9 @@ public class MainActivity extends AppCompatActivity {
             editButtonClicked = !editButtonClicked;
             setEditModeButtonsVisibility();
             setTabsVisibility();
+
+            InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
 
             viewPagerAdapter.notifyDataSetChanged();
         });
@@ -1344,6 +1350,13 @@ public class MainActivity extends AppCompatActivity {
         et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         et.setHint(getString(R.string.enter_text));
 
+        et.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                return true;
+            }
+        });
+
         return et;
     }
 
@@ -1355,6 +1368,14 @@ public class MainActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.MATCH_PARENT);
         et.setLayoutParams(lp);
         et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+
+        et.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                return true;
+            }
+        });
+
         return et;
     }
 
@@ -1499,6 +1520,14 @@ public class MainActivity extends AppCompatActivity {
         TextView text = view.findViewById(R.id.tvDepartmentsName);
         et.setText(text.getText().toString() + " ");
         et.setSelection(et.length());
+
+        et.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                return true;
+            }
+        });
+
         return et;
     }
 
@@ -2392,12 +2421,18 @@ public class MainActivity extends AppCompatActivity {
                 switch (item.getItemId()) {
                     case R.id.data_menu_delete:
                         deleteSingleItem(position, dataID);
+
+                        InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+
                         return true;
                     case R.id.data_menu_edit:
                         inputTextDialogWindowForViewHolderItem(view, position, dataID);
                         return true;
                     case R.id.data_menu_move:
-                        createDataMoveSubMenu(view, dataID, position);
+                        if (db.departmentDataDao().getAllNames(chosenListData.list_id).size()>1) {
+                            createDataMoveSubMenu(view, dataID, position);
+                        }
                         return false;
                     default:
                         return false;

@@ -6,10 +6,13 @@ import android.graphics.Paint;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Display;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -17,6 +20,7 @@ import android.widget.TextView;
 
 
 import androidx.core.content.ContextCompat;
+import androidx.core.view.KeyEventDispatcher;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
@@ -159,15 +163,48 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
             this.myCustomEditTextListener = myCustomEditTextListener;
             this.mEditQty.addTextChangedListener(myCustomEditTextListener);
 
-            mEditQty.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+
+            this.mEditQty.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                 @Override
                 public void onFocusChange(View v, boolean hasFocus) {
                     if (!hasFocus) {
-                        InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                       // InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        //imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                        //imm.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
+                        Float qtyInFloat = 0.0f;
+                        qtyInFloat = Float.parseFloat(mEditQty.getText().toString());
+                        String text = String.valueOf(qtyInFloat).replaceAll("\\.?0*$", "");
+                        mEditQty.setText(text);
                     }
                 }
             });
+
+            this.mEditQty.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    boolean handled = false;
+
+                    if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                        View next = v.focusSearch(View.FOCUS_DOWN);
+                        if (next != null) {
+                            next.requestFocus();
+                        }
+
+                        EditText nextET = next.findViewById(R.id.etAnimalCount);
+                        nextET.setSelection(nextET.getText().length());
+                        handled = true;
+                    } else {
+                        v.clearFocus();
+                        InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                        handled = true;
+                    }
+
+                    return handled;
+                }
+            });
+
 
             mMoreImage.setOnClickListener(this);
             mLowImage.setOnClickListener(this);
@@ -217,6 +254,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         public void afterTextChanged(Editable editable) {
             //todo округлять до третьего знака после запятой
             Log.d(TAG, "afterTextChanged started editable: " + editable.toString());
+
             if (!editable.toString().equals("") && !editable.toString().equals("-")) {
 
                 if (MainActivity.canUpdate
