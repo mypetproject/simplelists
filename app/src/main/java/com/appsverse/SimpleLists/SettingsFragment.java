@@ -1,12 +1,9 @@
-package com.example.shoplist2;
+package com.appsverse.SimpleLists;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 public class SettingsFragment extends PreferenceFragmentCompat {

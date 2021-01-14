@@ -1,4 +1,4 @@
-package com.example.shoplist2;
+package com.appsverse.SimpleLists;
 
 import org.junit.Test;
 

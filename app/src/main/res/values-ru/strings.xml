@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SimpleShopList</string>
+    <string name="app_name">Simple Lists</string>
     <string name="hintPopup">Eeee</string>
     <string name="enter_text">Введите текст</string>
     <string name="cancel">Отмена</string>

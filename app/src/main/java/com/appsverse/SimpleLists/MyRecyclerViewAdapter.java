@@ -1,4 +1,4 @@
-package com.example.shoplist2;
+package com.appsverse.SimpleLists;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -6,7 +6,6 @@ import android.graphics.Paint;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.Display;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -20,7 +19,6 @@ import android.widget.TextView;
 
 
 import androidx.core.content.ContextCompat;
-import androidx.core.view.KeyEventDispatcher;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;

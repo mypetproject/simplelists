@@ -1,4 +1,4 @@
-package com.example.shoplist2;
+package com.appsverse.SimpleLists;
 
 import androidx.room.Dao;
 import androidx.room.Insert;

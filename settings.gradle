@@ -1,2 +1,2 @@
-rootProject.name='ShopList2'
+rootProject.name='Simple Lists'
 include ':app'

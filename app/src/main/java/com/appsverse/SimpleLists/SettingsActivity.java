@@ -1,4 +1,4 @@
-package com.example.shoplist2;
+package com.appsverse.SimpleLists;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;

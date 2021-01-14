@@ -1,6 +1,5 @@
-package com.example.shoplist2;
+package com.appsverse.SimpleLists;
 
-import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Index;

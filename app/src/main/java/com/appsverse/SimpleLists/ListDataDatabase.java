@@ -1,4 +1,4 @@
-package com.example.shoplist2;
+package com.appsverse.SimpleLists;
 
 import androidx.room.Database;
 import androidx.room.RoomDatabase;

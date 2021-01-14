@@ -1,4 +1,4 @@
-package com.example.shoplist2;
+package com.appsverse.SimpleLists;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -8,10 +8,6 @@ import androidx.room.Query;
 import androidx.room.Update;
 
 import java.util.List;
-
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.Single;
 
 @Dao
 public interface ListDataDao {

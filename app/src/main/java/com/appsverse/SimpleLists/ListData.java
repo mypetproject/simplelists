@@ -1,12 +1,9 @@
-package com.example.shoplist2;
+package com.appsverse.SimpleLists;
 
 import androidx.annotation.NonNull;
-import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
-
-import io.reactivex.Single;
 
 @Entity(tableName = "lists_table", indices = {@Index(value = {"list_name"}, unique = true)})
 
