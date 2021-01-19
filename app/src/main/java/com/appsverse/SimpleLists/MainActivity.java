@@ -272,6 +272,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //todo BUG when theme changed and main activity recreated toolbar items gravity change to center mode
     private void setToolbar() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -524,7 +525,6 @@ public class MainActivity extends AppCompatActivity {
         viewPagerAdapter.notifyDataSetChanged();
     }
 
-    //TODO!!! bug with department popupmenu in edit mode, didn't create popup if last department is invisible
     private void setShowOrHideItemInPopupMenu(PopupMenu popup, DepartmentData departmentData) {
         if (departmentData.visibility == 1) {
             popup.getMenu().findItem(R.id.department_menu_hide_or_show).setTitle(R.string.hide_department);
