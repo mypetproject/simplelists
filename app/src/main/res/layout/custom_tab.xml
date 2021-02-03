@@ -29,7 +29,6 @@
         android:textColor="#03DAC5"
         android:textSize="12sp"
         android:layout_marginRight="0dp"
-
         android:background="@drawable/department_holder_qty"/>
 
 </LinearLayout>

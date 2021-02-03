@@ -11,10 +11,8 @@ import androidx.room.PrimaryKey;
 public class DepartmentData {
 
         @PrimaryKey(autoGenerate = true)
-        //@NonNull
         public int department_id;
 
-        //@ForeignKey()
         public int list_id;
 
         public int department_position;

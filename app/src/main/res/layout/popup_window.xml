@@ -23,11 +23,7 @@ android:theme="@style/AppTheme"
         android:textSize="22sp"
         android:autofillHints="@string/enter_text"
         android:imeOptions="actionDone"
-        android:textIsSelectable="true"
-
-
-        />
-
+        android:textIsSelectable="true"/>
 
     <Button
         android:id="@+id/popup_cancel_button"
@@ -38,23 +34,20 @@ android:theme="@style/AppTheme"
         android:layout_alignEnd="@+id/popup_edit"
         android:layout_marginStart="120dp"
         android:layout_marginEnd="-25dp"
-
-
-        android:foregroundGravity="center"
+       android:foregroundGravity="center"
         android:gravity="center"
-        android:text="@string/cancel"
-        />
+        android:text="@string/cancel"/>
+
     <Button
         android:id="@+id/popup_ok_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/popup_edit"
-                android:layout_marginStart="250dp"
+        android:layout_marginStart="250dp"
         android:layout_marginEnd="15dp"
         android:foregroundGravity="center"
         android:gravity="center"
-        android:text="@string/ok"
-        />
+        android:text="@string/ok"/>
 
     <Button
         android:id="@+id/popup_next_button"
@@ -64,7 +57,6 @@ android:theme="@style/AppTheme"
         android:foregroundGravity="center"
         android:gravity="center"
         android:text="@string/next"
-        android:layout_marginStart="25dp"
-        />
+        android:layout_marginStart="25dp"/>
 
 </RelativeLayout>

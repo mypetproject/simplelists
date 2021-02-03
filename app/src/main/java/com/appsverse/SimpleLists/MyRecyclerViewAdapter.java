@@ -219,9 +219,6 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
             if (mClickListener != null) {
 
-                //todo зачем нужна эта строка?
-                //MainActivity.setAdapterPosition(getLayoutPosition());
-
                 mClickListener.onItemClick(view, getAdapterPosition(), mData.get(getAdapterPosition()).data_id);
             }
         }
@@ -250,7 +247,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
         @Override
         public void afterTextChanged(Editable editable) {
-            //todo округлять до третьего знака после запятой
+
             Log.d(TAG, "afterTextChanged started editable: " + editable.toString());
 
             if (!editable.toString().equals("") && !editable.toString().equals("-")) {

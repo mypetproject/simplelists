@@ -4,11 +4,8 @@
     android:layout_width="wrap_content"
     android:layout_height="30dp"
     android:background="@drawable/department_holder"
+    android:orientation="horizontal">
 
-    android:orientation="horizontal"
-
-    >
-    <!--android:background="#79bfea"-->
     <TextView
         android:id="@+id/tvDepartmentsName"
         android:layout_width="wrap_content"
@@ -17,8 +14,7 @@
         android:textColor="#000000"
         android:textSize="12sp"
         android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        />
+        android:layout_marginRight="10dp"/>
 
     <TextView
         android:id="@+id/tvDepartmentsQty"
@@ -29,24 +25,18 @@
         android:textColor="#03DAC5"
         android:textSize="12sp"
         android:layout_marginRight="10dp"
-
         android:background="@drawable/department_holder_qty"/>
 
     <ImageView
         android:id="@+id/image_delete2"
-
         android:layout_width="40dp"
         android:layout_height="30dp"
-
         android:src="@drawable/ic_delete" />
 
     <ImageView
         android:id="@+id/addImage"
-
         android:layout_width="30dp"
         android:layout_height="30dp"
-
         android:src="@drawable/ic_add_circle" />
-
 
 </LinearLayout>

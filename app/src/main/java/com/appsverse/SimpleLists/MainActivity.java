@@ -107,9 +107,6 @@ public class MainActivity extends AppCompatActivity {
 
     public static Context context;
 
-//todo! killerfeature: block list by fingerprint and pin
-
-    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -272,15 +269,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //todo BUG when theme changed and main activity recreated toolbar items gravity change to center mode
     private void setToolbar() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    }
-
-    public static Context getAppContext() {
-        return MainActivity.context;
     }
 
     private void setPreferences() {
@@ -575,7 +567,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void moveDepartmentToNewList(MenuItem item, DepartmentData departmentData) {
 
-        //DepartmentData departmentData = db.departmentDataDao().getDepartmentDataById(id);
         ListData toList = db.listDataDao().getChosenListByName(item.getTitle().toString());
         int oldPosition = departmentData.department_position;
         boolean nameSetStatus = true;
@@ -604,7 +595,6 @@ public class MainActivity extends AppCompatActivity {
         setNavigationDrawerData();
     }
 
-    //TODO!!! оптимизировать метод ниже
     public static void ViewPagerItemClicked(View view, int dataID, MyRecyclerViewAdapter adapter, int position, List<Data> adapterData) {
         logThisMethodStatic(new Object() {
         }.getClass().getEnclosingMethod().getName());
@@ -705,7 +695,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static int getTotalActiveItemsCountForChosenList() {
-        //List<DepartmentData> listOfDepartmentsData = new ArrayList<DepartmentData>(db.departmentDataDao().getAll(chosenListData.list_id));
+
         List<DepartmentData> listOfDepartmentsData = new ArrayList<DepartmentData>(db.departmentDataDao().getAllVisibleDepartmentData(chosenListData.list_id));
         int sumOfActive = 0;
 
@@ -1150,10 +1140,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (drawerResult.isDrawerOpen()) {
             drawerResult.closeDrawer();
-
-            // Go to first element of ViewPager by press button "Back" if it is position >0
-
-        } else if (!editButtonClicked) {
+       } else if (!editButtonClicked) {
             editButtonClicked = true;
             addDepartmentButton.setVisibility(View.GONE);
             addDepartmentEndButton.setVisibility(View.GONE);
@@ -1593,12 +1580,11 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "new data set started");
         int departmentID = db.departmentDataDao().getChosenDepartment(departmentPosition - 1, chosenListData.list_id).department_id;
         Data newData = new Data(departmentID, position, s, dataQty);
-        //Log.d(TAG, " Data newData = new Data ended");
+
         db.dataDao().incrementValues(db.departmentDataDao().getChosenDepartment(departmentPosition - 1, chosenListData.list_id).department_id, position - 1);
         db.dataDao().insert(newData);
         setDepartmentVisible(departmentID);
-        //data.add(position, newData);
-        //Log.d(TAG, "Test increment data position: " + db.dataDao().getAllPositions(chosenDepartmentData.department_id));
+
         Log.d(TAG, "new data set ended");
     }
 
@@ -1859,7 +1845,7 @@ public class MainActivity extends AppCompatActivity {
         setStaticTabsVisibility();
     }
 
-    //todo!!! bug если есть скрытые разделы, то перескакивает с раздела на раздел при переходе в режим редактирования и обратно
+
     private static void deleteAllItemInDepartment(DepartmentData departmentData) {
 
         db.dataDao().deleteAllDataByDepartmentID(departmentData.department_id);
@@ -2139,7 +2125,7 @@ public class MainActivity extends AppCompatActivity {
         return s;
     }
 
-    //menu in toolbar on right side
+    //menu in toolbar on the right side
     public void onMoreMenuItemButtonClick(View view) {
         logThisMethod(new Object() {
         }.getClass().getEnclosingMethod().getName());
@@ -2289,18 +2275,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void saveLanguage(String lang) {
-        //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("Language", lang);
         editor.commit();
-        //   Log.d(TAG, "saved Theme = " + sharedPreferences.getInt("Theme",1));
-        //  Log.d(TAG, "saved Theme =  " + theme);
+
     }
 
     public String loadLanguage() {
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, 0);
-        String lang = sharedPreferences.getString("Language", "en"); //en is default, when nothing is saved yet
+        String lang = sharedPreferences.getString("Language", "en");
         return lang;
     }
 
@@ -2522,7 +2507,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //TODO!!! При наличии скрытых разделов в списке, если выбрать в конце списка раздел при переходе из одного режима в другой перескакивает на другой раздел
+
     static int notifyWithDelay(int delay) {
         SystemClock.sleep(delay);
         mn.runOnUiThread(new Runnable() {
@@ -2541,21 +2526,4 @@ public class MainActivity extends AppCompatActivity {
 
 }
 
-
-//todo Добавление списков, отделов, элементов с помощью google assistant
-//todo Обучение интерфейсу при первом старте
-
-
-//todo блокировка списка отпечатком и пинкодом
-//todo поиск по списку?
-
-//todo аттач фото к элементу отдела
-
-
-//todo проверка на hardware клавиатуру при вызове alertdialog для корректировки или добавления элемента (те, где есть edittext)
-
-
-//todo по лонгтапу по элементу отдела появляется чекбокс, где можно выделить элементы и удалить несколько сразу
-
-//todo set current date like default in dialog edittext when new list in creating?
 

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- https://material.io/resources/color/#!/?view.left=0&view.right=0&primary.color=FFCC80 -->
     <color name="colorPrimary">#000000</color> <!-- drawer text color -->
     <color name="colorPrimaryDark">#ca9b52</color>
     <color name="colorPrimaryLight">#ffffb0</color>
