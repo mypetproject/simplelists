@@ -8,7 +8,7 @@ android {
         applicationId "com.appsverse.SimpleLists"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 2
+        versionCode 3
         versionName "2021.08.16"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
