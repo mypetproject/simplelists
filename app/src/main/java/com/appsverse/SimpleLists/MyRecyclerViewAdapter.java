@@ -166,12 +166,8 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
                 @Override
                 public void onFocusChange(View v, boolean hasFocus) {
                     if (!hasFocus) {
-                       // InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        //imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                        //imm.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-
-                        Float qtyInFloat = 0.0f;
-                        qtyInFloat = Float.parseFloat(mEditQty.getText().toString());
+                          Float qtyInFloat = 0.0f;
+                        if (!mEditQty.getText().toString().isEmpty()) qtyInFloat = Float.parseFloat(mEditQty.getText().toString());
                         String text = String.valueOf(qtyInFloat).replaceAll("\\.?0*$", "");
                         mEditQty.setText(text);
                     }
